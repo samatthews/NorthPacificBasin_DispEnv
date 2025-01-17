@@ -1,0 +1,2052 @@
+---
+title: "Analyze_06_BetaDiversityCorrelations"
+output: html_document
+date: "2024-11-04"
+---
+
+
+```{r setup, include=FALSE}
+library(microshades)
+library(phyloseq)
+library(vegan)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(metagMisc)
+#library(viridis)
+library(RColorBrewer)
+library(ggExtra)
+library(beepr)
+library(readxl)
+library(ggforce)
+library(ggrepel)
+library(ggpubr)
+library(cowplot)
+library(ggtext)
+library(sp)
+library(vegan)
+library(grid)
+library(ggsci)
+set.seed(00110011)
+theme_set(theme_bw())
+theme_update(plot.title = element_text(hjust = 0.5))
+depthcolors <- c("#4DAF4A", "#E41A1C", "#984EA3")
+names(depthcolors) <- c("0-200m", "200-500m", "500-1000m")
+markercolors <- c("#D81B60","#1E88E5")
+names(markercolors) <- c("18S", "COI")
+
+```
+
+```{r}
+load("~/Documents/Chapter4/BasinScale_Analysis_v2_2024/data_objects/CleanZooplanktonPhyloseqs.rdat")
+```
+
+
+# environment similarity:community similarity
+- Does epipelagic/mesopelagic community similarity covary with environmental similarity? 
+- Can I calculate distance among samples and test for correlation with environmental differences? 
+- Is environmental similarity the same as biogeochemical provinces? Consider whether to include biogeochemical provinces
+
+-> we'll use bray-curtis similarity, since there's variability in sampling type and depth bins etc 
+##get bray curtis distances
+```{r community distance}
+dist_bray <- phyloseq::distance(zoops18S, method = "bray")
+dist_bray_mtx18 <- as.matrix(dist_bray) # convert 'dist' to 'matrix'
+
+# retrieve the beta-diversity value between samples:
+dist_bray_mtx18["1 200-500m ", "1 500-1000m "] # 0.05152207
+dist_bray_mtx18["1 200-500m ", "1 200-500m "] # 0
+
+dist_bray_mtx_long18 <- reshape::melt(dist_bray_mtx18, as.is = TRUE)[reshape::melt(upper.tri(dist_bray_mtx18), as.is = TRUE)$value,]
+
+dist_bray_mtx_long18$DepthA <- stringr::str_split_i((dist_bray_mtx_long18$X1), " ", i = 2)
+dist_bray_mtx_long18$StationA <- stringr::str_split_i((dist_bray_mtx_long18$X1), " ", i = 1)
+dist_bray_mtx_long18$DepthB <- stringr::str_split_i((dist_bray_mtx_long18$X2), " ", i = 2)
+dist_bray_mtx_long18$StationB <- stringr::str_split_i((dist_bray_mtx_long18$X2), " ", i = 1)
+
+
+
+dist_bray <- phyloseq::distance(zoopsCOI, method = "bray")
+dist_bray_mtx <- as.matrix(dist_bray) # convert 'dist' to 'matrix'
+
+# retrieve the beta-diversity value between samples:
+dist_bray_mtx["1 200-500m ", "1 500-1000m "] # 0.05152207
+dist_bray_mtx["1 200-500m ", "1 200-500m "] # 0
+
+dist_bray_mtx_longCOI <- reshape::melt(dist_bray_mtx, as.is = TRUE)[reshape::melt(upper.tri(dist_bray_mtx), as.is = TRUE)$value,]
+
+dist_bray_mtx_longCOI$DepthA <- stringr::str_split_i((dist_bray_mtx_longCOI$X1), " ", i = 2)
+dist_bray_mtx_longCOI$StationA <- stringr::str_split_i((dist_bray_mtx_longCOI$X1), " ", i = 1)
+dist_bray_mtx_longCOI$DepthB <- stringr::str_split_i((dist_bray_mtx_longCOI$X2), " ", i = 2)
+dist_bray_mtx_longCOI$StationB <- stringr::str_split_i((dist_bray_mtx_longCOI$X2), " ", i = 1)
+```
+
+##get insitu env differences 
+```{r temp sal and oxy difference}
+temp <- data.frame(sample_data(zoopsCOI)[,c("MeanTemp")])
+sal <- data.frame(sample_data(zoopsCOI)[,c("MeanSal")])
+oxy <- data.frame(sample_data(zoopsCOI)[,c("MeanOxy")])
+
+dist_temp <- outer(temp$MeanTemp, temp$MeanTemp, '-')
+rownames(dist_temp) <- rownames(dist_bray_mtx)
+colnames(dist_temp) <- colnames(dist_bray_mtx)
+dist_sal <- outer(sal$MeanSal, sal$MeanSal, '-')
+rownames(dist_sal) <- rownames(dist_bray_mtx)
+colnames(dist_sal) <- colnames(dist_bray_mtx)
+dist_oxy <- outer(oxy$MeanOxy, oxy$MeanOxy, '-')
+rownames(dist_oxy) <- rownames(dist_bray_mtx)
+colnames(dist_oxy) <- colnames(dist_bray_mtx)
+
+dist_temp_coi <- reshape::melt(dist_temp, as.is = TRUE)[reshape::melt(upper.tri(dist_temp), as.is = TRUE)$value,]
+dist_sal_coi <- reshape::melt(dist_sal, as.is = TRUE)[reshape::melt(upper.tri(dist_sal), as.is = TRUE)$value,]
+dist_oxy_coi <- reshape::melt(dist_oxy, as.is = TRUE)[reshape::melt(upper.tri(dist_oxy), as.is = TRUE)$value,]
+
+
+temp <- data.frame(sample_data(zoops18S)[,c("MeanTemp")])
+sal <- data.frame(sample_data(zoops18S)[,c("MeanSal")])
+oxy <- data.frame(sample_data(zoops18S)[,c("MeanOxy")])
+
+dist_temp <- outer(temp$MeanTemp, temp$MeanTemp, '-')
+rownames(dist_temp) <- rownames(dist_bray_mtx18)
+colnames(dist_temp) <- colnames(dist_bray_mtx18)
+dist_sal <- outer(sal$MeanSal, sal$MeanSal, '-')
+rownames(dist_sal) <- rownames(dist_bray_mtx18)
+colnames(dist_sal) <- colnames(dist_bray_mtx18)
+dist_oxy <- outer(oxy$MeanOxy, oxy$MeanOxy, '-')
+rownames(dist_oxy) <- rownames(dist_bray_mtx18)
+colnames(dist_oxy) <- colnames(dist_bray_mtx18)
+
+dist_temp_18s <- reshape::melt(dist_temp, as.is = TRUE)[reshape::melt(upper.tri(dist_temp), as.is = TRUE)$value,]
+dist_sal_18s <- reshape::melt(dist_sal, as.is = TRUE)[reshape::melt(upper.tri(dist_sal), as.is = TRUE)$value,]
+dist_oxy_18s <- reshape::melt(dist_oxy, as.is = TRUE)[reshape::melt(upper.tri(dist_oxy), as.is = TRUE)$value,]
+```
+
+##get model env differences 
+```{r temp sal and oxy difference}
+temp <- data.frame(sample_data(zoopsCOI)[,c("meanModelTemp")])
+sal <- data.frame(sample_data(zoopsCOI)[,c("meanModelSal")])
+
+dist_temp <- outer(temp$meanModelTemp, temp$meanModelTemp, '-')
+rownames(dist_temp) <- rownames(dist_bray_mtx)
+colnames(dist_temp) <- colnames(dist_bray_mtx)
+dist_sal <- outer(sal$meanModelSal, sal$meanModelSal, '-')
+rownames(dist_sal) <- rownames(dist_bray_mtx)
+colnames(dist_sal) <- colnames(dist_bray_mtx)
+
+dist_modtemp_coi <- reshape::melt(dist_temp, as.is = TRUE)[reshape::melt(upper.tri(dist_temp), as.is = TRUE)$value,]
+dist_modsal_coi <- reshape::melt(dist_sal, as.is = TRUE)[reshape::melt(upper.tri(dist_sal), as.is = TRUE)$value,]
+
+
+temp <- data.frame(sample_data(zoops18S)[,c("meanModelTemp")])
+sal <- data.frame(sample_data(zoops18S)[,c("meanModelSal")])
+
+dist_temp <- outer(temp$meanModelTemp, temp$meanModelTemp, '-')
+rownames(dist_temp) <- rownames(dist_bray_mtx18)
+colnames(dist_temp) <- colnames(dist_bray_mtx18)
+dist_sal <- outer(sal$meanModelSal, sal$meanModelSal, '-')
+rownames(dist_sal) <- rownames(dist_bray_mtx18)
+colnames(dist_sal) <- colnames(dist_bray_mtx18)
+
+dist_modtemp_18s <- reshape::melt(dist_temp, as.is = TRUE)[reshape::melt(upper.tri(dist_temp), as.is = TRUE)$value,]
+dist_modsal_18s <- reshape::melt(dist_sal, as.is = TRUE)[reshape::melt(upper.tri(dist_sal), as.is = TRUE)$value,]
+```
+ 
+
+##get food env differences 
+```{r temp sal and oxy difference}
+npp <- data.frame(sample_data(zoopsCOI)[,c("npp_meanyearlytotal")])
+ef <- data.frame(sample_data(zoopsCOI)[,c("ef_meanyearlytotal")])
+
+dist_npp <- outer(npp$npp_meanyearlytotal, npp$npp_meanyearlytotal, '-')
+rownames(dist_npp) <- rownames(dist_bray_mtx)
+colnames(dist_npp) <- colnames(dist_bray_mtx)
+dist_ef <- outer(ef$ef_meanyearlytotal, ef$ef_meanyearlytotal, '-')
+rownames(dist_ef) <- rownames(dist_bray_mtx)
+colnames(dist_ef) <- colnames(dist_bray_mtx)
+
+dist_npp_coi <- reshape::melt(dist_npp, as.is = TRUE)[reshape::melt(upper.tri(dist_npp), as.is = TRUE)$value,]
+dist_ef_coi <- reshape::melt(dist_ef, as.is = TRUE)[reshape::melt(upper.tri(dist_ef), as.is = TRUE)$value,]
+
+
+npp <- data.frame(sample_data(zoops18S)[,c("npp_meanyearlytotal")])
+ef <- data.frame(sample_data(zoops18S)[,c("ef_meanyearlytotal")])
+
+dist_temp <- outer(npp$npp_meanyearlytotal, npp$npp_meanyearlytotal, '-')
+rownames(dist_temp) <- rownames(dist_bray_mtx18)
+colnames(dist_temp) <- colnames(dist_bray_mtx18)
+dist_ef <- outer(ef$ef_meanyearlytotal, ef$ef_meanyearlytotal, '-')
+rownames(dist_ef) <- rownames(dist_bray_mtx18)
+colnames(dist_ef) <- colnames(dist_bray_mtx18)
+
+dist_npp_18s <- reshape::melt(dist_npp, as.is = TRUE)[reshape::melt(upper.tri(dist_npp), as.is = TRUE)$value,]
+dist_ef_18s <- reshape::melt(dist_ef, as.is = TRUE)[reshape::melt(upper.tri(dist_ef), as.is = TRUE)$value,]
+```
+ 
+##test for normality
+```{r test for normality}
+
+hist(dist_bray_mtx_longCOI$value, col='steelblue', main='COI Bray Distances')
+hist(dist_bray_mtx_long18$value, col='steelblue', main='18S Bray Distances')
+hist(dist_temp_coi$value, col='steelblue', main='Temperature differences')
+hist(dist_sal_coi$value, col='steelblue', main='Salinity differences')
+hist(dist_oxy_coi$value, col='steelblue', main='Oxygen differences')
+hist(dist_modtemp_coi$value, col='steelblue', main='Temperature differences')
+hist(dist_modsal_coi$value, col='steelblue', main='Salinity differences')
+```
+
+
+#model correlation between overall BCD and environment
+(using model data)
+##coi
+```{r}
+dist_modtemp_coi$variable <- "Temperature"
+dist_modsal_coi$variable <- "Salinity"
+dist_oxy_coi$variable <- "Oxygen"
+dist_ef_coi$variable <- "EF"
+dist_npp_coi$variable <- "NPP"
+colnames(dist_modtemp_coi)[3] <- "Temperature"
+colnames(dist_modsal_coi)[3] <- "Salinity"
+colnames(dist_oxy_coi)[3] <- "Oxygen"
+colnames(dist_ef_coi)[3] <- "EF"
+colnames(dist_npp_coi)[3] <- "NPP"
+dist_ef_coi$EF <- dist_ef_coi$EF * 365
+dist_npp_coi$NPP <- dist_npp_coi$NPP * 365
+colnames(dist_bray_mtx_longCOI)[3] <- "BCD"
+dist_modtemp_coi$formerging <- paste(dist_modtemp_coi$X1, dist_modtemp_coi$X2)
+dist_modsal_coi$formerging <- paste(dist_modsal_coi$X1, dist_modsal_coi$X2)
+dist_oxy_coi$formerging <- paste(dist_oxy_coi$X1, dist_oxy_coi$X2)
+dist_ef_coi$formerging <- paste(dist_ef_coi$X1, dist_ef_coi$X2)
+dist_npp_coi$formerging <- paste(dist_npp_coi$X1, dist_npp_coi$X2)
+dist_bray_mtx_longCOI$formerging <- paste(dist_bray_mtx_longCOI$X1, dist_bray_mtx_longCOI$X2)
+dist_bray_mtx_longCOI <- dist_bray_mtx_longCOI[dist_bray_mtx_longCOI$DepthA == dist_bray_mtx_longCOI$DepthB,]
+
+coi_mod <- merge(dist_bray_mtx_longCOI, dist_modtemp_coi, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_modsal_coi, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_oxy_coi, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_ef_coi, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_npp_coi, by = "formerging", all.x = T, all.y = F)
+
+coilong_mod <- coi_mod %>% dplyr::select(DepthA, StationA, DepthB, StationB, BCD, Temperature, Salinity, Oxygen, EF, NPP) %>% pivot_longer(-c(DepthA, StationA, DepthB, StationB, BCD), values_to = "EnvDiff")
+coilong_mod$EnvDiff <- abs(coilong_mod$EnvDiff)
+
+coilong_mod$name <- forcats::fct_relevel(coilong_mod$name, "Temperature", "Salinity", "Oxygen", "NPP", "EF")
+
+coilong_mod$name_fac <- factor(coilong_mod$name, levels = c("Temperature", "Salinity", "Oxygen", "NPP", "EF"), ordered = TRUE, labels = c(expression(Temperature~(degree*C)), "Salinity", expression(DO~(µmol~kg^-1)), expression(NPP~(mgC~m^-2~yr^1)), expression(EF~(mgC~m^-2~yr^1))))
+coilong_mod$show <- "Yes"
+coilong_mod$show[(coilong_mod$name == "NPP" & coilong_mod$DepthB == "200-500m")] <- "No"
+coilong_mod$show[(coilong_mod$name == "NPP" & coilong_mod$DepthB == "500-1000m")] <- "No"
+coilong_mod$show[(coilong_mod$name == "EF" & coilong_mod$DepthB == "0-200m")] <- "No"
+
+plotcoi_mod <- ggplot(data=coilong_mod[coilong_mod$show == "Yes",], aes(x = EnvDiff, y = BCD, group = DepthB, color = DepthB)) + 
+  geom_point(alpha = 0.4, size = .3) + 
+  facet_grid(~name_fac, scales = "free_x", labeller = label_parsed) +
+  #xlab("Environmental difference") + 
+  xlab(expression(paste(Delta, " Environment"))) + 
+  ylab("Bray-Curtis Dissimilarity (BCD)") + 
+  ggtitle("COI")+ 
+   stat_cor(method = "spearman", label.x.npc = .35, label.y.npc = 0.75,
+            cor.coef.name = "rho",
+            alternative = "greater", geom = "label", 
+            aes(label = paste(after_stat(r), cut(after_stat(p), 
+                                              breaks = c(-Inf, 0.001, 0.01, 0.05, Inf),
+                                              labels = c("'***'", "'**'", "'*'", "'ns'")), sep = "~','~")),
+            show.legend = F) + 
+    geom_smooth(method = "loess", span = 1, show.legend=F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) )  + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+plotcoi_mod
+
+```
+
+##18s
+```{r}
+dist_modtemp_18s$variable <- "Temperature"
+dist_modsal_18s$variable <- "Salinity"
+dist_oxy_18s$variable <- "Oxygen"
+dist_ef_18s$variable <- "EF"
+dist_npp_18s$variable <- "NPP"
+colnames(dist_modtemp_18s)[3] <- "Temperature"
+colnames(dist_modsal_18s)[3] <- "Salinity"
+colnames(dist_oxy_18s)[3] <- "Oxygen"
+colnames(dist_ef_18s)[3] <- "EF"
+colnames(dist_npp_18s)[3] <- "NPP"
+dist_ef_18s$EF <- dist_ef_18s$EF * 365
+dist_npp_18s$NPP <- dist_npp_18s$NPP * 365
+colnames(dist_bray_mtx_long18)[3] <- "BCD"
+dist_modtemp_18s$formerging <- paste(dist_modtemp_18s$X1, dist_modtemp_18s$X2)
+dist_modsal_18s$formerging <- paste(dist_modsal_18s$X1, dist_modsal_18s$X2)
+dist_oxy_18s$formerging <- paste(dist_oxy_18s$X1, dist_oxy_18s$X2)
+dist_ef_18s$formerging <- paste(dist_ef_18s$X1, dist_ef_18s$X2)
+dist_npp_18s$formerging <- paste(dist_npp_18s$X1, dist_npp_18s$X2)
+dist_bray_mtx_long18$formerging <- paste(dist_bray_mtx_long18$X1, dist_bray_mtx_long18$X2)
+dist_bray_mtx_long18 <- dist_bray_mtx_long18[dist_bray_mtx_long18$DepthA == dist_bray_mtx_long18$DepthB,]
+
+z18_mod <- merge(dist_bray_mtx_long18, dist_modtemp_18s, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_modsal_18s, by = "formerging", all.x = T, all.y = F)%>% 
+  merge(dist_oxy_18s, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_ef_18s, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_npp_18s, by = "formerging", all.x = T, all.y = F)
+
+z18long_mod <- z18_mod %>% dplyr::select(DepthA, StationA, DepthB, StationB, BCD, Temperature, Salinity, Oxygen, EF, NPP) %>% pivot_longer(-c(DepthA, StationA, DepthB, StationB, BCD), values_to = "EnvDiff")
+z18long_mod$EnvDiff <- abs(z18long_mod$EnvDiff)
+
+z18long_mod$name <- forcats::fct_relevel(z18long_mod$name, "Temperature", "Salinity", "Oxygen", "NPP", "EF")
+
+z18long_mod$name_fac <- factor(z18long_mod$name, levels = c("Temperature", "Salinity", "Oxygen", "NPP", "EF"), ordered = TRUE, labels = c(expression(Temperature~(degree*C)), "Salinity", expression(DO~(µmol~kg^-1)), expression(NPP~(mgC~m^-2~yr^1)), expression(EF~(mgC~m^-2~yr^1))))
+z18long_mod$show.point <- "Yes"
+z18long_mod$show.point[(z18long_mod$name == "NPP" & z18long_mod$DepthB == "200-500m")] <- "No"
+z18long_mod$show.point[(z18long_mod$name == "NPP" & z18long_mod$DepthB == "500-1000m")] <- "No"
+z18long_mod$show.point[(z18long_mod$name == "EF" & z18long_mod$DepthB == "0-200m")] <- "No"
+z18long_mod$show.line <- z18long_mod$show.point
+z18long_mod$show.line[(z18long_mod$name == "Oxygen" & z18long_mod$DepthB == "200-500m")] <- "No"
+
+
+plot18_mod <- ggplot(data=z18long_mod[z18long_mod$show.point == "Yes",], aes(x = EnvDiff, y = BCD, group = DepthB, color = DepthB)) + 
+  geom_point(alpha = 0.4, size = .3) + 
+  facet_grid(~name_fac, scales = "free_x", labeller = label_parsed) + 
+#  xlab("Environmental difference") + 
+  xlab(expression(paste(Delta, " Environment"))) + 
+  ylab("Bray-Curtis Dissimilarity (BCD)") + 
+  ggtitle("18S")+ 
+   stat_cor(method = "spearman", label.x.npc = .35, label.y.npc = 0.7,
+            cor.coef.name = "rho",
+            alternative = "greater", geom = "label",
+            aes(label = paste(after_stat(r), cut(after_stat(p), 
+                                              breaks = c(-Inf, 0.001, 0.01, 0.05, Inf),
+                                              labels = c("'***'", "'**'", "'*'", "'ns'")), sep = "~','~")),
+            show.legend=F) + 
+    geom_smooth(data=z18long_mod[z18long_mod$show.line == "Yes",], aes(x = EnvDiff, y = BCD, group = DepthB, color = DepthB),
+                inherit.aes = F,
+                method = "loess", span =1, show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) ) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+plot18_mod
+
+
+
+```
+
+
+##print to plot
+```{r}
+bothcorrenvirobray <- ggarrange(plot18_mod+xlab(NULL)+ylab(NULL), plotcoi_mod+xlab(NULL)+ylab(NULL), common.legend = T, legend = "right", labels = c("a)", "b)"), nrow = 2)
+bothcorrenvirobray <- annotate_figure(bothcorrenvirobray, bottom = text_grob(expression(paste(Delta, " Environment"))))
+bothcorrenvirobray <- annotate_figure(bothcorrenvirobray, left = text_grob("Bray-Curtis Dissimilarity (BCD)", rot = 90))
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/Bray_EnvMod_Corr_linear2.pdf", height =5, width = 8)
+bothcorrenvirobray
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/Bray_EnvMod_Corr_linear2.jpeg", height =5, width = 8, unit = "in", quality = 100, res = 600)
+bothcorrenvirobray
+dev.off()
+
+```
+
+# insitu relationship, non-parametric
+##coi
+```{r}
+dist_temp_coi$variable <- "Temperature"
+dist_sal_coi$variable <- "Salinity"
+dist_oxy_coi$variable <- "Oxygen"
+colnames(dist_temp_coi)[3] <- "Temperature"
+colnames(dist_sal_coi)[3] <- "Salinity"
+colnames(dist_oxy_coi)[3] <- "Oxygen"
+colnames(dist_bray_mtx_longCOI)[3] <- "BCD"
+dist_temp_coi$formerging <- paste(dist_temp_coi$X1, dist_temp_coi$X2)
+dist_sal_coi$formerging <- paste(dist_sal_coi$X1, dist_sal_coi$X2)
+dist_oxy_coi$formerging <- paste(dist_oxy_coi$X1, dist_oxy_coi$X2)
+dist_bray_mtx_longCOI$formerging <- paste(dist_bray_mtx_longCOI$X1, dist_bray_mtx_longCOI$X2)
+dist_bray_mtx_longCOI <- dist_bray_mtx_longCOI[dist_bray_mtx_longCOI$DepthA == dist_bray_mtx_longCOI$DepthB,]
+
+coi <- merge(dist_bray_mtx_longCOI, dist_temp_coi, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_sal_coi, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_oxy_coi, by = "formerging", all.x = T, all.y = F)
+
+coilong <- coi %>% dplyr::select(DepthA, StationA, DepthB, StationB, BCD, Temperature, Salinity, Oxygen) %>% pivot_longer(-c(DepthA, StationA, DepthB, StationB, BCD), values_to = "EnvDiff")
+coilong$EnvDiff <- abs(coilong$EnvDiff)
+coilong$name <- forcats::fct_relevel(coilong$name, "Temperature", "Salinity", "Oxygen")
+
+coilong$name_fac <- factor(coilong$name, levels = c("Temperature", "Salinity", "Oxygen"), ordered = TRUE, labels = c(expression(Temperature~(degree*C)), "Salinity", expression(Dissolved~Oxygen~(µmol~kg^-1))))
+
+
+plotcoi <- ggplot(data=coilong[coilong$name != "Oxygen",], aes(x = EnvDiff, y = BCD, group = DepthB, color = DepthB)) + 
+  geom_point(alpha = 0.4, size = .3) + 
+  facet_wrap(~name_fac, scales = "free_x", labeller = label_parsed) + 
+  xlab("Environmental difference") + 
+  ylab("Bray-Curtis distance") + 
+  ggtitle("COI")+ 
+   stat_cor(method = "spearman", show.legend = F, label.x.npc = .35, label.y.npc = 0.75,
+            cor.coef.name = "rho",
+            alternative = "greater", geom = "label", 
+            aes(label = paste(after_stat(r.label), cut(after_stat(p), 
+                                              breaks = c(-Inf, 0.001, 0.01, 0.05, Inf),
+                                              labels = c("'***'", "'**'", "'*'", "'ns'")), sep = "~','~"))) + 
+    geom_smooth(method = "loess", span = 1, show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) )+ 
+  theme(axis.text.x = element_text(angle=45)) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n=3))
+plotcoi
+
+```
+
+##18s
+```{r}
+dist_temp_18s$variable <- "Temperature"
+dist_sal_18s$variable <- "Salinity"
+dist_oxy_18s$variable <- "Oxygen"
+colnames(dist_temp_18s)[3] <- "Temperature"
+colnames(dist_sal_18s)[3] <- "Salinity"
+colnames(dist_oxy_18s)[3] <- "Oxygen"
+colnames(dist_bray_mtx_long18)[3] <- "BCD"
+dist_temp_18s$formerging <- paste(dist_temp_18s$X1, dist_temp_18s$X2)
+dist_sal_18s$formerging <- paste(dist_sal_18s$X1, dist_sal_18s$X2)
+dist_oxy_18s$formerging <- paste(dist_oxy_18s$X1, dist_oxy_18s$X2)
+dist_bray_mtx_long18$formerging <- paste(dist_bray_mtx_long18$X1, dist_bray_mtx_long18$X2)
+dist_bray_mtx_long18 <- dist_bray_mtx_long18[dist_bray_mtx_long18$DepthA == dist_bray_mtx_long18$DepthB,]
+
+z18 <- merge(dist_bray_mtx_long18, dist_temp_18s, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_sal_18s, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_oxy_18s, by = "formerging", all.x = T, all.y = F)
+
+z18long <- z18 %>% dplyr::select(DepthA, StationA, DepthB, StationB, BCD, Temperature, Salinity, Oxygen) %>% pivot_longer(-c(DepthA, StationA, DepthB, StationB, BCD), values_to = "EnvDiff")
+z18long$EnvDiff <- abs(z18long$EnvDiff)
+z18long$name <- forcats::fct_relevel(z18long$name, "Temperature", "Salinity", "Oxygen")
+
+z18long$name_fac <- factor(z18long$name, levels = c("Temperature", "Salinity", "Oxygen"), ordered = TRUE, labels = c(expression(Temperature~(degree*C)), "Salinity", expression(Dissolved~Oxygen~(µmol~kg^-1))))
+
+
+plot18 <- ggplot(data=z18long[z18long$name!="Oxygen",], aes(x = EnvDiff, y = BCD, group = DepthB, color = DepthB)) + 
+  geom_point(alpha = 0.4, size = .3) + 
+  facet_wrap(~name_fac, scales = "free_x", labeller = label_parsed) + 
+  xlab("Environmental difference") + 
+  ylab("Bray-Curtis distance") + 
+  ggtitle("18S")+ 
+   stat_cor(method = "spearman", show.legend = F, label.x.npc = .35, label.y.npc = 0.7,
+            cor.coef.name = "rho",
+            alternative = "greater", geom = "label",
+            aes(label = paste(after_stat(r.label), cut(after_stat(p), 
+                                              breaks = c(-Inf, 0.001, 0.01, 0.05, Inf),
+                                              labels = c("'***'", "'**'", "'*'", "'ns'")), sep = "~','~"))) + 
+    geom_smooth(method = "loess", span = 1, show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) ) + 
+  theme(axis.text.x = element_text(angle=45)) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n=3))
+plot18
+
+```
+
+##print to plot
+```{r}
+bothcorrenvirobray <- ggarrange(plot18+xlab(NULL)+ylab(NULL), plotcoi+xlab(NULL)+ylab(NULL), common.legend = T, legend = "right", labels = c("a)", "b)"), nrow = 2, align = "hv")
+bothcorrenvirobray <- annotate_figure(bothcorrenvirobray, bottom = text_grob(expression(paste(Delta, " Environment"))))
+bothcorrenvirobray <- annotate_figure(bothcorrenvirobray, left = text_grob("Bray-Curtis Dissimilarity (BCD)", rot = 90))
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/Bray_EnvInSitu_Corr_linear.pdf", height =4.6, width = 7)
+bothcorrenvirobray
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/Bray_EnvInSitu_Corr_linear.jpeg", height =4.8, width = 5.5, unit = "in", quality = 100, res = 300)
+bothcorrenvirobray
+dev.off()
+
+```
+
+
+#correlation between overall BCD and circulation
+```{r}
+load(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/data_objects/20yearsTimedivArrival_350mradius.Rdat")
+```
+
+##subset to samples extending to 1000m
+```{r}
+
+zoopsCOI <- subset_samples(zoopsCOI, Location.ID %in% c(1:14,15:22,23:26,31:32))
+zoops18S <- subset_samples(zoops18S, Location.ID %in% c(1:14,15:22,23:26,32))
+
+#zoopsCOI <- phyloseq_standardize_otu_abundance(zoopsCOI, method = "total")
+#zoops18S <- phyloseq_standardize_otu_abundance(zoops18S, method = "total")
+
+
+#arrivedparticles1year75 <- arrivedparticles1year75[arrivedparticles1year75$source_station %in% c(1:14,15:22,23:26,31:32),]
+#arrivedparticles2.5year75 <- arrivedparticles2.5year75[arrivedparticles2.5year75$source_station %in% c(1:14,15:22,23:26,31:32),]
+#arrivedparticles5year75 <- arrivedparticles5year75[arrivedparticles5year75$source_station %in% c(1:14,15:22,23:26,31:32),]
+#arrivedparticles10year75 <- arrivedparticles10year75[arrivedparticles10year75$source_station %in% c(1:14,15:22,23:26,31:32),]
+arrivedparticles20year75 <- arrivedparticles20year75[arrivedparticles20year75$source_station %in% c(1:14,15:22,23:26,31:32),]
+
+#arrivedparticles1year350 <- arrivedparticles1year350[arrivedparticles1year350$source_station %in% c(1:14,15:22,23:26,31:32),]
+#arrivedparticles2.5year350 <- arrivedparticles2.5year350[arrivedparticles2.5year350$source_station %in% c(1:14,15:22,23:26,31:32),]
+#arrivedparticles5year350 <- arrivedparticles5year350[arrivedparticles5year350$source_station %in% c(1:14,15:22,23:26,31:32),]
+#arrivedparticles10year350 <- arrivedparticles10year350[arrivedparticles10year350$source_station %in% c(1:14,15:22,23:26,31:32),]
+arrivedparticles20year350 <- arrivedparticles20year350[arrivedparticles20year350$source_station %in% c(1:14,15:22,23:26,31:32),]
+
+#arrivedparticles1year750 <- arrivedparticles1year750[arrivedparticles1year750$source_station %in% c(1:14,15:22,23:26,31:32),]
+#arrivedparticles2.5year750 <- arrivedparticles2.5year750[arrivedparticles2.5year750$source_station %in% c(1:14,15:22,23:26,31:32),]
+#arrivedparticles5year750 <- arrivedparticles5year750[arrivedparticles5year750$source_station %in% c(1:14,15:22,23:26,31:32),]
+#arrivedparticles10year750 <- arrivedparticles10year750[arrivedparticles10year750$source_station %in% c(1:14,15:22,23:26,31:32),]
+arrivedparticles20year750 <- arrivedparticles20year750[arrivedparticles20year750$source_station %in% c(1:14,15:22,23:26,31:32),]
+
+
+#arrivedparticles1year75 <- arrivedparticles1year75[arrivedparticles1year75$sink_station %in% c(1:14,15:22,23:26,31:32),]
+#arrivedparticles2.5year75 <- arrivedparticles2.5year75[arrivedparticles2.5year75$sink_station %in% c(1:14,15:22,23:26,31:32),]
+#arrivedparticles5year75 <- arrivedparticles5year75[arrivedparticles5year75$sink_station %in% c(1:14,15:22,23:26,31:32),]
+#arrivedparticles10year75 <- arrivedparticles10year75[arrivedparticles10year75$sink_station %in% c(1:14,15:22,23:26,31:32),]
+arrivedparticles20year75 <- arrivedparticles20year75[arrivedparticles20year75$sink_station %in% c(1:14,15:22,23:26,31:32),]
+
+#arrivedparticles1year350 <- arrivedparticles1year350[arrivedparticles1year350$sink_station %in% c(1:14,15:22,23:26,31:32),]
+#arrivedparticles2.5year350 <- arrivedparticles2.5year350[arrivedparticles2.5year350$sink_station %in% c(1:14,15:22,23:26,31:32),]
+#arrivedparticles5year350 <- arrivedparticles5year350[arrivedparticles5year350$sink_station %in% c(1:14,15:22,23:26,31:32),]
+#arrivedparticles10year350 <- arrivedparticles10year350[arrivedparticles10year350$sink_station %in% c(1:14,15:22,23:26,31:32),]
+arrivedparticles20year350 <- arrivedparticles20year350[arrivedparticles20year350$sink_station %in% c(1:14,15:22,23:26,31:32),]
+
+#arrivedparticles1year750 <- arrivedparticles1year750[arrivedparticles1year750$sink_station %in% c(1:14,15:22,23:26,31:32),]
+#arrivedparticles2.5year750 <- arrivedparticles2.5year750[arrivedparticles2.5year750$sink_station %in% c(1:14,15:22,23:26,31:32),]
+#arrivedparticles5year750 <- arrivedparticles5year750[arrivedparticles5year750$sink_station %in% c(1:14,15:22,23:26,31:32),]
+#arrivedparticles10year750 <- arrivedparticles10year750[arrivedparticles10year750$sink_station %in% c(1:14,15:22,23:26,31:32),]
+arrivedparticles20year750 <- arrivedparticles20year750[arrivedparticles20year750$sink_station %in% c(1:14,15:22,23:26,31:32),]
+
+
+```
+
+
+##calculate community distances
+```{r community distance 18S}
+dist_bray <- phyloseq::distance(zoops18S, method = "bray")
+dist_bray_mtx18 <- as.matrix(dist_bray) # convert 'dist' to 'matrix'
+dist_bray_mtx_long18 <- reshape::melt(dist_bray_mtx18, as.is = TRUE)[reshape::melt(upper.tri(dist_bray_mtx18), as.is = TRUE)$value,]
+
+dist_bray_mtx_long18$DepthA <- stringr::str_split_i((dist_bray_mtx_long18$X1), " ", i = 2)
+dist_bray_mtx_long18$StationA <- stringr::str_split_i((dist_bray_mtx_long18$X1), " ", i = 1)
+dist_bray_mtx_long18$DepthB <- stringr::str_split_i((dist_bray_mtx_long18$X2), " ", i = 2)
+dist_bray_mtx_long18$StationB <- stringr::str_split_i((dist_bray_mtx_long18$X2), " ", i = 1)
+dist_bray_mtx_long18$unique <- paste("Source:", dist_bray_mtx_long18$StationA, "Sink:", dist_bray_mtx_long18$StationB)
+
+dist_bray_mtx_long18$unique <- paste("Source:", dist_bray_mtx_long18$StationA, "Sink:", dist_bray_mtx_long18$StationB)
+dist_bray_mtx_long18_200 <- dist_bray_mtx_long18[dist_bray_mtx_long18$DepthA == "0-200m" & dist_bray_mtx_long18$DepthB == "0-200m",]
+dist_bray_mtx_long18_500 <- dist_bray_mtx_long18[dist_bray_mtx_long18$DepthA == "200-500m" & dist_bray_mtx_long18$DepthB == "200-500m",]
+dist_bray_mtx_long18_1000 <- dist_bray_mtx_long18[dist_bray_mtx_long18$DepthA == "500-1000m" & dist_bray_mtx_long18$DepthB == "500-1000m",]
+
+
+
+
+dist_bray <- phyloseq::distance(zoopsCOI, method = "bray")
+dist_bray_mtx <- as.matrix(dist_bray) # convert 'dist' to 'matrix'
+dist_bray_mtx_longCOI <- reshape::melt(dist_bray_mtx, as.is = TRUE)[reshape::melt(upper.tri(dist_bray_mtx), as.is = TRUE)$value,]
+
+dist_bray_mtx_longCOI$DepthA <- stringr::str_split_i((dist_bray_mtx_longCOI$X1), " ", i = 2)
+dist_bray_mtx_longCOI$StationA <- stringr::str_split_i((dist_bray_mtx_longCOI$X1), " ", i = 1)
+dist_bray_mtx_longCOI$DepthB <- stringr::str_split_i((dist_bray_mtx_longCOI$X2), " ", i = 2)
+dist_bray_mtx_longCOI$StationB <- stringr::str_split_i((dist_bray_mtx_longCOI$X2), " ", i = 1)
+dist_bray_mtx_longCOI$unique <- paste("Source:", dist_bray_mtx_longCOI$StationA, "Sink:", dist_bray_mtx_longCOI$StationB)
+
+dist_bray_mtx_longCOI$unique <- paste("Source:", dist_bray_mtx_longCOI$StationA, "Sink:", dist_bray_mtx_longCOI$StationB)
+dist_bray_mtx_longCOI_200 <- dist_bray_mtx_longCOI[dist_bray_mtx_longCOI$DepthA == "0-200m" & dist_bray_mtx_longCOI$DepthB == "0-200m",]
+dist_bray_mtx_longCOI_500 <- dist_bray_mtx_longCOI[dist_bray_mtx_longCOI$DepthA == "200-500m" & dist_bray_mtx_longCOI$DepthB == "200-500m",]
+dist_bray_mtx_longCOI_1000 <- dist_bray_mtx_longCOI[dist_bray_mtx_longCOI$DepthA == "500-1000m" & dist_bray_mtx_longCOI$DepthB == "500-1000m",]
+
+
+
+```
+
+
+##plot 10 year together
+##coi
+```{r COI}
+arrivedparticles20year750$unique <- paste("Source:", arrivedparticles20year750$source_station, "Sink:", arrivedparticles20year750$sink_station)
+arrivedparticles20year750$unique2 <- paste("Source:", arrivedparticles20year750$sink_station, "Sink:", arrivedparticles20year750$source_station)
+distBrayCOI_w_particles1 <- merge(dist_bray_mtx_longCOI_1000, arrivedparticles20year750, by = "unique", all = T)
+distBrayCOI_w_particles1 <- merge(distBrayCOI_w_particles1, arrivedparticles20year750, by.x = "unique", by.y = "unique2", all = T)
+
+arrivedparticles20year350$unique <- paste("Source:", arrivedparticles20year350$source_station, "Sink:", arrivedparticles20year350$sink_station)
+arrivedparticles20year350$unique2 <- paste("Source:", arrivedparticles20year350$sink_station, "Sink:", arrivedparticles20year350$source_station)
+distBrayCOI_w_particles2 <- merge(dist_bray_mtx_longCOI_500, arrivedparticles20year350, by = "unique", all = T)
+distBrayCOI_w_particles2 <- merge(distBrayCOI_w_particles2, arrivedparticles20year350, by.x = "unique", by.y = "unique2", all = T)
+
+arrivedparticles20year75$unique <- paste("Source:", arrivedparticles20year75$source_station, "Sink:", arrivedparticles20year75$sink_station)
+arrivedparticles20year75$unique2 <- paste("Source:", arrivedparticles20year75$sink_station, "Sink:", arrivedparticles20year75$source_station)
+distBrayCOI_w_particles3 <- merge(dist_bray_mtx_longCOI_200, arrivedparticles20year75, by = "unique", all = T)
+distBrayCOI_w_particles3 <- merge(distBrayCOI_w_particles3, arrivedparticles20year75, by.x = "unique", by.y = "unique2", all = T)
+
+BCD_COI_with_particles <- rbind(distBrayCOI_w_particles1, distBrayCOI_w_particles2)
+BCD_COI_with_particles <- rbind(BCD_COI_with_particles, distBrayCOI_w_particles3)
+
+BCD_COI_with_particles$potential_final <- pmax(BCD_COI_with_particles$potential2.x, BCD_COI_with_particles$potential2.y, na.rm = T) #get maximum connectivity (since it's directional)
+BCD_COI_with_particles <- BCD_COI_with_particles[!is.na(BCD_COI_with_particles$DepthA),] #remove rows without BCD (dropout samples and/or comparisons between the same location)
+
+#scale from 0-1
+BCD_COI_with_particles$potential_final <- BCD_COI_with_particles$potential_final/max(BCD_COI_with_particles$potential_final, na.rm=T)
+#if no particles made it, then the distance is maximized
+BCD_COI_with_particles$potential_final[is.na(BCD_COI_with_particles$potential_final)] <- 1
+#BCD_COI_with_particles$circulation_distance <- 1-BCD_COI_with_particles$potential_final
+#BCD_COI_with_particles$potential_final <- BCD_COI_with_particles$potential_final/max(BCD_COI_with_particles$potential_final)
+
+BCDcoi_particles <- ggplot(BCD_COI_with_particles, aes(x = potential_final, y = value, group = DepthA, color = DepthA)) + 
+  geom_point(alpha = 0.4, size = .3) + 
+  xlab("Dispersal time (months)") + ylab("Bray-Curtis Dissimilarity") + 
+  ggtitle("COI")+ 
+  geom_smooth(method = "loess", show.legend = F, span = 1)+ 
+   stat_cor(method = "spearman", label.x.npc = "center", label.y.npc = "middle",
+            cor.coef.name = "rho", geom = "label", 
+            alternative = "two.sided", aes(label = paste(after_stat(r.label), cut(after_stat(p), 
+                                              breaks = c(-Inf, 0.001, 0.01, 0.05, Inf),
+                                              labels = c("'***'", "'**'", "'*'", "'ns'")), sep = "~','~")), show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) )
+BCDcoi_particles
+```
+
+##18s
+```{r 18S}
+arrivedparticles20year750$unique <- paste("Source:", arrivedparticles20year750$source_station, "Sink:", arrivedparticles20year750$sink_station)
+arrivedparticles20year750$unique2 <- paste("Source:", arrivedparticles20year750$sink_station, "Sink:", arrivedparticles20year750$source_station)
+distBray18s_w_particles1 <- merge(dist_bray_mtx_long18_1000, arrivedparticles20year750, by = "unique", all = T)
+distBray18s_w_particles1 <- merge(distBray18s_w_particles1, arrivedparticles20year750, by.x = "unique", by.y = "unique2", all = T)
+
+arrivedparticles20year350$unique <- paste("Source:", arrivedparticles20year350$source_station, "Sink:", arrivedparticles20year350$sink_station)
+arrivedparticles20year350$unique2 <- paste("Source:", arrivedparticles20year350$sink_station, "Sink:", arrivedparticles20year350$source_station)
+distBray18s_w_particles2 <- merge(dist_bray_mtx_long18_500, arrivedparticles20year350, by = "unique", all = T)
+distBray18s_w_particles2 <- merge(distBray18s_w_particles2, arrivedparticles20year350, by.x = "unique", by.y = "unique2", all = T)
+
+arrivedparticles20year75$unique <- paste("Source:", arrivedparticles20year75$source_station, "Sink:", arrivedparticles20year75$sink_station)
+arrivedparticles20year75$unique2 <- paste("Source:", arrivedparticles20year75$sink_station, "Sink:", arrivedparticles20year75$source_station)
+distBray18s_w_particles3 <- merge(dist_bray_mtx_long18_200, arrivedparticles20year75, by = "unique", all = T)
+distBray18s_w_particles3 <- merge(distBray18s_w_particles3, arrivedparticles20year75, by.x = "unique", by.y = "unique2", all = T)
+
+BCD_18S_with_particles <- rbind(distBray18s_w_particles1, distBray18s_w_particles2)
+BCD_18S_with_particles <- rbind(BCD_18S_with_particles, distBray18s_w_particles3)
+
+BCD_18S_with_particles$potential_final <- pmax(BCD_18S_with_particles$potential2.x, BCD_18S_with_particles$potential2.y, na.rm = T) #get maximum connectivity (since it's directional)
+BCD_18S_with_particles <- BCD_18S_with_particles[!is.na(BCD_18S_with_particles$DepthA),] #remove rows without BCD (dropout samples and/or comparisons between the same location)
+
+#scale from 0-1
+BCD_18S_with_particles$potential_final <- BCD_18S_with_particles$potential_final/max(BCD_18S_with_particles$potential_final, na.rm=T)
+#if no particles made it, then the distance is maximized
+BCD_18S_with_particles$potential_final[is.na(BCD_18S_with_particles$potential_final)] <- 1
+#BCD_18S_with_particles$circulation_distance <- 1-BCD_18S_with_particles$potential_final
+
+
+BCD18s_particles <- ggplot(BCD_18S_with_particles, aes(x = potential_final, y = value, group = DepthA, color = DepthA)) + 
+  geom_point(alpha = 0.4, size = .3) + 
+  xlab("Dispersal time (months)") + ylab("Bray-Curtis Dissimilarity (BCD)") + 
+  ggtitle("18S")+ 
+  geom_smooth(method = "loess", show.legend = F, span = 1)+ 
+   stat_cor(method = "spearman", label.x.npc = "center", label.y.npc = "middle",
+            cor.coef.name = "rho",geom = "label", 
+            alternative = "two.sided", aes(label = paste(after_stat(r.label), cut(after_stat(p), 
+                                              breaks = c(-Inf, 0.001, 0.01, 0.05, Inf),
+                                              labels = c("'***'", "'**'", "'*'", "'ns'")), sep = "~','~")), show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) )
+BCD18s_particles
+
+
+```
+
+##save
+```{r}
+BCD_particles <- ggarrange(BCD18s_particles+xlab(NULL)+ylab(NULL), BCDcoi_particles+xlab(NULL)+ylab(NULL), common.legend = T, legend = "right", labels = c("a)", "b)"), nrow = 1)
+BCD_particles <- annotate_figure(BCD_particles, bottom = text_grob("Dispersal distance"))
+BCD_particles <- annotate_figure(BCD_particles, left = text_grob("Bray-Curtis Dissimilarity", rot = 90))
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/BCD_PotentialConnectivityTimeLost.pdf", height =2.5, width = 6.5)
+BCD_particles
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/BCD_PotentialConnectivityTimeLost.jpeg", height =2.5, width = 6.5, unit = "in", quality = 100, res = 300)
+BCD_particles
+dev.off()
+```
+
+
+```{r}
+
+```
+
+#correlation between overall BCD and geographic distance
+
+##calculate distances
+```{r}
+locations <- data.frame(sample_data(subset_samples(zoopsCOI, depth_bin == "500-1000m")))
+locations <- locations[,c("Lat.N.",  "Lon.W.", "SampleID", "depth_bin", "Location.ID")]
+locations <- locations %>% dplyr::distinct(Location.ID, Lat.N., Lon.W.)
+#dist(points, method = "euclidean", upper = T, diag = T)
+distances <- data.frame(raster::pointDistance(cbind(locations$Lon.W., locations$Lat.N.), cbind(locations$Lon.W., locations$Lat.N.), lonlat=TRUE, allpairs = T))
+colnames(distances) <- locations$Location.ID
+rownames(distances) <- locations$Location.ID
+
+geographicdistances <- distances %>%
+  tibble::rownames_to_column(var = "sink_station") %>% pivot_longer(-sink_station, names_to = "source_station", values_to = "geo_distance")
+geographicdistances$geo_distance <- geographicdistances$geo_distance/1000 #convert to km
+```
+
+
+
+##calculate community distances
+```{r community distance 18S}
+dist_bray <- phyloseq::distance(zoops18S, method = "bray")
+dist_bray_mtx18 <- as.matrix(dist_bray) # convert 'dist' to 'matrix'
+dist_bray_mtx_long18 <- reshape::melt(dist_bray_mtx18, as.is = TRUE)[reshape::melt(upper.tri(dist_bray_mtx18), as.is = TRUE)$value,]
+
+dist_bray_mtx_long18$DepthA <- stringr::str_split_i((dist_bray_mtx_long18$X1), " ", i = 2)
+dist_bray_mtx_long18$StationA <- stringr::str_split_i((dist_bray_mtx_long18$X1), " ", i = 1)
+dist_bray_mtx_long18$DepthB <- stringr::str_split_i((dist_bray_mtx_long18$X2), " ", i = 2)
+dist_bray_mtx_long18$StationB <- stringr::str_split_i((dist_bray_mtx_long18$X2), " ", i = 1)
+dist_bray_mtx_long18$unique <- paste("Source:", dist_bray_mtx_long18$StationA, "Sink:", dist_bray_mtx_long18$StationB)
+
+
+dist_bray <- phyloseq::distance(zoopsCOI, method = "bray")
+dist_bray_mtx <- as.matrix(dist_bray) # convert 'dist' to 'matrix'
+dist_bray_mtx_longCOI <- reshape::melt(dist_bray_mtx, as.is = TRUE)[reshape::melt(upper.tri(dist_bray_mtx), as.is = TRUE)$value,]
+
+dist_bray_mtx_longCOI$DepthA <- stringr::str_split_i((dist_bray_mtx_longCOI$X1), " ", i = 2)
+dist_bray_mtx_longCOI$StationA <- stringr::str_split_i((dist_bray_mtx_longCOI$X1), " ", i = 1)
+dist_bray_mtx_longCOI$DepthB <- stringr::str_split_i((dist_bray_mtx_longCOI$X2), " ", i = 2)
+dist_bray_mtx_longCOI$StationB <- stringr::str_split_i((dist_bray_mtx_longCOI$X2), " ", i = 1)
+dist_bray_mtx_longCOI$unique <- paste("Source:", dist_bray_mtx_longCOI$StationA, "Sink:", dist_bray_mtx_longCOI$StationB)
+```
+
+
+
+```{r 18S}
+geographicdistances$unique <- paste("Source:", geographicdistances$source_station, "Sink:", geographicdistances$sink_station)
+geographicdistances$unique2 <- paste("Source:", geographicdistances$sink_station, "Sink:", geographicdistances$source_station)
+distBray18s_w_particles <- merge(dist_bray_mtx_long18, geographicdistances, by = "unique", all = T)
+distBray18s_w_particles <- distBray18s_w_particles[(distBray18s_w_particles$DepthA == distBray18s_w_particles$DepthB),]
+distBray18s_w_particles <- distBray18s_w_particles[!is.na(distBray18s_w_particles$DepthA),]
+distBray18s_w_particles$diel1 <- stringr::str_split_i((distBray18s_w_particles$X1), " ", i = 3)
+distBray18s_w_particles$diel2 <- stringr::str_split_i((distBray18s_w_particles$X2), " ", i = 3)
+distBray18s_w_particles$diel1[distBray18s_w_particles$diel1 == "day"] <- "Day"
+distBray18s_w_particles$diel1[distBray18s_w_particles$diel1 == "night"] <- "Night"
+distBray18s_w_particles$diel2[distBray18s_w_particles$diel2 == "day"] <- "Day"
+distBray18s_w_particles$diel2[distBray18s_w_particles$diel2 == "night"] <- "Night"
+distBray18s_w_particles <- distBray18s_w_particles[distBray18s_w_particles$geo_distance !=0,]
+
+geographic_18S <- ggplot(distBray18s_w_particles, aes(x = geo_distance, y = value, group = DepthA, color = DepthA)) + 
+  geom_point(alpha = 0.4, size = .3) + 
+  xlab("Geographic Distance (km)") + 
+  ylab("Bray-Curtis Distance") + 
+  ggtitle("18S") + 
+  geom_smooth(data=subset(distBray18s_w_particles,DepthA=="500-1000m"),
+               aes(x = geo_distance, y = value, group = DepthA, color = DepthA), method = "loess", span = 1, show.legend = F)+ 
+   stat_cor(method = "spearman", label.x.npc = .36, label.y.npc = .5,
+            cor.coef.name = "rho", geom = "label", 
+            alternative = "two.sided", aes(label = paste(after_stat(r.label), cut(after_stat(p), 
+                                              breaks = c(-Inf, 0.001, 0.01, 0.05, Inf),
+                                              labels = c("'***'", "'**'", "'*'", "'ns'")), sep = "~','~")),
+            show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) )
+geographic_18S
+
+```
+
+
+```{r}
+geographicdistances$unique <- paste("Source:", geographicdistances$source_station, "Sink:", geographicdistances$sink_station)
+geographicdistances$unique2 <- paste("Source:", geographicdistances$sink_station, "Sink:", geographicdistances$source_station)
+distBrayCOI_w_particles <- merge(dist_bray_mtx_longCOI, geographicdistances, by = "unique", all = T)
+distBrayCOI_w_particles <- distBrayCOI_w_particles[(distBrayCOI_w_particles$DepthA == distBrayCOI_w_particles$DepthB),]
+distBrayCOI_w_particles <- distBrayCOI_w_particles[!is.na(distBrayCOI_w_particles$DepthA),]
+distBrayCOI_w_particles$diel1 <- stringr::str_split_i((distBrayCOI_w_particles$X1), " ", i = 3)
+distBrayCOI_w_particles$diel2 <- stringr::str_split_i((distBrayCOI_w_particles$X2), " ", i = 3)
+distBrayCOI_w_particles$diel1[distBrayCOI_w_particles$diel1 == "day"] <- "Day"
+distBrayCOI_w_particles$diel1[distBrayCOI_w_particles$diel1 == "night"] <- "Night"
+distBrayCOI_w_particles$diel2[distBrayCOI_w_particles$diel2 == "day"] <- "Day"
+distBrayCOI_w_particles$diel2[distBrayCOI_w_particles$diel2 == "night"] <- "Night"
+distBrayCOI_w_particles <- distBrayCOI_w_particles[distBrayCOI_w_particles$geo_distance !=0,]
+
+geographic_COI <- ggplot(distBrayCOI_w_particles, aes(x = geo_distance, y = value, group = DepthA, color = DepthA)) + 
+  geom_point(alpha = 0.4, size = .3) + 
+  xlab("Geographic Distance (km)") + 
+  ylab("Bray-Curtis Distance") + 
+  ggtitle("COI") + 
+  geom_smooth(method = "loess", span = 1, show.legend = F)+ 
+   stat_cor(method = "spearman", label.x.npc = .36, label.y.npc = .58,
+            cor.coef.name = "rho", geom = "label", 
+            alternative = "two.sided", aes(label = paste(after_stat(r.label), cut(after_stat(p), 
+                                              breaks = c(-Inf, 0.001, 0.01, 0.05, Inf),
+                                              labels = c("'***'", "'**'", "'*'", "'ns'")), sep = "~','~")), show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) )
+geographic_COI
+```
+
+
+```{r plot}
+BCD_geographic <- ggarrange(geographic_18S + xlab(NULL) + ylab(NULL), geographic_COI + xlab(NULL) + ylab(NULL), common.legend = T, legend = "right", labels = c("a)", "b)"), nrow = 1)
+BCD_geographic <- annotate_figure(BCD_geographic, bottom = text_grob("Geographic distance (km)"))
+BCD_geographic <- annotate_figure(BCD_geographic, left = text_grob("Bray-Curtis distance", rot = 90))
+
+
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/Bray_Geographic_Corr_linear.pdf", height =2.5, width = 6.5)
+BCD_geographic
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/Bray_Geographic_Corr_linear.jpeg", height =2.5, width = 6.5, unit = "in", quality = 100, res = 300)
+BCD_geographic
+dev.off()
+
+```
+
+
+
+#correlation by taxonomic groups
+
+##environment similarity:community similarity
+
+##get bray curtis distances by group
+###copepods
+```{r community distance}
+copes_zoops18S <- subset_taxa(zoops18S, Class == "Copepoda")
+dist_bray <- phyloseq::distance(copes_zoops18S, method = "bray")
+dist_bray_mtx18 <- as.matrix(dist_bray) # convert 'dist' to 'matrix'
+
+# retrieve the beta-diversity value between samples:
+dist_bray_mtx18["1 200-500m ", "1 500-1000m "] # 0.05152207
+dist_bray_mtx18["1 200-500m ", "1 200-500m "] # 0
+
+dist_bray_mtx_long18 <- reshape::melt(dist_bray_mtx18, as.is = TRUE)[reshape::melt(upper.tri(dist_bray_mtx18), as.is = TRUE)$value,]
+
+dist_bray_mtx_long18$DepthA <- stringr::str_split_i((dist_bray_mtx_long18$X1), " ", i = 2)
+dist_bray_mtx_long18$StationA <- stringr::str_split_i((dist_bray_mtx_long18$X1), " ", i = 1)
+dist_bray_mtx_long18$DepthB <- stringr::str_split_i((dist_bray_mtx_long18$X2), " ", i = 2)
+dist_bray_mtx_long18$StationB <- stringr::str_split_i((dist_bray_mtx_long18$X2), " ", i = 1)
+copes_dist_bray_mtx_long18 <- dist_bray_mtx_long18
+
+
+calanoids_zoops18S <- subset_taxa(zoops18S, Order == "Calanoida")
+dist_bray <- phyloseq::distance(calanoids_zoops18S, method = "bray")
+dist_bray_mtx18 <- as.matrix(dist_bray) # convert 'dist' to 'matrix'
+
+# retrieve the beta-diversity value between samples:
+dist_bray_mtx18["1 200-500m ", "1 500-1000m "] # 0.05152207
+dist_bray_mtx18["1 200-500m ", "1 200-500m "] # 0
+
+dist_bray_mtx_long18 <- reshape::melt(dist_bray_mtx18, as.is = TRUE)[reshape::melt(upper.tri(dist_bray_mtx18), as.is = TRUE)$value,]
+
+dist_bray_mtx_long18$DepthA <- stringr::str_split_i((dist_bray_mtx_long18$X1), " ", i = 2)
+dist_bray_mtx_long18$StationA <- stringr::str_split_i((dist_bray_mtx_long18$X1), " ", i = 1)
+dist_bray_mtx_long18$DepthB <- stringr::str_split_i((dist_bray_mtx_long18$X2), " ", i = 2)
+dist_bray_mtx_long18$StationB <- stringr::str_split_i((dist_bray_mtx_long18$X2), " ", i = 1)
+calanoids_dist_bray_mtx_long18 <- dist_bray_mtx_long18
+
+
+cyclopoids_zoops18S <- subset_taxa(zoops18S, Order == "Cyclopoida")
+cyclopoids_zoops18S <- subset_taxa(cyclopoids_zoops18S, taxa_sums(cyclopoids_zoops18S) > 0)
+cyclopoids_zoops18S <- subset_samples(cyclopoids_zoops18S, sample_sums(cyclopoids_zoops18S) > 0)
+dist_bray <- phyloseq::distance(cyclopoids_zoops18S, method = "bray")
+dist_bray_mtx18 <- as.matrix(dist_bray) # convert 'dist' to 'matrix'
+
+# retrieve the beta-diversity value between samples:
+dist_bray_mtx18["1 200-500m ", "1 500-1000m "] # 0.05152207
+dist_bray_mtx18["1 200-500m ", "1 200-500m "] # 0
+
+dist_bray_mtx_long18 <- reshape::melt(dist_bray_mtx18, as.is = TRUE)[reshape::melt(upper.tri(dist_bray_mtx18), as.is = TRUE)$value,]
+
+dist_bray_mtx_long18$DepthA <- stringr::str_split_i((dist_bray_mtx_long18$X1), " ", i = 2)
+dist_bray_mtx_long18$StationA <- stringr::str_split_i((dist_bray_mtx_long18$X1), " ", i = 1)
+dist_bray_mtx_long18$DepthB <- stringr::str_split_i((dist_bray_mtx_long18$X2), " ", i = 2)
+dist_bray_mtx_long18$StationB <- stringr::str_split_i((dist_bray_mtx_long18$X2), " ", i = 1)
+cyclopoids_dist_bray_mtx_long18 <- dist_bray_mtx_long18
+
+
+copes_zoopsCOI <- subset_taxa(zoopsCOI, Class == "Copepoda")
+dist_bray <- phyloseq::distance(copes_zoopsCOI, method = "bray")
+dist_bray_mtx <- as.matrix(dist_bray) # convert 'dist' to 'matrix'
+
+# retrieve the beta-diversity value between samples:
+dist_bray_mtx["1 200-500m ", "1 500-1000m "] # 0.05152207
+dist_bray_mtx["1 200-500m ", "1 200-500m "] # 0
+
+dist_bray_mtx_longCOI <- reshape::melt(dist_bray_mtx, as.is = TRUE)[reshape::melt(upper.tri(dist_bray_mtx), as.is = TRUE)$value,]
+
+dist_bray_mtx_longCOI$DepthA <- stringr::str_split_i((dist_bray_mtx_longCOI$X1), " ", i = 2)
+dist_bray_mtx_longCOI$StationA <- stringr::str_split_i((dist_bray_mtx_longCOI$X1), " ", i = 1)
+dist_bray_mtx_longCOI$DepthB <- stringr::str_split_i((dist_bray_mtx_longCOI$X2), " ", i = 2)
+dist_bray_mtx_longCOI$StationB <- stringr::str_split_i((dist_bray_mtx_longCOI$X2), " ", i = 1)
+copes_dist_bray_mtx_longCOI <- dist_bray_mtx_longCOI
+```
+
+
+
+###ostracods
+```{r community distance}
+# #only two halocyprid ASVs in 18S, skip this analysis
+# dist_bray <- phyloseq::distance(zoops18S, method = "bray")
+# dist_bray_mtx18 <- as.matrix(dist_bray) # convert 'dist' to 'matrix'
+# 
+# # retrieve the beta-diversity value between samples:
+# dist_bray_mtx18["1 200-500m ", "1 500-1000m "] # 0.05152207
+# dist_bray_mtx18["1 200-500m ", "1 200-500m "] # 0
+# 
+# dist_bray_mtx_long18 <- reshape::melt(dist_bray_mtx18, as.is = TRUE)[reshape::melt(upper.tri(dist_bray_mtx18), as.is = TRUE)$value,]
+# 
+# dist_bray_mtx_long18$DepthA <- stringr::str_split_i((dist_bray_mtx_long18$X1), " ", i = 2)
+# dist_bray_mtx_long18$StationA <- stringr::str_split_i((dist_bray_mtx_long18$X1), " ", i = 1)
+# dist_bray_mtx_long18$DepthB <- stringr::str_split_i((dist_bray_mtx_long18$X2), " ", i = 2)
+# dist_bray_mtx_long18$StationB <- stringr::str_split_i((dist_bray_mtx_long18$X2), " ", i = 1)
+# 
+
+ostracods_zoopsCOI <- subset_taxa(zoopsCOI, Order == "Halocyprida")
+dist_bray <- phyloseq::distance(ostracods_zoopsCOI, method = "bray")
+dist_bray_mtx <- as.matrix(dist_bray) # convert 'dist' to 'matrix'
+
+# retrieve the beta-diversity value between samples:
+dist_bray_mtx["1 200-500m ", "1 500-1000m "] # 0.05152207
+dist_bray_mtx["1 200-500m ", "1 200-500m "] # 0
+
+dist_bray_mtx_longCOI <- reshape::melt(dist_bray_mtx, as.is = TRUE)[reshape::melt(upper.tri(dist_bray_mtx), as.is = TRUE)$value,]
+
+dist_bray_mtx_longCOI$DepthA <- stringr::str_split_i((dist_bray_mtx_longCOI$X1), " ", i = 2)
+dist_bray_mtx_longCOI$StationA <- stringr::str_split_i((dist_bray_mtx_longCOI$X1), " ", i = 1)
+dist_bray_mtx_longCOI$DepthB <- stringr::str_split_i((dist_bray_mtx_longCOI$X2), " ", i = 2)
+dist_bray_mtx_longCOI$StationB <- stringr::str_split_i((dist_bray_mtx_longCOI$X2), " ", i = 1)
+ostracods_dist_bray_mtx_longCOI <- dist_bray_mtx_longCOI
+
+```
+
+###molluscs
+```{r community distance}
+molluscs_zoops18S <- subset_taxa(zoops18S, Phylum == "Mollusca")
+molluscs_zoops18S <- subset_samples(molluscs_zoops18S, sample_sums(molluscs_zoops18S) > 0)
+dist_bray <- phyloseq::distance(molluscs_zoops18S, method = "bray")
+dist_bray_mtx18 <- as.matrix(dist_bray) # convert 'dist' to 'matrix'
+
+# retrieve the beta-diversity value between samples:
+dist_bray_mtx18["1 200-500m ", "1 500-1000m "] # 0.05152207
+dist_bray_mtx18["1 200-500m ", "1 200-500m "] # 0
+
+dist_bray_mtx_long18 <- reshape::melt(dist_bray_mtx18, as.is = TRUE)[reshape::melt(upper.tri(dist_bray_mtx18), as.is = TRUE)$value,]
+
+dist_bray_mtx_long18$DepthA <- stringr::str_split_i((dist_bray_mtx_long18$X1), " ", i = 2)
+dist_bray_mtx_long18$StationA <- stringr::str_split_i((dist_bray_mtx_long18$X1), " ", i = 1)
+dist_bray_mtx_long18$DepthB <- stringr::str_split_i((dist_bray_mtx_long18$X2), " ", i = 2)
+dist_bray_mtx_long18$StationB <- stringr::str_split_i((dist_bray_mtx_long18$X2), " ", i = 1)
+molluscs_dist_bray_mtx_long18 <- dist_bray_mtx_long18
+
+
+molluscs_zoopsCOI <- subset_taxa(zoopsCOI, Phylum == "Mollusca")
+molluscs_zoopsCOI <- subset_samples(molluscs_zoopsCOI, sample_sums(molluscs_zoopsCOI) > 0)
+dist_bray <- phyloseq::distance(molluscs_zoopsCOI, method = "bray")
+dist_bray_mtx <- as.matrix(dist_bray) # convert 'dist' to 'matrix'
+
+# retrieve the beta-diversity value between samples:
+dist_bray_mtx["1 200-500m ", "1 500-1000m "] # 0.05152207
+dist_bray_mtx["1 200-500m ", "1 200-500m "] # 0
+
+dist_bray_mtx_longCOI <- reshape::melt(dist_bray_mtx, as.is = TRUE)[reshape::melt(upper.tri(dist_bray_mtx), as.is = TRUE)$value,]
+
+dist_bray_mtx_longCOI$DepthA <- stringr::str_split_i((dist_bray_mtx_longCOI$X1), " ", i = 2)
+dist_bray_mtx_longCOI$StationA <- stringr::str_split_i((dist_bray_mtx_longCOI$X1), " ", i = 1)
+dist_bray_mtx_longCOI$DepthB <- stringr::str_split_i((dist_bray_mtx_longCOI$X2), " ", i = 2)
+dist_bray_mtx_longCOI$StationB <- stringr::str_split_i((dist_bray_mtx_longCOI$X2), " ", i = 1)
+molluscs_dist_bray_mtx_longCOI <- dist_bray_mtx_longCOI
+```
+
+
+###cnidarians
+```{r community distance}
+# cnidaria_zoops18S <- subset_taxa(zoops18S, Phylum == "Cnidaria")
+# dist_bray <- phyloseq::distance(annelids_zoops18S, method = "bray")
+# dist_bray_mtx18 <- as.matrix(dist_bray) # convert 'dist' to 'matrix'
+# 
+# # retrieve the beta-diversity value between samples:
+# dist_bray_mtx18["1 200-500m ", "1 500-1000m "] # 0.05152207
+# dist_bray_mtx18["1 200-500m ", "1 200-500m "] # 0
+# 
+# dist_bray_mtx_long18 <- reshape::melt(dist_bray_mtx18, as.is = TRUE)[reshape::melt(upper.tri(dist_bray_mtx18), as.is = TRUE)$value,]
+# 
+# dist_bray_mtx_long18$DepthA <- stringr::str_split_i((dist_bray_mtx_long18$X1), " ", i = 2)
+# dist_bray_mtx_long18$StationA <- stringr::str_split_i((dist_bray_mtx_long18$X1), " ", i = 1)
+# dist_bray_mtx_long18$DepthB <- stringr::str_split_i((dist_bray_mtx_long18$X2), " ", i = 2)
+# dist_bray_mtx_long18$StationB <- stringr::str_split_i((dist_bray_mtx_long18$X2), " ", i = 1)
+# cnidaria_dist_bray_mtx_long18 <- dist_bray_mtx_long18
+
+
+cnidaria_zoopsCOI <- subset_taxa(zoopsCOI, Phylum == "Cnidaria")
+dist_bray <- phyloseq::distance(cnidaria_zoopsCOI, method = "bray")
+dist_bray_mtx <- as.matrix(dist_bray) # convert 'dist' to 'matrix'
+
+# retrieve the beta-diversity value between samples:
+dist_bray_mtx["1 200-500m ", "1 500-1000m "] # 0.05152207
+dist_bray_mtx["1 200-500m ", "1 200-500m "] # 0
+
+dist_bray_mtx_longCOI <- reshape::melt(dist_bray_mtx, as.is = TRUE)[reshape::melt(upper.tri(dist_bray_mtx), as.is = TRUE)$value,]
+
+dist_bray_mtx_longCOI$DepthA <- stringr::str_split_i((dist_bray_mtx_longCOI$X1), " ", i = 2)
+dist_bray_mtx_longCOI$StationA <- stringr::str_split_i((dist_bray_mtx_longCOI$X1), " ", i = 1)
+dist_bray_mtx_longCOI$DepthB <- stringr::str_split_i((dist_bray_mtx_longCOI$X2), " ", i = 2)
+dist_bray_mtx_longCOI$StationB <- stringr::str_split_i((dist_bray_mtx_longCOI$X2), " ", i = 1)
+cnidaria_dist_bray_mtx_longCOI <- dist_bray_mtx_longCOI
+```
+
+
+
+##get insitu env differences 
+```{r temp sal and oxy difference}
+temp <- data.frame(sample_data(zoopsCOI)[,c("MeanTemp")])
+sal <- data.frame(sample_data(zoopsCOI)[,c("MeanSal")])
+oxy <- data.frame(sample_data(zoopsCOI)[,c("MeanOxy")])
+
+dist_temp <- outer(temp$MeanTemp, temp$MeanTemp, '-')
+rownames(dist_temp) <- rownames(dist_bray_mtx)
+colnames(dist_temp) <- colnames(dist_bray_mtx)
+dist_sal <- outer(sal$MeanSal, sal$MeanSal, '-')
+rownames(dist_sal) <- rownames(dist_bray_mtx)
+colnames(dist_sal) <- colnames(dist_bray_mtx)
+dist_oxy <- outer(oxy$MeanOxy, oxy$MeanOxy, '-')
+rownames(dist_oxy) <- rownames(dist_bray_mtx)
+colnames(dist_oxy) <- colnames(dist_bray_mtx)
+
+dist_temp_coi <- reshape::melt(dist_temp, as.is = TRUE)[reshape::melt(upper.tri(dist_temp), as.is = TRUE)$value,]
+dist_sal_coi <- reshape::melt(dist_sal, as.is = TRUE)[reshape::melt(upper.tri(dist_sal), as.is = TRUE)$value,]
+dist_oxy_coi <- reshape::melt(dist_oxy, as.is = TRUE)[reshape::melt(upper.tri(dist_oxy), as.is = TRUE)$value,]
+
+
+temp <- data.frame(sample_data(zoops18S)[,c("MeanTemp")])
+sal <- data.frame(sample_data(zoops18S)[,c("MeanSal")])
+oxy <- data.frame(sample_data(zoops18S)[,c("MeanOxy")])
+
+dist_temp <- outer(temp$MeanTemp, temp$MeanTemp, '-')
+rownames(dist_temp) <- rownames(dist_bray_mtx18)
+colnames(dist_temp) <- colnames(dist_bray_mtx18)
+dist_sal <- outer(sal$MeanSal, sal$MeanSal, '-')
+rownames(dist_sal) <- rownames(dist_bray_mtx18)
+colnames(dist_sal) <- colnames(dist_bray_mtx18)
+dist_oxy <- outer(oxy$MeanOxy, oxy$MeanOxy, '-')
+rownames(dist_oxy) <- rownames(dist_bray_mtx18)
+colnames(dist_oxy) <- colnames(dist_bray_mtx18)
+
+dist_temp_18s <- reshape::melt(dist_temp, as.is = TRUE)[reshape::melt(upper.tri(dist_temp), as.is = TRUE)$value,]
+dist_sal_18s <- reshape::melt(dist_sal, as.is = TRUE)[reshape::melt(upper.tri(dist_sal), as.is = TRUE)$value,]
+dist_oxy_18s <- reshape::melt(dist_oxy, as.is = TRUE)[reshape::melt(upper.tri(dist_oxy), as.is = TRUE)$value,]
+```
+
+
+##get model env differences 
+```{r temp sal and oxy difference}
+temp <- data.frame(sample_data(zoopsCOI)[,c("meanModelTemp")])
+sal <- data.frame(sample_data(zoopsCOI)[,c("meanModelSal")])
+
+dist_temp <- outer(temp$meanModelTemp, temp$meanModelTemp, '-')
+rownames(dist_temp) <- rownames(dist_bray_mtx)
+colnames(dist_temp) <- colnames(dist_bray_mtx)
+dist_sal <- outer(sal$meanModelSal, sal$meanModelSal, '-')
+rownames(dist_sal) <- rownames(dist_bray_mtx)
+colnames(dist_sal) <- colnames(dist_bray_mtx)
+
+dist_modtemp_coi <- reshape::melt(dist_temp, as.is = TRUE)[reshape::melt(upper.tri(dist_temp), as.is = TRUE)$value,]
+dist_modsal_coi <- reshape::melt(dist_sal, as.is = TRUE)[reshape::melt(upper.tri(dist_sal), as.is = TRUE)$value,]
+
+
+temp <- data.frame(sample_data(zoops18S)[,c("meanModelTemp")])
+sal <- data.frame(sample_data(zoops18S)[,c("meanModelSal")])
+
+dist_temp <- outer(temp$meanModelTemp, temp$meanModelTemp, '-')
+rownames(dist_temp) <- rownames(dist_bray_mtx18)
+colnames(dist_temp) <- colnames(dist_bray_mtx18)
+dist_sal <- outer(sal$meanModelSal, sal$meanModelSal, '-')
+rownames(dist_sal) <- rownames(dist_bray_mtx18)
+colnames(dist_sal) <- colnames(dist_bray_mtx18)
+
+dist_modtemp_18s <- reshape::melt(dist_temp, as.is = TRUE)[reshape::melt(upper.tri(dist_temp), as.is = TRUE)$value,]
+dist_modsal_18s <- reshape::melt(dist_sal, as.is = TRUE)[reshape::melt(upper.tri(dist_sal), as.is = TRUE)$value,]
+```
+ 
+
+##get food env differences 
+```{r temp sal and oxy difference}
+npp <- data.frame(sample_data(zoopsCOI)[,c("npp_meanyearlytotal")])
+ef <- data.frame(sample_data(zoopsCOI)[,c("ef_meanyearlytotal")])
+
+dist_npp <- outer(npp$npp_meanyearlytotal, npp$npp_meanyearlytotal, '-')
+rownames(dist_npp) <- rownames(dist_bray_mtx)
+colnames(dist_npp) <- colnames(dist_bray_mtx)
+dist_ef <- outer(ef$ef_meanyearlytotal, ef$ef_meanyearlytotal, '-')
+rownames(dist_ef) <- rownames(dist_bray_mtx)
+colnames(dist_ef) <- colnames(dist_bray_mtx)
+
+dist_npp_coi <- reshape::melt(dist_npp, as.is = TRUE)[reshape::melt(upper.tri(dist_npp), as.is = TRUE)$value,]
+dist_ef_coi <- reshape::melt(dist_ef, as.is = TRUE)[reshape::melt(upper.tri(dist_ef), as.is = TRUE)$value,]
+
+
+npp <- data.frame(sample_data(zoops18S)[,c("npp_meanyearlytotal")])
+ef <- data.frame(sample_data(zoops18S)[,c("ef_meanyearlytotal")])
+
+dist_temp <- outer(npp$npp_meanyearlytotal, npp$npp_meanyearlytotal, '-')
+rownames(dist_temp) <- rownames(dist_bray_mtx18)
+colnames(dist_temp) <- colnames(dist_bray_mtx18)
+dist_ef <- outer(ef$ef_meanyearlytotal, ef$ef_meanyearlytotal, '-')
+rownames(dist_ef) <- rownames(dist_bray_mtx18)
+colnames(dist_ef) <- colnames(dist_bray_mtx18)
+
+dist_npp_18s <- reshape::melt(dist_npp, as.is = TRUE)[reshape::melt(upper.tri(dist_npp), as.is = TRUE)$value,]
+dist_ef_18s <- reshape::melt(dist_ef, as.is = TRUE)[reshape::melt(upper.tri(dist_ef), as.is = TRUE)$value,]
+```
+
+
+
+
+##reformat COI BCDs
+copes_dist_bray_mtx_longCOI
+ostracods_dist_bray_mtx_longCOI
+molluscs_dist_bray_mtx_longCOI
+cnidaria_dist_bray_mtx_longCOI
+```{r}
+dist_modtemp_coi$variable <- "Temperature"
+dist_modsal_coi$variable <- "Salinity"
+dist_oxy_coi$variable <- "Oxygen"
+dist_ef_coi$variable <- "EF"
+dist_npp_coi$variable <- "NPP"
+colnames(dist_modtemp_coi)[3] <- "Temperature"
+colnames(dist_modsal_coi)[3] <- "Salinity"
+colnames(dist_oxy_coi)[3] <- "Oxygen"
+colnames(dist_ef_coi)[3] <- "EF"
+colnames(dist_npp_coi)[3] <- "NPP"
+dist_ef_coi$EF <- dist_ef_coi$EF * 365
+dist_npp_coi$NPP <- dist_npp_coi$NPP * 365
+dist_modtemp_coi$formerging <- paste(dist_modtemp_coi$X1, dist_modtemp_coi$X2)
+dist_modsal_coi$formerging <- paste(dist_modsal_coi$X1, dist_modsal_coi$X2)
+dist_oxy_coi$formerging <- paste(dist_oxy_coi$X1, dist_oxy_coi$X2)
+dist_ef_coi$formerging <- paste(dist_ef_coi$X1, dist_ef_coi$X2)
+dist_npp_coi$formerging <- paste(dist_npp_coi$X1, dist_npp_coi$X2)
+
+##copepods:
+colnames(copes_dist_bray_mtx_longCOI)[3] <- "BCD"
+copes_dist_bray_mtx_longCOI$formerging <- paste(copes_dist_bray_mtx_longCOI$X1, copes_dist_bray_mtx_longCOI$X2)
+copes_dist_bray_mtx_longCOI <- copes_dist_bray_mtx_longCOI[copes_dist_bray_mtx_longCOI$DepthA == copes_dist_bray_mtx_longCOI$DepthB,]
+copes_dist_bray_mtx_longCOI <- merge(copes_dist_bray_mtx_longCOI, dist_modtemp_coi, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_modsal_coi, by = "formerging", all.x = T, all.y = F)%>% 
+  merge(dist_oxy_coi, by = "formerging", all.x = T, all.y = F)%>% 
+  merge(dist_ef_coi, by = "formerging", all.x = T, all.y = F)%>% 
+  merge(dist_npp_coi, by = "formerging", all.x = T, all.y = F)
+copescoi_mod <- copes_dist_bray_mtx_longCOI %>% dplyr::select(DepthA, StationA, DepthB, StationB, BCD, Temperature, Salinity, Oxygen, EF, NPP) %>% pivot_longer(-c(DepthA, StationA, DepthB, StationB, BCD), values_to = "EnvDiff")
+copescoi_mod$EnvDiff <- abs(copescoi_mod$EnvDiff)
+copescoi_mod$name <- forcats::fct_relevel(copescoi_mod$name, "Temperature", "Salinity", "Oxygen", "NPP", "EF")
+copescoi_mod$name_fac <- factor(copescoi_mod$name, levels = c("Temperature", "Salinity", "Oxygen", "NPP", "EF"), ordered = TRUE, labels = c(expression(Temperature~(degree*C)), "Salinity", expression(DO~(µmol~kg^-1)), expression(NPP~(mgC~m^-2~yr^1)), expression(EF~(mgC~m^-2~yr^1))))
+
+##ostracods:
+colnames(ostracods_dist_bray_mtx_longCOI)[3] <- "BCD"
+ostracods_dist_bray_mtx_longCOI$formerging <- paste(ostracods_dist_bray_mtx_longCOI$X1, ostracods_dist_bray_mtx_longCOI$X2)
+ostracods_dist_bray_mtx_longCOI <- ostracods_dist_bray_mtx_longCOI[ostracods_dist_bray_mtx_longCOI$DepthA == ostracods_dist_bray_mtx_longCOI$DepthB,]
+ostracods_dist_bray_mtx_longCOI <- merge(ostracods_dist_bray_mtx_longCOI, dist_modtemp_coi, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_modsal_coi, by = "formerging", all.x = T, all.y = F)%>% 
+  merge(dist_oxy_coi, by = "formerging", all.x = T, all.y = F)%>% 
+  merge(dist_ef_coi, by = "formerging", all.x = T, all.y = F)%>% 
+  merge(dist_npp_coi, by = "formerging", all.x = T, all.y = F)
+ostracoi_mod <- ostracods_dist_bray_mtx_longCOI %>% dplyr::select(DepthA, StationA, DepthB, StationB, BCD, Temperature, Salinity, Oxygen, EF, NPP) %>% pivot_longer(-c(DepthA, StationA, DepthB, StationB, BCD), values_to = "EnvDiff")
+ostracoi_mod$EnvDiff <- abs(ostracoi_mod$EnvDiff)
+ostracoi_mod$name <- forcats::fct_relevel(ostracoi_mod$name, "Temperature", "Salinity", "Oxygen", "NPP", "EF")
+ostracoi_mod$name_fac <- factor(ostracoi_mod$name, levels = c("Temperature", "Salinity", "Oxygen", "NPP", "EF"), ordered = TRUE, labels = c(expression(Temperature~(degree*C)), "Salinity", expression(DO~(µmol~kg^-1)), expression(NPP~(mgC~m^-2~yr^1)), expression(EF~(mgC~m^-2~yr^1))))
+
+##molluscs:
+colnames(molluscs_dist_bray_mtx_longCOI)[3] <- "BCD"
+molluscs_dist_bray_mtx_longCOI$formerging <- paste(molluscs_dist_bray_mtx_longCOI$X1, molluscs_dist_bray_mtx_longCOI$X2)
+molluscs_dist_bray_mtx_longCOI <- molluscs_dist_bray_mtx_longCOI[molluscs_dist_bray_mtx_longCOI$DepthA == molluscs_dist_bray_mtx_longCOI$DepthB,]
+molluscs_dist_bray_mtx_longCOI <- merge(molluscs_dist_bray_mtx_longCOI, dist_modtemp_coi, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_modsal_coi, by = "formerging", all.x = T, all.y = F)%>% 
+  merge(dist_oxy_coi, by = "formerging", all.x = T, all.y = F)%>% 
+  merge(dist_ef_coi, by = "formerging", all.x = T, all.y = F)%>% 
+  merge(dist_npp_coi, by = "formerging", all.x = T, all.y = F)
+mollusccoi_mod <- molluscs_dist_bray_mtx_longCOI %>% dplyr::select(DepthA, StationA, DepthB, StationB, BCD, Temperature, Salinity, Oxygen, EF, NPP) %>% pivot_longer(-c(DepthA, StationA, DepthB, StationB, BCD), values_to = "EnvDiff")
+mollusccoi_mod$EnvDiff <- abs(mollusccoi_mod$EnvDiff)
+mollusccoi_mod$name <- forcats::fct_relevel(mollusccoi_mod$name, "Temperature", "Salinity", "Oxygen", "NPP", "EF")
+mollusccoi_mod$name_fac <- factor(mollusccoi_mod$name, levels = c("Temperature", "Salinity", "Oxygen", "NPP", "EF"), ordered = TRUE, labels = c(expression(Temperature~(degree*C)), "Salinity", expression(DO~(µmol~kg^-1)), expression(NPP~(mgC~m^-2~yr^1)), expression(EF~(mgC~m^-2~yr^1))))
+
+##cnidaria:
+colnames(cnidaria_dist_bray_mtx_longCOI)[3] <- "BCD"
+cnidaria_dist_bray_mtx_longCOI$formerging <- paste(cnidaria_dist_bray_mtx_longCOI$X1, cnidaria_dist_bray_mtx_longCOI$X2)
+cnidaria_dist_bray_mtx_longCOI <- cnidaria_dist_bray_mtx_longCOI[cnidaria_dist_bray_mtx_longCOI$DepthA == cnidaria_dist_bray_mtx_longCOI$DepthB,]
+cnidaria_dist_bray_mtx_longCOI <- merge(cnidaria_dist_bray_mtx_longCOI, dist_modtemp_coi, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_modsal_coi, by = "formerging", all.x = T, all.y = F)%>% 
+  merge(dist_oxy_coi, by = "formerging", all.x = T, all.y = F)%>% 
+  merge(dist_ef_coi, by = "formerging", all.x = T, all.y = F)%>% 
+  merge(dist_npp_coi, by = "formerging", all.x = T, all.y = F)
+cnidariacoi_mod <- cnidaria_dist_bray_mtx_longCOI %>% dplyr::select(DepthA, StationA, DepthB, StationB, BCD, Temperature, Salinity, Oxygen, EF, NPP) %>% pivot_longer(-c(DepthA, StationA, DepthB, StationB, BCD), values_to = "EnvDiff")
+cnidariacoi_mod$EnvDiff <- abs(cnidariacoi_mod$EnvDiff)
+cnidariacoi_mod$name <- forcats::fct_relevel(cnidariacoi_mod$name, "Temperature", "Salinity", "Oxygen", "NPP", "EF")
+cnidariacoi_mod$name_fac <- factor(cnidariacoi_mod$name, levels = c("Temperature", "Salinity", "Oxygen", "NPP", "EF"), ordered = TRUE, labels = c(expression(Temperature~(degree*C)), "Salinity", expression(DO~(µmol~kg^-1)), expression(NPP~(mgC~m^-2~yr^1)), expression(EF~(mgC~m^-2~yr^1))))
+
+
+```
+
+
+##reformat 18S BCDs
+copes_dist_bray_mtx_long18
+calanoids_dist_bray_mtx_long18
+cyclopoids_dist_bray_mtx_long18
+molluscs_dist_bray_mtx_long18
+```{r}
+dist_modtemp_18s$variable <- "Temperature"
+dist_modsal_18s$variable <- "Salinity"
+dist_oxy_18s$variable <- "Oxygen"
+dist_ef_18s$variable <- "EF"
+dist_npp_18s$variable <- "NPP"
+colnames(dist_modtemp_18s)[3] <- "Temperature"
+colnames(dist_modsal_18s)[3] <- "Salinity"
+colnames(dist_oxy_18s)[3] <- "Oxygen"
+colnames(dist_ef_18s)[3] <- "EF"
+colnames(dist_npp_18s)[3] <- "NPP"
+dist_ef_18s$EF <- dist_ef_18s$EF * 365
+dist_npp_18s$NPP <- dist_npp_18s$NPP * 365
+dist_modtemp_18s$formerging <- paste(dist_modtemp_18s$X1, dist_modtemp_18s$X2)
+dist_modsal_18s$formerging <- paste(dist_modsal_18s$X1, dist_modsal_18s$X2)
+dist_oxy_18s$formerging <- paste(dist_oxy_18s$X1, dist_oxy_18s$X2)
+dist_ef_18s$formerging <- paste(dist_ef_18s$X1, dist_ef_18s$X2)
+dist_npp_18s$formerging <- paste(dist_npp_18s$X1, dist_npp_18s$X2)
+
+
+##copepods:
+colnames(copes_dist_bray_mtx_long18)[3] <- "BCD"
+copes_dist_bray_mtx_long18$formerging <- paste(copes_dist_bray_mtx_long18$X1, copes_dist_bray_mtx_long18$X2)
+copes_dist_bray_mtx_long18 <- copes_dist_bray_mtx_long18[copes_dist_bray_mtx_long18$DepthA == copes_dist_bray_mtx_long18$DepthB,]
+copes_dist_bray_mtx_long18 <- merge(copes_dist_bray_mtx_long18, dist_modtemp_18s, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_modsal_18s, by = "formerging", all.x = T, all.y = F)%>% 
+  merge(dist_oxy_18s, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_ef_18s, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_npp_18s, by = "formerging", all.x = T, all.y = F)
+copepods_18smod <- copes_dist_bray_mtx_long18 %>% dplyr::select(DepthA, StationA, DepthB, StationB, BCD, Temperature, Salinity, Oxygen, EF, NPP) %>% pivot_longer(-c(DepthA, StationA, DepthB, StationB, BCD), values_to = "EnvDiff")
+copepods_18smod$EnvDiff <- abs(copepods_18smod$EnvDiff)
+copepods_18smod$name <- forcats::fct_relevel(copepods_18smod$name, "Temperature", "Salinity", "Oxygen", "NPP", "EF")
+copepods_18smod$name_fac <- factor(copepods_18smod$name, levels = c("Temperature", "Salinity", "Oxygen", "NPP", "EF"), ordered = TRUE, labels = c(expression(Temperature~(degree*C)), "Salinity", expression(DO~(µmol~kg^-1)), expression(NPP~(mgC~m^-2~yr^1)), expression(EF~(mgC~m^-2~yr^1))))
+
+##calanoids:
+colnames(calanoids_dist_bray_mtx_long18)[3] <- "BCD"
+calanoids_dist_bray_mtx_long18$formerging <- paste(calanoids_dist_bray_mtx_long18$X1, calanoids_dist_bray_mtx_long18$X2)
+calanoids_dist_bray_mtx_long18 <- calanoids_dist_bray_mtx_long18[calanoids_dist_bray_mtx_long18$DepthA == calanoids_dist_bray_mtx_long18$DepthB,]
+calanoids_dist_bray_mtx_long18 <- merge(calanoids_dist_bray_mtx_long18, dist_modtemp_18s, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_modsal_18s, by = "formerging", all.x = T, all.y = F)%>% 
+  merge(dist_oxy_18s, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_ef_18s, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_npp_18s, by = "formerging", all.x = T, all.y = F)
+calanoids_18smod <- calanoids_dist_bray_mtx_long18 %>% dplyr::select(DepthA, StationA, DepthB, StationB, BCD, Temperature, Salinity, Oxygen, EF, NPP) %>% pivot_longer(-c(DepthA, StationA, DepthB, StationB, BCD), values_to = "EnvDiff")
+calanoids_18smod$EnvDiff <- abs(calanoids_18smod$EnvDiff)
+calanoids_18smod$name <- forcats::fct_relevel(calanoids_18smod$name, "Temperature", "Salinity", "Oxygen", "NPP", "EF")
+calanoids_18smod$name_fac <- factor(calanoids_18smod$name, levels = c("Temperature", "Salinity", "Oxygen", "NPP", "EF"), ordered = TRUE, labels = c(expression(Temperature~(degree*C)), "Salinity", expression(DO~(µmol~kg^-1)), expression(NPP~(mgC~m^-2~yr^1)), expression(EF~(mgC~m^-2~yr^1))))
+
+
+##cyclopoids:
+colnames(cyclopoids_dist_bray_mtx_long18)[3] <- "BCD"
+cyclopoids_dist_bray_mtx_long18$formerging <- paste(cyclopoids_dist_bray_mtx_long18$X1, cyclopoids_dist_bray_mtx_long18$X2)
+cyclopoids_dist_bray_mtx_long18 <- cyclopoids_dist_bray_mtx_long18[cyclopoids_dist_bray_mtx_long18$DepthA == cyclopoids_dist_bray_mtx_long18$DepthB,]
+cyclopoids_dist_bray_mtx_long18 <- merge(cyclopoids_dist_bray_mtx_long18, dist_modtemp_18s, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_modsal_18s, by = "formerging", all.x = T, all.y = F)%>% 
+  merge(dist_oxy_18s, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_ef_18s, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_npp_18s, by = "formerging", all.x = T, all.y = F)
+cyclopoids_18smod <- cyclopoids_dist_bray_mtx_long18 %>% dplyr::select(DepthA, StationA, DepthB, StationB, BCD, Temperature, Salinity, Oxygen, EF, NPP) %>% pivot_longer(-c(DepthA, StationA, DepthB, StationB, BCD), values_to = "EnvDiff")
+cyclopoids_18smod$EnvDiff <- abs(cyclopoids_18smod$EnvDiff)
+cyclopoids_18smod$name <- forcats::fct_relevel(cyclopoids_18smod$name, "Temperature", "Salinity", "Oxygen", "NPP", "EF")
+cyclopoids_18smod$name_fac <- factor(cyclopoids_18smod$name, levels = c("Temperature", "Salinity", "Oxygen", "NPP", "EF"), ordered = TRUE, labels = c(expression(Temperature~(degree*C)), "Salinity", expression(DO~(µmol~kg^-1)), expression(NPP~(mgC~m^-2~yr^1)), expression(EF~(mgC~m^-2~yr^1))))
+
+##molluscs:
+colnames(molluscs_dist_bray_mtx_long18)[3] <- "BCD"
+molluscs_dist_bray_mtx_long18$formerging <- paste(molluscs_dist_bray_mtx_long18$X1, molluscs_dist_bray_mtx_long18$X2)
+molluscs_dist_bray_mtx_long18 <- molluscs_dist_bray_mtx_long18[molluscs_dist_bray_mtx_long18$DepthA == molluscs_dist_bray_mtx_long18$DepthB,]
+molluscs_dist_bray_mtx_long18 <- merge(molluscs_dist_bray_mtx_long18, dist_modtemp_18s, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_modsal_18s, by = "formerging", all.x = T, all.y = F)%>% 
+  merge(dist_oxy_18s, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_ef_18s, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_npp_18s, by = "formerging", all.x = T, all.y = F)
+molluscs_18smod <- molluscs_dist_bray_mtx_long18 %>% dplyr::select(DepthA, StationA, DepthB, StationB, BCD, Temperature, Salinity, Oxygen, EF, NPP) %>% pivot_longer(-c(DepthA, StationA, DepthB, StationB, BCD), values_to = "EnvDiff")
+molluscs_18smod$EnvDiff <- abs(molluscs_18smod$EnvDiff)
+molluscs_18smod$name <- forcats::fct_relevel(molluscs_18smod$name, "Temperature", "Salinity", "Oxygen", "NPP", "EF")
+molluscs_18smod$name_fac <- factor(molluscs_18smod$name, levels = c("Temperature", "Salinity", "Oxygen", "NPP", "EF"), ordered = TRUE, labels = c(expression(Temperature~(degree*C)), "Salinity", expression(DO~(µmol~kg^-1)), expression(NPP~(mgC~m^-2~yr^1)), expression(EF~(mgC~m^-2~yr^1))))
+
+```
+
+copepods_18smod
+calanoids_18smod
+cyclopoids_18smod
+molluscs_18smod
+
+copescoi_mod
+ostracoi_mod
+mollusccoi_mod
+cnidariacoi_mod
+###plots of environment
+```{r}
+
+ggplot(data=copepods_18smod, aes(x = EnvDiff, y = BCD, group = DepthB, color = DepthB)) + 
+  geom_point(alpha = 0.4, size = .3) + 
+  facet_grid(~name_fac, scales = "free_x", labeller = label_parsed) + 
+#  xlab("Environmental difference") + 
+  xlab(expression(paste(Delta, " Environment"))) + 
+  ylab("Bray-Curtis Dissimilarity (BCD)") + 
+  ggtitle("18S All Copepoda")+ 
+   stat_cor(method = "spearman", label.x.npc = .35, label.y.npc = 0.7,
+            cor.coef.name = "rho",
+            alternative = "greater", geom = "label",
+            aes(label = paste(after_stat(r), cut(after_stat(p), 
+                                              breaks = c(-Inf, 0.001, 0.01, 0.05, Inf),
+                                              labels = c("'***'", "'**'", "'*'", "'ns'")), sep = "~','~")),
+            show.legend=F) + 
+    geom_smooth(data=copepods_18smod, aes(x = EnvDiff, y = BCD, group = DepthB, color = DepthB),
+                inherit.aes = F,
+                method = "loess", span =1, show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) ) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+ggplot(data=calanoids_18smod, aes(x = EnvDiff, y = BCD, group = DepthB, color = DepthB)) + 
+  geom_point(alpha = 0.4, size = .3) + 
+  facet_grid(~name_fac, scales = "free_x", labeller = label_parsed) + 
+#  xlab("Environmental difference") + 
+  xlab(expression(paste(Delta, " Environment"))) + 
+  ylab("Bray-Curtis Dissimilarity (BCD)") + 
+  ggtitle("18S Calanoids")+ 
+   stat_cor(method = "spearman", label.x.npc = .35, label.y.npc = 0.7,
+            cor.coef.name = "rho",
+            alternative = "greater", geom = "label",
+            aes(label = paste(after_stat(r), cut(after_stat(p), 
+                                              breaks = c(-Inf, 0.001, 0.01, 0.05, Inf),
+                                              labels = c("'***'", "'**'", "'*'", "'ns'")), sep = "~','~")),
+            show.legend=F) + 
+    geom_smooth(data=calanoids_18smod, aes(x = EnvDiff, y = BCD, group = DepthB, color = DepthB),
+                inherit.aes = F,
+                method = "loess", span =1, show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) ) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+ggplot(data=cyclopoids_18smod, aes(x = EnvDiff, y = BCD, group = DepthB, color = DepthB)) + 
+  geom_point(alpha = 0.4, size = .3) + 
+  facet_grid(~name_fac, scales = "free_x", labeller = label_parsed) + 
+#  xlab("Environmental difference") + 
+  xlab(expression(paste(Delta, " Environment"))) + 
+  ylab("Bray-Curtis Dissimilarity (BCD)") + 
+  ggtitle("18S All Cyclopoids")+ 
+   stat_cor(method = "spearman", label.x.npc = .35, label.y.npc = 0.7,
+            cor.coef.name = "rho",
+            alternative = "greater", geom = "label",
+            aes(label = paste(after_stat(r), cut(after_stat(p), 
+                                              breaks = c(-Inf, 0.001, 0.01, 0.05, Inf),
+                                              labels = c("'***'", "'**'", "'*'", "'ns'")), sep = "~','~")),
+            show.legend=F) + 
+    geom_smooth(data=cyclopoids_18smod, aes(x = EnvDiff, y = BCD, group = DepthB, color = DepthB),
+                inherit.aes = F,
+                method = "loess", span =1, show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) ) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+ggplot(data=molluscs_18smod, aes(x = EnvDiff, y = BCD, group = DepthB, color = DepthB)) + 
+  geom_point(alpha = 0.4, size = .3) + 
+  facet_grid(~name_fac, scales = "free_x", labeller = label_parsed) + 
+#  xlab("Environmental difference") + 
+  xlab(expression(paste(Delta, " Environment"))) + 
+  ylab("Bray-Curtis Dissimilarity (BCD)") + 
+  ggtitle("18S Molluscs")+ 
+   stat_cor(method = "spearman", label.x.npc = .35, label.y.npc = 0.7,
+            cor.coef.name = "rho",
+            alternative = "greater", geom = "label",
+            aes(label = paste(after_stat(r), cut(after_stat(p), 
+                                              breaks = c(-Inf, 0.001, 0.01, 0.05, Inf),
+                                              labels = c("'***'", "'**'", "'*'", "'ns'")), sep = "~','~")),
+            show.legend=F) + 
+    geom_smooth(data=molluscs_18smod, aes(x = EnvDiff, y = BCD, group = DepthB, color = DepthB),
+                inherit.aes = F,
+                method = "loess", span =1, show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) ) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+ggplot(data=copescoi_mod, aes(x = EnvDiff, y = BCD, group = DepthB, color = DepthB)) + 
+  geom_point(alpha = 0.4, size = .3) + 
+  facet_grid(~name_fac, scales = "free_x", labeller = label_parsed) + 
+#  xlab("Environmental difference") + 
+  xlab(expression(paste(Delta, " Environment"))) + 
+  ylab("Bray-Curtis Dissimilarity (BCD)") + 
+  ggtitle("COI Copepods")+ 
+   stat_cor(method = "spearman", label.x.npc = .35, label.y.npc = 0.7,
+            cor.coef.name = "rho",
+            alternative = "greater", geom = "label",
+            aes(label = paste(after_stat(r), cut(after_stat(p), 
+                                              breaks = c(-Inf, 0.001, 0.01, 0.05, Inf),
+                                              labels = c("'***'", "'**'", "'*'", "'ns'")), sep = "~','~")),
+            show.legend=F) + 
+    geom_smooth(data=copescoi_mod, aes(x = EnvDiff, y = BCD, group = DepthB, color = DepthB),
+                inherit.aes = F,
+                method = "loess", span =1, show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) ) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+ggplot(data=ostracoi_mod, aes(x = EnvDiff, y = BCD, group = DepthB, color = DepthB)) + 
+  geom_point(alpha = 0.4, size = .3) + 
+  facet_grid(~name_fac, scales = "free_x", labeller = label_parsed) + 
+#  xlab("Environmental difference") + 
+  xlab(expression(paste(Delta, " Environment"))) + 
+  ylab("Bray-Curtis Dissimilarity (BCD)") + 
+  ggtitle("COI Ostracods")+ 
+   stat_cor(method = "spearman", label.x.npc = .35, label.y.npc = 0.7,
+            cor.coef.name = "rho",
+            alternative = "greater", geom = "label",
+            aes(label = paste(after_stat(r), cut(after_stat(p), 
+                                              breaks = c(-Inf, 0.001, 0.01, 0.05, Inf),
+                                              labels = c("'***'", "'**'", "'*'", "'ns'")), sep = "~','~")),
+            show.legend=F) + 
+    geom_smooth(data=ostracoi_mod, aes(x = EnvDiff, y = BCD, group = DepthB, color = DepthB),
+                inherit.aes = F,
+                method = "loess", span =1, show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) ) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+
+ggplot(data=mollusccoi_mod, aes(x = EnvDiff, y = BCD, group = DepthB, color = DepthB)) + 
+  geom_point(alpha = 0.4, size = .3) + 
+  facet_grid(~name_fac, scales = "free_x", labeller = label_parsed) + 
+#  xlab("Environmental difference") + 
+  xlab(expression(paste(Delta, " Environment"))) + 
+  ylab("Bray-Curtis Dissimilarity (BCD)") + 
+  ggtitle("COI Molluscs")+ 
+   stat_cor(method = "spearman", label.x.npc = .35, label.y.npc = 0.7,
+            cor.coef.name = "rho",
+            alternative = "greater", geom = "label",
+            aes(label = paste(after_stat(r), cut(after_stat(p), 
+                                              breaks = c(-Inf, 0.001, 0.01, 0.05, Inf),
+                                              labels = c("'***'", "'**'", "'*'", "'ns'")), sep = "~','~")),
+            show.legend=F) + 
+    geom_smooth(data=mollusccoi_mod, aes(x = EnvDiff, y = BCD, group = DepthB, color = DepthB),
+                inherit.aes = F,
+                method = "loess", span =1, show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) ) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+
+ggplot(data=cnidariacoi_mod, aes(x = EnvDiff, y = BCD, group = DepthB, color = DepthB)) + 
+  geom_point(alpha = 0.4, size = .3) + 
+  facet_grid(~name_fac, scales = "free_x", labeller = label_parsed) + 
+#  xlab("Environmental difference") + 
+  xlab(expression(paste(Delta, " Environment"))) + 
+  ylab("Bray-Curtis Dissimilarity (BCD)") + 
+  ggtitle("COI Cnidaria")+ 
+   stat_cor(method = "spearman", label.x.npc = .35, label.y.npc = 0.7,
+            cor.coef.name = "rho",
+            alternative = "greater", geom = "label",
+            aes(label = paste(after_stat(r), cut(after_stat(p), 
+                                              breaks = c(-Inf, 0.001, 0.01, 0.05, Inf),
+                                              labels = c("'***'", "'**'", "'*'", "'ns'")), sep = "~','~")),
+            show.legend=F) + 
+    geom_smooth(data=cnidariacoi_mod, aes(x = EnvDiff, y = BCD, group = DepthB, color = DepthB),
+                inherit.aes = F,
+                method = "loess", span =1, show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) ) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+
+
+```
+
+
+#plots of BCD and circulation
+
+##18s copepods
+```{r}
+dist_bray <- phyloseq::distance(copes_zoops18S, method = "bray")
+dist_bray_mtx18 <- as.matrix(dist_bray) # convert 'dist' to 'matrix'
+dist_bray_mtx_long18 <- reshape::melt(dist_bray_mtx18, as.is = TRUE)[reshape::melt(upper.tri(dist_bray_mtx18), as.is = TRUE)$value,]
+
+dist_bray_mtx_long18$DepthA <- stringr::str_split_i((dist_bray_mtx_long18$X1), " ", i = 2)
+dist_bray_mtx_long18$StationA <- stringr::str_split_i((dist_bray_mtx_long18$X1), " ", i = 1)
+dist_bray_mtx_long18$DepthB <- stringr::str_split_i((dist_bray_mtx_long18$X2), " ", i = 2)
+dist_bray_mtx_long18$StationB <- stringr::str_split_i((dist_bray_mtx_long18$X2), " ", i = 1)
+dist_bray_mtx_long18$unique <- paste("Source:", dist_bray_mtx_long18$StationA, "Sink:", dist_bray_mtx_long18$StationB)
+
+dist_bray_mtx_long18$unique <- paste("Source:", dist_bray_mtx_long18$StationA, "Sink:", dist_bray_mtx_long18$StationB)
+dist_bray_mtx_long18_200 <- dist_bray_mtx_long18[dist_bray_mtx_long18$DepthA == "0-200m" & dist_bray_mtx_long18$DepthB == "0-200m",]
+dist_bray_mtx_long18_500 <- dist_bray_mtx_long18[dist_bray_mtx_long18$DepthA == "200-500m" & dist_bray_mtx_long18$DepthB == "200-500m",]
+dist_bray_mtx_long18_1000 <- dist_bray_mtx_long18[dist_bray_mtx_long18$DepthA == "500-1000m" & dist_bray_mtx_long18$DepthB == "500-1000m",]
+
+
+arrivedparticles20year750$unique <- paste("Source:", arrivedparticles20year750$source_station, "Sink:", arrivedparticles20year750$sink_station)
+arrivedparticles20year750$unique2 <- paste("Source:", arrivedparticles20year750$sink_station, "Sink:", arrivedparticles20year750$source_station)
+distBray18s_w_particles1 <- merge(dist_bray_mtx_long18_1000, arrivedparticles20year750, by = "unique", all = T)
+distBray18s_w_particles1 <- merge(distBray18s_w_particles1, arrivedparticles20year750, by.x = "unique", by.y = "unique2", all = T)
+
+arrivedparticles20year350$unique <- paste("Source:", arrivedparticles20year350$source_station, "Sink:", arrivedparticles20year350$sink_station)
+arrivedparticles20year350$unique2 <- paste("Source:", arrivedparticles20year350$sink_station, "Sink:", arrivedparticles20year350$source_station)
+distBray18s_w_particles2 <- merge(dist_bray_mtx_long18_500, arrivedparticles20year350, by = "unique", all = T)
+distBray18s_w_particles2 <- merge(distBray18s_w_particles2, arrivedparticles20year350, by.x = "unique", by.y = "unique2", all = T)
+
+arrivedparticles20year75$unique <- paste("Source:", arrivedparticles20year75$source_station, "Sink:", arrivedparticles20year75$sink_station)
+arrivedparticles20year75$unique2 <- paste("Source:", arrivedparticles20year75$sink_station, "Sink:", arrivedparticles20year75$source_station)
+distBray18s_w_particles3 <- merge(dist_bray_mtx_long18_200, arrivedparticles20year75, by = "unique", all = T)
+distBray18s_w_particles3 <- merge(distBray18s_w_particles3, arrivedparticles20year75, by.x = "unique", by.y = "unique2", all = T)
+
+BCD_18S_with_particles <- rbind(distBray18s_w_particles1, distBray18s_w_particles2)
+BCD_18S_with_particles <- rbind(BCD_18S_with_particles, distBray18s_w_particles3)
+
+BCD_18S_with_particles$potential_final <- pmax(BCD_18S_with_particles$potential2.x, BCD_18S_with_particles$potential2.y, na.rm = T) #get maximum connectivity (since it's directional)
+BCD_18S_with_particles <- BCD_18S_with_particles[!is.na(BCD_18S_with_particles$DepthA),] #remove rows without BCD (dropout samples and/or comparisons between the same location)
+
+#scale from 0-1
+BCD_18S_with_particles$potential_final <- BCD_18S_with_particles$potential_final/max(BCD_18S_with_particles$potential_final, na.rm=T)
+#if no particles made it, then the distance is maximized
+BCD_18S_with_particles$potential_final[is.na(BCD_18S_with_particles$potential_final)] <- 1
+#BCD_18S_with_particles$circulation_distance <- 1-BCD_18S_with_particles$potential_final
+
+
+BCD18s_particles_copes <- ggplot(BCD_18S_with_particles, aes(x = potential_final, y = value, group = DepthA, color = DepthA)) + 
+  geom_point(alpha = 0.4, size = .3) + 
+  xlab("Dispersal time (months)") + ylab("Bray-Curtis Dissimilarity (BCD)") + 
+  ggtitle("18S copepods")+ 
+  geom_smooth(method = "loess", show.legend = F, span = 1)+ 
+   stat_cor(method = "spearman", label.x.npc = "center", label.y.npc = "middle",
+            cor.coef.name = "rho",geom = "label", 
+            alternative = "two.sided", aes(label = paste(after_stat(r.label), cut(after_stat(p), 
+                                              breaks = c(-Inf, 0.001, 0.01, 0.05, Inf),
+                                              labels = c("'***'", "'**'", "'*'", "'ns'")), sep = "~','~")), show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) )
+BCD18s_particles_copes
+
+
+```
+
+
+
+##18s calanoid copepods
+```{r}
+dist_bray <- phyloseq::distance(calanoids_zoops18S, method = "bray")
+dist_bray_mtx18 <- as.matrix(dist_bray) # convert 'dist' to 'matrix'
+dist_bray_mtx_long18 <- reshape::melt(dist_bray_mtx18, as.is = TRUE)[reshape::melt(upper.tri(dist_bray_mtx18), as.is = TRUE)$value,]
+
+dist_bray_mtx_long18$DepthA <- stringr::str_split_i((dist_bray_mtx_long18$X1), " ", i = 2)
+dist_bray_mtx_long18$StationA <- stringr::str_split_i((dist_bray_mtx_long18$X1), " ", i = 1)
+dist_bray_mtx_long18$DepthB <- stringr::str_split_i((dist_bray_mtx_long18$X2), " ", i = 2)
+dist_bray_mtx_long18$StationB <- stringr::str_split_i((dist_bray_mtx_long18$X2), " ", i = 1)
+dist_bray_mtx_long18$unique <- paste("Source:", dist_bray_mtx_long18$StationA, "Sink:", dist_bray_mtx_long18$StationB)
+
+dist_bray_mtx_long18$unique <- paste("Source:", dist_bray_mtx_long18$StationA, "Sink:", dist_bray_mtx_long18$StationB)
+dist_bray_mtx_long18_200 <- dist_bray_mtx_long18[dist_bray_mtx_long18$DepthA == "0-200m" & dist_bray_mtx_long18$DepthB == "0-200m",]
+dist_bray_mtx_long18_500 <- dist_bray_mtx_long18[dist_bray_mtx_long18$DepthA == "200-500m" & dist_bray_mtx_long18$DepthB == "200-500m",]
+dist_bray_mtx_long18_1000 <- dist_bray_mtx_long18[dist_bray_mtx_long18$DepthA == "500-1000m" & dist_bray_mtx_long18$DepthB == "500-1000m",]
+
+
+arrivedparticles20year750$unique <- paste("Source:", arrivedparticles20year750$source_station, "Sink:", arrivedparticles20year750$sink_station)
+arrivedparticles20year750$unique2 <- paste("Source:", arrivedparticles20year750$sink_station, "Sink:", arrivedparticles20year750$source_station)
+distBray18s_w_particles1 <- merge(dist_bray_mtx_long18_1000, arrivedparticles20year750, by = "unique", all = T)
+distBray18s_w_particles1 <- merge(distBray18s_w_particles1, arrivedparticles20year750, by.x = "unique", by.y = "unique2", all = T)
+
+arrivedparticles20year350$unique <- paste("Source:", arrivedparticles20year350$source_station, "Sink:", arrivedparticles20year350$sink_station)
+arrivedparticles20year350$unique2 <- paste("Source:", arrivedparticles20year350$sink_station, "Sink:", arrivedparticles20year350$source_station)
+distBray18s_w_particles2 <- merge(dist_bray_mtx_long18_500, arrivedparticles20year350, by = "unique", all = T)
+distBray18s_w_particles2 <- merge(distBray18s_w_particles2, arrivedparticles20year350, by.x = "unique", by.y = "unique2", all = T)
+
+arrivedparticles20year75$unique <- paste("Source:", arrivedparticles20year75$source_station, "Sink:", arrivedparticles20year75$sink_station)
+arrivedparticles20year75$unique2 <- paste("Source:", arrivedparticles20year75$sink_station, "Sink:", arrivedparticles20year75$source_station)
+distBray18s_w_particles3 <- merge(dist_bray_mtx_long18_200, arrivedparticles20year75, by = "unique", all = T)
+distBray18s_w_particles3 <- merge(distBray18s_w_particles3, arrivedparticles20year75, by.x = "unique", by.y = "unique2", all = T)
+
+BCD_18S_with_particles <- rbind(distBray18s_w_particles1, distBray18s_w_particles2)
+BCD_18S_with_particles <- rbind(BCD_18S_with_particles, distBray18s_w_particles3)
+
+BCD_18S_with_particles$potential_final <- pmax(BCD_18S_with_particles$potential2.x, BCD_18S_with_particles$potential2.y, na.rm = T) #get maximum connectivity (since it's directional)
+BCD_18S_with_particles <- BCD_18S_with_particles[!is.na(BCD_18S_with_particles$DepthA),] #remove rows without BCD (dropout samples and/or comparisons between the same location)
+
+#scale from 0-1
+BCD_18S_with_particles$potential_final <- BCD_18S_with_particles$potential_final/max(BCD_18S_with_particles$potential_final, na.rm=T)
+#if no particles made it, then the distance is maximized
+BCD_18S_with_particles$potential_final[is.na(BCD_18S_with_particles$potential_final)] <- 1
+#BCD_18S_with_particles$circulation_distance <- 1-BCD_18S_with_particles$potential_final
+
+
+BCD18s_particles_calanoids <- ggplot(BCD_18S_with_particles, aes(x = potential_final, y = value, group = DepthA, color = DepthA)) + 
+  geom_point(alpha = 0.4, size = .3) + 
+  xlab("Dispersal time (months)") + ylab("Bray-Curtis Dissimilarity (BCD)") + 
+  ggtitle("18S calanoids")+ 
+  geom_smooth(method = "loess", show.legend = F, span = 1)+ 
+   stat_cor(method = "spearman", label.x.npc = "center", label.y.npc = "middle",
+            cor.coef.name = "rho",geom = "label", 
+            alternative = "two.sided", aes(label = paste(after_stat(r.label), cut(after_stat(p), 
+                                              breaks = c(-Inf, 0.001, 0.01, 0.05, Inf),
+                                              labels = c("'***'", "'**'", "'*'", "'ns'")), sep = "~','~")), show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) )
+BCD18s_particles_calanoids
+
+
+```
+
+
+
+
+##18s cyclopoid copepods
+```{r}
+dist_bray <- phyloseq::distance(cyclopoids_zoops18S, method = "bray")
+dist_bray_mtx18 <- as.matrix(dist_bray) # convert 'dist' to 'matrix'
+dist_bray_mtx_long18 <- reshape::melt(dist_bray_mtx18, as.is = TRUE)[reshape::melt(upper.tri(dist_bray_mtx18), as.is = TRUE)$value,]
+
+dist_bray_mtx_long18$DepthA <- stringr::str_split_i((dist_bray_mtx_long18$X1), " ", i = 2)
+dist_bray_mtx_long18$StationA <- stringr::str_split_i((dist_bray_mtx_long18$X1), " ", i = 1)
+dist_bray_mtx_long18$DepthB <- stringr::str_split_i((dist_bray_mtx_long18$X2), " ", i = 2)
+dist_bray_mtx_long18$StationB <- stringr::str_split_i((dist_bray_mtx_long18$X2), " ", i = 1)
+dist_bray_mtx_long18$unique <- paste("Source:", dist_bray_mtx_long18$StationA, "Sink:", dist_bray_mtx_long18$StationB)
+
+dist_bray_mtx_long18$unique <- paste("Source:", dist_bray_mtx_long18$StationA, "Sink:", dist_bray_mtx_long18$StationB)
+dist_bray_mtx_long18_200 <- dist_bray_mtx_long18[dist_bray_mtx_long18$DepthA == "0-200m" & dist_bray_mtx_long18$DepthB == "0-200m",]
+dist_bray_mtx_long18_500 <- dist_bray_mtx_long18[dist_bray_mtx_long18$DepthA == "200-500m" & dist_bray_mtx_long18$DepthB == "200-500m",]
+dist_bray_mtx_long18_1000 <- dist_bray_mtx_long18[dist_bray_mtx_long18$DepthA == "500-1000m" & dist_bray_mtx_long18$DepthB == "500-1000m",]
+
+
+arrivedparticles20year750$unique <- paste("Source:", arrivedparticles20year750$source_station, "Sink:", arrivedparticles20year750$sink_station)
+arrivedparticles20year750$unique2 <- paste("Source:", arrivedparticles20year750$sink_station, "Sink:", arrivedparticles20year750$source_station)
+distBray18s_w_particles1 <- merge(dist_bray_mtx_long18_1000, arrivedparticles20year750, by = "unique", all = T)
+distBray18s_w_particles1 <- merge(distBray18s_w_particles1, arrivedparticles20year750, by.x = "unique", by.y = "unique2", all = T)
+
+arrivedparticles20year350$unique <- paste("Source:", arrivedparticles20year350$source_station, "Sink:", arrivedparticles20year350$sink_station)
+arrivedparticles20year350$unique2 <- paste("Source:", arrivedparticles20year350$sink_station, "Sink:", arrivedparticles20year350$source_station)
+distBray18s_w_particles2 <- merge(dist_bray_mtx_long18_500, arrivedparticles20year350, by = "unique", all = T)
+distBray18s_w_particles2 <- merge(distBray18s_w_particles2, arrivedparticles20year350, by.x = "unique", by.y = "unique2", all = T)
+
+arrivedparticles20year75$unique <- paste("Source:", arrivedparticles20year75$source_station, "Sink:", arrivedparticles20year75$sink_station)
+arrivedparticles20year75$unique2 <- paste("Source:", arrivedparticles20year75$sink_station, "Sink:", arrivedparticles20year75$source_station)
+distBray18s_w_particles3 <- merge(dist_bray_mtx_long18_200, arrivedparticles20year75, by = "unique", all = T)
+distBray18s_w_particles3 <- merge(distBray18s_w_particles3, arrivedparticles20year75, by.x = "unique", by.y = "unique2", all = T)
+
+BCD_18S_with_particles <- rbind(distBray18s_w_particles1, distBray18s_w_particles2)
+BCD_18S_with_particles <- rbind(BCD_18S_with_particles, distBray18s_w_particles3)
+
+BCD_18S_with_particles$potential_final <- pmax(BCD_18S_with_particles$potential2.x, BCD_18S_with_particles$potential2.y, na.rm = T) #get maximum connectivity (since it's directional)
+BCD_18S_with_particles <- BCD_18S_with_particles[!is.na(BCD_18S_with_particles$DepthA),] #remove rows without BCD (dropout samples and/or comparisons between the same location)
+
+#scale from 0-1
+BCD_18S_with_particles$potential_final <- BCD_18S_with_particles$potential_final/max(BCD_18S_with_particles$potential_final, na.rm=T)
+#if no particles made it, then the distance is maximized
+BCD_18S_with_particles$potential_final[is.na(BCD_18S_with_particles$potential_final)] <- 1
+#BCD_18S_with_particles$circulation_distance <- 1-BCD_18S_with_particles$potential_final
+
+
+BCD18s_particles_cyclopoids <- ggplot(BCD_18S_with_particles, aes(x = potential_final, y = value, group = DepthA, color = DepthA)) + 
+  geom_point(alpha = 0.4, size = .3) + 
+  xlab("Dispersal time (months)") + ylab("Bray-Curtis Dissimilarity (BCD)") + 
+  ggtitle("18S cyclopoids")+ 
+  geom_smooth(method = "loess", show.legend = F, span = 1)+ 
+   stat_cor(method = "spearman", label.x.npc = "center", label.y.npc = "middle",
+            cor.coef.name = "rho",geom = "label", 
+            alternative = "two.sided", aes(label = paste(after_stat(r.label), cut(after_stat(p), 
+                                              breaks = c(-Inf, 0.001, 0.01, 0.05, Inf),
+                                              labels = c("'***'", "'**'", "'*'", "'ns'")), sep = "~','~")), show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) )
+BCD18s_particles_cyclopoids
+
+
+```
+
+##COI copepods
+```{r}
+dist_bray <- phyloseq::distance(copes_zoopsCOI, method = "bray")
+dist_bray_mtx <- as.matrix(dist_bray) # convert 'dist' to 'matrix'
+dist_bray_mtx_longCOI <- reshape::melt(dist_bray_mtx, as.is = TRUE)[reshape::melt(upper.tri(dist_bray_mtx), as.is = TRUE)$value,]
+
+dist_bray_mtx_longCOI$DepthA <- stringr::str_split_i((dist_bray_mtx_longCOI$X1), " ", i = 2)
+dist_bray_mtx_longCOI$StationA <- stringr::str_split_i((dist_bray_mtx_longCOI$X1), " ", i = 1)
+dist_bray_mtx_longCOI$DepthB <- stringr::str_split_i((dist_bray_mtx_longCOI$X2), " ", i = 2)
+dist_bray_mtx_longCOI$StationB <- stringr::str_split_i((dist_bray_mtx_longCOI$X2), " ", i = 1)
+dist_bray_mtx_longCOI$unique <- paste("Source:", dist_bray_mtx_longCOI$StationA, "Sink:", dist_bray_mtx_longCOI$StationB)
+
+dist_bray_mtx_longCOI$unique <- paste("Source:", dist_bray_mtx_longCOI$StationA, "Sink:", dist_bray_mtx_longCOI$StationB)
+dist_bray_mtx_longCOI_200 <- dist_bray_mtx_longCOI[dist_bray_mtx_longCOI$DepthA == "0-200m" & dist_bray_mtx_longCOI$DepthB == "0-200m",]
+dist_bray_mtx_longCOI_500 <- dist_bray_mtx_longCOI[dist_bray_mtx_longCOI$DepthA == "200-500m" & dist_bray_mtx_longCOI$DepthB == "200-500m",]
+dist_bray_mtx_longCOI_1000 <- dist_bray_mtx_longCOI[dist_bray_mtx_longCOI$DepthA == "500-1000m" & dist_bray_mtx_longCOI$DepthB == "500-1000m",]
+
+
+
+arrivedparticles20year750$unique <- paste("Source:", arrivedparticles20year750$source_station, "Sink:", arrivedparticles20year750$sink_station)
+arrivedparticles20year750$unique2 <- paste("Source:", arrivedparticles20year750$sink_station, "Sink:", arrivedparticles20year750$source_station)
+distBrayCOI_w_particles1 <- merge(dist_bray_mtx_longCOI_1000, arrivedparticles20year750, by = "unique", all = T)
+distBrayCOI_w_particles1 <- merge(distBrayCOI_w_particles1, arrivedparticles20year750, by.x = "unique", by.y = "unique2", all = T)
+
+arrivedparticles20year350$unique <- paste("Source:", arrivedparticles20year350$source_station, "Sink:", arrivedparticles20year350$sink_station)
+arrivedparticles20year350$unique2 <- paste("Source:", arrivedparticles20year350$sink_station, "Sink:", arrivedparticles20year350$source_station)
+distBrayCOI_w_particles2 <- merge(dist_bray_mtx_longCOI_500, arrivedparticles20year350, by = "unique", all = T)
+distBrayCOI_w_particles2 <- merge(distBrayCOI_w_particles2, arrivedparticles20year350, by.x = "unique", by.y = "unique2", all = T)
+
+arrivedparticles20year75$unique <- paste("Source:", arrivedparticles20year75$source_station, "Sink:", arrivedparticles20year75$sink_station)
+arrivedparticles20year75$unique2 <- paste("Source:", arrivedparticles20year75$sink_station, "Sink:", arrivedparticles20year75$source_station)
+distBrayCOI_w_particles3 <- merge(dist_bray_mtx_longCOI_200, arrivedparticles20year75, by = "unique", all = T)
+distBrayCOI_w_particles3 <- merge(distBrayCOI_w_particles3, arrivedparticles20year75, by.x = "unique", by.y = "unique2", all = T)
+
+BCD_COI_with_particles <- rbind(distBrayCOI_w_particles1, distBrayCOI_w_particles2)
+BCD_COI_with_particles <- rbind(BCD_COI_with_particles, distBrayCOI_w_particles3)
+
+BCD_COI_with_particles$potential_final <- pmax(BCD_COI_with_particles$potential2.x, BCD_COI_with_particles$potential2.y, na.rm = T) #get maximum connectivity (since it's directional)
+BCD_COI_with_particles <- BCD_COI_with_particles[!is.na(BCD_COI_with_particles$DepthA),] #remove rows without BCD (dropout samples and/or comparisons between the same location)
+
+#scale from 0-1
+BCD_COI_with_particles$potential_final <- BCD_COI_with_particles$potential_final/max(BCD_COI_with_particles$potential_final, na.rm=T)
+#if no particles made it, then the distance is maximized
+BCD_COI_with_particles$potential_final[is.na(BCD_COI_with_particles$potential_final)] <- 1
+#BCD_COI_with_particles$circulation_distance <- 1-BCD_COI_with_particles$potential_final
+#BCD_COI_with_particles$potential_final <- BCD_COI_with_particles$potential_final/max(BCD_COI_with_particles$potential_final)
+
+BCDcoi_particles_copepods <- ggplot(BCD_COI_with_particles, aes(x = potential_final, y = value, group = DepthA, color = DepthA)) + 
+  geom_point(alpha = 0.4, size = .3) + 
+  xlab("Dispersal time (months)") + ylab("Bray-Curtis Dissimilarity") + 
+  ggtitle("COI copepods")+ 
+  geom_smooth(method = "loess", show.legend = F, span = 1)+ 
+   stat_cor(method = "spearman", label.x.npc = "center", label.y.npc = "middle",
+            cor.coef.name = "rho", geom = "label", 
+            alternative = "two.sided", aes(label = paste(after_stat(r.label), cut(after_stat(p), 
+                                              breaks = c(-Inf, 0.001, 0.01, 0.05, Inf),
+                                              labels = c("'***'", "'**'", "'*'", "'ns'")), sep = "~','~")), show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) )
+BCDcoi_particles_copepods
+```
+
+
+##18s molluscs
+```{r}
+dist_bray <- phyloseq::distance(molluscs_zoops18S, method = "bray")
+dist_bray_mtx18 <- as.matrix(dist_bray) # convert 'dist' to 'matrix'
+dist_bray_mtx_long18 <- reshape::melt(dist_bray_mtx18, as.is = TRUE)[reshape::melt(upper.tri(dist_bray_mtx18), as.is = TRUE)$value,]
+
+dist_bray_mtx_long18$DepthA <- stringr::str_split_i((dist_bray_mtx_long18$X1), " ", i = 2)
+dist_bray_mtx_long18$StationA <- stringr::str_split_i((dist_bray_mtx_long18$X1), " ", i = 1)
+dist_bray_mtx_long18$DepthB <- stringr::str_split_i((dist_bray_mtx_long18$X2), " ", i = 2)
+dist_bray_mtx_long18$StationB <- stringr::str_split_i((dist_bray_mtx_long18$X2), " ", i = 1)
+dist_bray_mtx_long18$unique <- paste("Source:", dist_bray_mtx_long18$StationA, "Sink:", dist_bray_mtx_long18$StationB)
+
+dist_bray_mtx_long18$unique <- paste("Source:", dist_bray_mtx_long18$StationA, "Sink:", dist_bray_mtx_long18$StationB)
+dist_bray_mtx_long18_200 <- dist_bray_mtx_long18[dist_bray_mtx_long18$DepthA == "0-200m" & dist_bray_mtx_long18$DepthB == "0-200m",]
+dist_bray_mtx_long18_500 <- dist_bray_mtx_long18[dist_bray_mtx_long18$DepthA == "200-500m" & dist_bray_mtx_long18$DepthB == "200-500m",]
+dist_bray_mtx_long18_1000 <- dist_bray_mtx_long18[dist_bray_mtx_long18$DepthA == "500-1000m" & dist_bray_mtx_long18$DepthB == "500-1000m",]
+
+
+arrivedparticles20year750$unique <- paste("Source:", arrivedparticles20year750$source_station, "Sink:", arrivedparticles20year750$sink_station)
+arrivedparticles20year750$unique2 <- paste("Source:", arrivedparticles20year750$sink_station, "Sink:", arrivedparticles20year750$source_station)
+distBray18s_w_particles1 <- merge(dist_bray_mtx_long18_1000, arrivedparticles20year750, by = "unique", all = T)
+distBray18s_w_particles1 <- merge(distBray18s_w_particles1, arrivedparticles20year750, by.x = "unique", by.y = "unique2", all = T)
+
+arrivedparticles20year350$unique <- paste("Source:", arrivedparticles20year350$source_station, "Sink:", arrivedparticles20year350$sink_station)
+arrivedparticles20year350$unique2 <- paste("Source:", arrivedparticles20year350$sink_station, "Sink:", arrivedparticles20year350$source_station)
+distBray18s_w_particles2 <- merge(dist_bray_mtx_long18_500, arrivedparticles20year350, by = "unique", all = T)
+distBray18s_w_particles2 <- merge(distBray18s_w_particles2, arrivedparticles20year350, by.x = "unique", by.y = "unique2", all = T)
+
+arrivedparticles20year75$unique <- paste("Source:", arrivedparticles20year75$source_station, "Sink:", arrivedparticles20year75$sink_station)
+arrivedparticles20year75$unique2 <- paste("Source:", arrivedparticles20year75$sink_station, "Sink:", arrivedparticles20year75$source_station)
+distBray18s_w_particles3 <- merge(dist_bray_mtx_long18_200, arrivedparticles20year75, by = "unique", all = T)
+distBray18s_w_particles3 <- merge(distBray18s_w_particles3, arrivedparticles20year75, by.x = "unique", by.y = "unique2", all = T)
+
+BCD_18S_with_particles <- rbind(distBray18s_w_particles1, distBray18s_w_particles2)
+BCD_18S_with_particles <- rbind(BCD_18S_with_particles, distBray18s_w_particles3)
+
+BCD_18S_with_particles$potential_final <- pmax(BCD_18S_with_particles$potential2.x, BCD_18S_with_particles$potential2.y, na.rm = T) #get maximum connectivity (since it's directional)
+BCD_18S_with_particles <- BCD_18S_with_particles[!is.na(BCD_18S_with_particles$DepthA),] #remove rows without BCD (dropout samples and/or comparisons between the same location)
+
+#scale from 0-1
+BCD_18S_with_particles$potential_final <- BCD_18S_with_particles$potential_final/max(BCD_18S_with_particles$potential_final, na.rm=T)
+#if no particles made it, then the distance is maximized
+BCD_18S_with_particles$potential_final[is.na(BCD_18S_with_particles$potential_final)] <- 1
+#BCD_18S_with_particles$circulation_distance <- 1-BCD_18S_with_particles$potential_final
+
+
+BCD18s_particles_molluscs <- ggplot(BCD_18S_with_particles, aes(x = potential_final, y = value, group = DepthA, color = DepthA)) + 
+  geom_point(alpha = 0.4, size = .3) + 
+  xlab("Dispersal time (months)") + ylab("Bray-Curtis Dissimilarity (BCD)") + 
+  ggtitle("18S molluscs")+ 
+  geom_smooth(method = "loess", show.legend = F, span = 1)+ 
+   stat_cor(method = "spearman", label.x.npc = "center", label.y.npc = "middle",
+            cor.coef.name = "rho",geom = "label", 
+            alternative = "two.sided", aes(label = paste(after_stat(r.label), cut(after_stat(p), 
+                                              breaks = c(-Inf, 0.001, 0.01, 0.05, Inf),
+                                              labels = c("'***'", "'**'", "'*'", "'ns'")), sep = "~','~")), show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) )
+BCD18s_particles_molluscs
+
+
+```
+
+##COI molluscs
+```{r}
+dist_bray <- phyloseq::distance(molluscs_zoopsCOI, method = "bray")
+dist_bray_mtx <- as.matrix(dist_bray) # convert 'dist' to 'matrix'
+dist_bray_mtx_longCOI <- reshape::melt(dist_bray_mtx, as.is = TRUE)[reshape::melt(upper.tri(dist_bray_mtx), as.is = TRUE)$value,]
+
+dist_bray_mtx_longCOI$DepthA <- stringr::str_split_i((dist_bray_mtx_longCOI$X1), " ", i = 2)
+dist_bray_mtx_longCOI$StationA <- stringr::str_split_i((dist_bray_mtx_longCOI$X1), " ", i = 1)
+dist_bray_mtx_longCOI$DepthB <- stringr::str_split_i((dist_bray_mtx_longCOI$X2), " ", i = 2)
+dist_bray_mtx_longCOI$StationB <- stringr::str_split_i((dist_bray_mtx_longCOI$X2), " ", i = 1)
+dist_bray_mtx_longCOI$unique <- paste("Source:", dist_bray_mtx_longCOI$StationA, "Sink:", dist_bray_mtx_longCOI$StationB)
+
+dist_bray_mtx_longCOI$unique <- paste("Source:", dist_bray_mtx_longCOI$StationA, "Sink:", dist_bray_mtx_longCOI$StationB)
+dist_bray_mtx_longCOI_200 <- dist_bray_mtx_longCOI[dist_bray_mtx_longCOI$DepthA == "0-200m" & dist_bray_mtx_longCOI$DepthB == "0-200m",]
+dist_bray_mtx_longCOI_500 <- dist_bray_mtx_longCOI[dist_bray_mtx_longCOI$DepthA == "200-500m" & dist_bray_mtx_longCOI$DepthB == "200-500m",]
+dist_bray_mtx_longCOI_1000 <- dist_bray_mtx_longCOI[dist_bray_mtx_longCOI$DepthA == "500-1000m" & dist_bray_mtx_longCOI$DepthB == "500-1000m",]
+
+
+
+arrivedparticles20year750$unique <- paste("Source:", arrivedparticles20year750$source_station, "Sink:", arrivedparticles20year750$sink_station)
+arrivedparticles20year750$unique2 <- paste("Source:", arrivedparticles20year750$sink_station, "Sink:", arrivedparticles20year750$source_station)
+distBrayCOI_w_particles1 <- merge(dist_bray_mtx_longCOI_1000, arrivedparticles20year750, by = "unique", all = T)
+distBrayCOI_w_particles1 <- merge(distBrayCOI_w_particles1, arrivedparticles20year750, by.x = "unique", by.y = "unique2", all = T)
+
+arrivedparticles20year350$unique <- paste("Source:", arrivedparticles20year350$source_station, "Sink:", arrivedparticles20year350$sink_station)
+arrivedparticles20year350$unique2 <- paste("Source:", arrivedparticles20year350$sink_station, "Sink:", arrivedparticles20year350$source_station)
+distBrayCOI_w_particles2 <- merge(dist_bray_mtx_longCOI_500, arrivedparticles20year350, by = "unique", all = T)
+distBrayCOI_w_particles2 <- merge(distBrayCOI_w_particles2, arrivedparticles20year350, by.x = "unique", by.y = "unique2", all = T)
+
+arrivedparticles20year75$unique <- paste("Source:", arrivedparticles20year75$source_station, "Sink:", arrivedparticles20year75$sink_station)
+arrivedparticles20year75$unique2 <- paste("Source:", arrivedparticles20year75$sink_station, "Sink:", arrivedparticles20year75$source_station)
+distBrayCOI_w_particles3 <- merge(dist_bray_mtx_longCOI_200, arrivedparticles20year75, by = "unique", all = T)
+distBrayCOI_w_particles3 <- merge(distBrayCOI_w_particles3, arrivedparticles20year75, by.x = "unique", by.y = "unique2", all = T)
+
+BCD_COI_with_particles <- rbind(distBrayCOI_w_particles1, distBrayCOI_w_particles2)
+BCD_COI_with_particles <- rbind(BCD_COI_with_particles, distBrayCOI_w_particles3)
+
+BCD_COI_with_particles$potential_final <- pmax(BCD_COI_with_particles$potential2.x, BCD_COI_with_particles$potential2.y, na.rm = T) #get maximum connectivity (since it's directional)
+BCD_COI_with_particles <- BCD_COI_with_particles[!is.na(BCD_COI_with_particles$DepthA),] #remove rows without BCD (dropout samples and/or comparisons between the same location)
+
+#scale from 0-1
+BCD_COI_with_particles$potential_final <- BCD_COI_with_particles$potential_final/max(BCD_COI_with_particles$potential_final, na.rm=T)
+#if no particles made it, then the distance is maximized
+BCD_COI_with_particles$potential_final[is.na(BCD_COI_with_particles$potential_final)] <- 1
+#BCD_COI_with_particles$circulation_distance <- 1-BCD_COI_with_particles$potential_final
+#BCD_COI_with_particles$potential_final <- BCD_COI_with_particles$potential_final/max(BCD_COI_with_particles$potential_final)
+
+BCDcoi_particles_molluscs <- ggplot(BCD_COI_with_particles, aes(x = potential_final, y = value, group = DepthA, color = DepthA)) + 
+  geom_point(alpha = 0.4, size = .3) + 
+  xlab("Dispersal time (months)") + ylab("Bray-Curtis Dissimilarity") + 
+  ggtitle("COI molluscs")+ 
+  geom_smooth(method = "loess", show.legend = F, span = 1)+ 
+   stat_cor(method = "spearman", label.x.npc = "center", label.y.npc = "middle",
+            cor.coef.name = "rho", geom = "label", 
+            alternative = "two.sided", aes(label = paste(after_stat(r.label), cut(after_stat(p), 
+                                              breaks = c(-Inf, 0.001, 0.01, 0.05, Inf),
+                                              labels = c("'***'", "'**'", "'*'", "'ns'")), sep = "~','~")), show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) )
+BCDcoi_particles_molluscs
+```
+
+
+##COI ostracods
+```{r}
+dist_bray <- phyloseq::distance(ostracods_zoopsCOI, method = "bray")
+dist_bray_mtx <- as.matrix(dist_bray) # convert 'dist' to 'matrix'
+dist_bray_mtx_longCOI <- reshape::melt(dist_bray_mtx, as.is = TRUE)[reshape::melt(upper.tri(dist_bray_mtx), as.is = TRUE)$value,]
+
+dist_bray_mtx_longCOI$DepthA <- stringr::str_split_i((dist_bray_mtx_longCOI$X1), " ", i = 2)
+dist_bray_mtx_longCOI$StationA <- stringr::str_split_i((dist_bray_mtx_longCOI$X1), " ", i = 1)
+dist_bray_mtx_longCOI$DepthB <- stringr::str_split_i((dist_bray_mtx_longCOI$X2), " ", i = 2)
+dist_bray_mtx_longCOI$StationB <- stringr::str_split_i((dist_bray_mtx_longCOI$X2), " ", i = 1)
+dist_bray_mtx_longCOI$unique <- paste("Source:", dist_bray_mtx_longCOI$StationA, "Sink:", dist_bray_mtx_longCOI$StationB)
+
+dist_bray_mtx_longCOI$unique <- paste("Source:", dist_bray_mtx_longCOI$StationA, "Sink:", dist_bray_mtx_longCOI$StationB)
+dist_bray_mtx_longCOI_200 <- dist_bray_mtx_longCOI[dist_bray_mtx_longCOI$DepthA == "0-200m" & dist_bray_mtx_longCOI$DepthB == "0-200m",]
+dist_bray_mtx_longCOI_500 <- dist_bray_mtx_longCOI[dist_bray_mtx_longCOI$DepthA == "200-500m" & dist_bray_mtx_longCOI$DepthB == "200-500m",]
+dist_bray_mtx_longCOI_1000 <- dist_bray_mtx_longCOI[dist_bray_mtx_longCOI$DepthA == "500-1000m" & dist_bray_mtx_longCOI$DepthB == "500-1000m",]
+
+
+
+arrivedparticles20year750$unique <- paste("Source:", arrivedparticles20year750$source_station, "Sink:", arrivedparticles20year750$sink_station)
+arrivedparticles20year750$unique2 <- paste("Source:", arrivedparticles20year750$sink_station, "Sink:", arrivedparticles20year750$source_station)
+distBrayCOI_w_particles1 <- merge(dist_bray_mtx_longCOI_1000, arrivedparticles20year750, by = "unique", all = T)
+distBrayCOI_w_particles1 <- merge(distBrayCOI_w_particles1, arrivedparticles20year750, by.x = "unique", by.y = "unique2", all = T)
+
+arrivedparticles20year350$unique <- paste("Source:", arrivedparticles20year350$source_station, "Sink:", arrivedparticles20year350$sink_station)
+arrivedparticles20year350$unique2 <- paste("Source:", arrivedparticles20year350$sink_station, "Sink:", arrivedparticles20year350$source_station)
+distBrayCOI_w_particles2 <- merge(dist_bray_mtx_longCOI_500, arrivedparticles20year350, by = "unique", all = T)
+distBrayCOI_w_particles2 <- merge(distBrayCOI_w_particles2, arrivedparticles20year350, by.x = "unique", by.y = "unique2", all = T)
+
+arrivedparticles20year75$unique <- paste("Source:", arrivedparticles20year75$source_station, "Sink:", arrivedparticles20year75$sink_station)
+arrivedparticles20year75$unique2 <- paste("Source:", arrivedparticles20year75$sink_station, "Sink:", arrivedparticles20year75$source_station)
+distBrayCOI_w_particles3 <- merge(dist_bray_mtx_longCOI_200, arrivedparticles20year75, by = "unique", all = T)
+distBrayCOI_w_particles3 <- merge(distBrayCOI_w_particles3, arrivedparticles20year75, by.x = "unique", by.y = "unique2", all = T)
+
+BCD_COI_with_particles <- rbind(distBrayCOI_w_particles1, distBrayCOI_w_particles2)
+BCD_COI_with_particles <- rbind(BCD_COI_with_particles, distBrayCOI_w_particles3)
+
+BCD_COI_with_particles$potential_final <- pmax(BCD_COI_with_particles$potential2.x, BCD_COI_with_particles$potential2.y, na.rm = T) #get maximum connectivity (since it's directional)
+BCD_COI_with_particles <- BCD_COI_with_particles[!is.na(BCD_COI_with_particles$DepthA),] #remove rows without BCD (dropout samples and/or comparisons between the same location)
+
+#scale from 0-1
+BCD_COI_with_particles$potential_final <- BCD_COI_with_particles$potential_final/max(BCD_COI_with_particles$potential_final, na.rm=T)
+#if no particles made it, then the distance is maximized
+BCD_COI_with_particles$potential_final[is.na(BCD_COI_with_particles$potential_final)] <- 1
+#BCD_COI_with_particles$circulation_distance <- 1-BCD_COI_with_particles$potential_final
+#BCD_COI_with_particles$potential_final <- BCD_COI_with_particles$potential_final/max(BCD_COI_with_particles$potential_final)
+
+BCDcoi_particles_ostracods <- ggplot(BCD_COI_with_particles, aes(x = potential_final, y = value, group = DepthA, color = DepthA)) + 
+  geom_point(alpha = 0.4, size = .3) + 
+  xlab("Dispersal time (months)") + ylab("Bray-Curtis Dissimilarity") + 
+  ggtitle("COI ostracods")+ 
+  geom_smooth(method = "loess", show.legend = F, span = 1)+ 
+   stat_cor(method = "spearman", label.x.npc = "center", label.y.npc = "middle",
+            cor.coef.name = "rho", geom = "label", 
+            alternative = "two.sided", aes(label = paste(after_stat(r.label), cut(after_stat(p), 
+                                              breaks = c(-Inf, 0.001, 0.01, 0.05, Inf),
+                                              labels = c("'***'", "'**'", "'*'", "'ns'")), sep = "~','~")), show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) )
+BCDcoi_particles_ostracods
+```
+
+
+##COI cnidarians
+```{r}
+dist_bray <- phyloseq::distance(cnidaria_zoopsCOI, method = "bray")
+dist_bray_mtx <- as.matrix(dist_bray) # convert 'dist' to 'matrix'
+dist_bray_mtx_longCOI <- reshape::melt(dist_bray_mtx, as.is = TRUE)[reshape::melt(upper.tri(dist_bray_mtx), as.is = TRUE)$value,]
+
+dist_bray_mtx_longCOI$DepthA <- stringr::str_split_i((dist_bray_mtx_longCOI$X1), " ", i = 2)
+dist_bray_mtx_longCOI$StationA <- stringr::str_split_i((dist_bray_mtx_longCOI$X1), " ", i = 1)
+dist_bray_mtx_longCOI$DepthB <- stringr::str_split_i((dist_bray_mtx_longCOI$X2), " ", i = 2)
+dist_bray_mtx_longCOI$StationB <- stringr::str_split_i((dist_bray_mtx_longCOI$X2), " ", i = 1)
+dist_bray_mtx_longCOI$unique <- paste("Source:", dist_bray_mtx_longCOI$StationA, "Sink:", dist_bray_mtx_longCOI$StationB)
+
+dist_bray_mtx_longCOI$unique <- paste("Source:", dist_bray_mtx_longCOI$StationA, "Sink:", dist_bray_mtx_longCOI$StationB)
+dist_bray_mtx_longCOI_200 <- dist_bray_mtx_longCOI[dist_bray_mtx_longCOI$DepthA == "0-200m" & dist_bray_mtx_longCOI$DepthB == "0-200m",]
+dist_bray_mtx_longCOI_500 <- dist_bray_mtx_longCOI[dist_bray_mtx_longCOI$DepthA == "200-500m" & dist_bray_mtx_longCOI$DepthB == "200-500m",]
+dist_bray_mtx_longCOI_1000 <- dist_bray_mtx_longCOI[dist_bray_mtx_longCOI$DepthA == "500-1000m" & dist_bray_mtx_longCOI$DepthB == "500-1000m",]
+
+
+
+arrivedparticles20year750$unique <- paste("Source:", arrivedparticles20year750$source_station, "Sink:", arrivedparticles20year750$sink_station)
+arrivedparticles20year750$unique2 <- paste("Source:", arrivedparticles20year750$sink_station, "Sink:", arrivedparticles20year750$source_station)
+distBrayCOI_w_particles1 <- merge(dist_bray_mtx_longCOI_1000, arrivedparticles20year750, by = "unique", all = T)
+distBrayCOI_w_particles1 <- merge(distBrayCOI_w_particles1, arrivedparticles20year750, by.x = "unique", by.y = "unique2", all = T)
+
+arrivedparticles20year350$unique <- paste("Source:", arrivedparticles20year350$source_station, "Sink:", arrivedparticles20year350$sink_station)
+arrivedparticles20year350$unique2 <- paste("Source:", arrivedparticles20year350$sink_station, "Sink:", arrivedparticles20year350$source_station)
+distBrayCOI_w_particles2 <- merge(dist_bray_mtx_longCOI_500, arrivedparticles20year350, by = "unique", all = T)
+distBrayCOI_w_particles2 <- merge(distBrayCOI_w_particles2, arrivedparticles20year350, by.x = "unique", by.y = "unique2", all = T)
+
+arrivedparticles20year75$unique <- paste("Source:", arrivedparticles20year75$source_station, "Sink:", arrivedparticles20year75$sink_station)
+arrivedparticles20year75$unique2 <- paste("Source:", arrivedparticles20year75$sink_station, "Sink:", arrivedparticles20year75$source_station)
+distBrayCOI_w_particles3 <- merge(dist_bray_mtx_longCOI_200, arrivedparticles20year75, by = "unique", all = T)
+distBrayCOI_w_particles3 <- merge(distBrayCOI_w_particles3, arrivedparticles20year75, by.x = "unique", by.y = "unique2", all = T)
+
+BCD_COI_with_particles <- rbind(distBrayCOI_w_particles1, distBrayCOI_w_particles2)
+BCD_COI_with_particles <- rbind(BCD_COI_with_particles, distBrayCOI_w_particles3)
+
+BCD_COI_with_particles$potential_final <- pmax(BCD_COI_with_particles$potential2.x, BCD_COI_with_particles$potential2.y, na.rm = T) #get maximum connectivity (since it's directional)
+BCD_COI_with_particles <- BCD_COI_with_particles[!is.na(BCD_COI_with_particles$DepthA),] #remove rows without BCD (dropout samples and/or comparisons between the same location)
+
+#scale from 0-1
+BCD_COI_with_particles$potential_final <- BCD_COI_with_particles$potential_final/max(BCD_COI_with_particles$potential_final, na.rm=T)
+#if no particles made it, then the distance is maximized
+BCD_COI_with_particles$potential_final[is.na(BCD_COI_with_particles$potential_final)] <- 1
+#BCD_COI_with_particles$circulation_distance <- 1-BCD_COI_with_particles$potential_final
+#BCD_COI_with_particles$potential_final <- BCD_COI_with_particles$potential_final/max(BCD_COI_with_particles$potential_final)
+
+BCDcoi_particles_cnidarians <- ggplot(BCD_COI_with_particles, aes(x = potential_final, y = value, group = DepthA, color = DepthA)) + 
+  geom_point(alpha = 0.4, size = .3) + 
+  xlab("Dispersal time (months)") + ylab("Bray-Curtis Dissimilarity") + 
+  ggtitle("COI cnidarians")+ 
+  geom_smooth(method = "loess", show.legend = F, span = 1)+ 
+   stat_cor(method = "spearman", label.x.npc = "center", label.y.npc = "middle",
+            cor.coef.name = "rho", geom = "label", 
+            alternative = "two.sided", aes(label = paste(after_stat(r.label), cut(after_stat(p), 
+                                              breaks = c(-Inf, 0.001, 0.01, 0.05, Inf),
+                                              labels = c("'***'", "'**'", "'*'", "'ns'")), sep = "~','~")), show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) )
+BCDcoi_particles_cnidarians
+```
+
+#Circulation vs geographic distance
+
+##calculate geo distances
+```{r}
+load("~/Documents/Chapter4/BasinScale_Analysis_v2_2024/data_objects/CleanZooplanktonPhyloseqs.rdat")
+locations <- data.frame(sample_data(subset_samples(zoopsBOTH, depth_bin == "500-1000m")))
+locations <- locations[,c("Lat.N.",  "Lon.W.", "SampleID", "depth_bin", "Location.ID")]
+locations <- locations %>% dplyr::distinct(Location.ID, Lat.N., Lon.W.)
+#dist(points, method = "euclidean", upper = T, diag = T)
+distances <- data.frame(raster::pointDistance(cbind(locations$Lon.W., locations$Lat.N.), cbind(locations$Lon.W., locations$Lat.N.), lonlat=TRUE, allpairs = T))
+colnames(distances) <- locations$Location.ID
+rownames(distances) <- locations$Location.ID
+
+geographicdistances <- distances %>%
+  tibble::rownames_to_column(var = "sink_station") %>% pivot_longer(-sink_station, names_to = "source_station", values_to = "geo_distance")
+geographicdistances$geo_distance <- geographicdistances$geo_distance/1000 #convert to km
+geographicdistances$unique <- paste("Source:", geographicdistances$source_station, "Sink:", geographicdistances$sink_station)
+```
+
+
+##add geo to circ distances
+```{r}
+arrivedparticles20year750$unique <- paste("Source:", arrivedparticles20year750$source_station, "Sink:", arrivedparticles20year750$sink_station)
+arrivedparticles20year750$unique2 <- paste("Source:", arrivedparticles20year750$sink_station, "Sink:", arrivedparticles20year750$source_station)
+arrivedparticles20year750$Depth <- "500-1000m"
+distgeo_w_particles1 <- merge(geographicdistances, arrivedparticles20year750, by = "unique", all = T)
+distgeo_w_particles1 <- merge(distgeo_w_particles1, arrivedparticles20year750, by.x = "unique", by.y = "unique2", all = T)
+
+arrivedparticles20year350$unique <- paste("Source:", arrivedparticles20year350$source_station, "Sink:", arrivedparticles20year350$sink_station)
+arrivedparticles20year350$unique2 <- paste("Source:", arrivedparticles20year350$sink_station, "Sink:", arrivedparticles20year350$source_station)
+arrivedparticles20year350$Depth <- "200-500m"
+distgeo_w_particles2 <- merge(geographicdistances, arrivedparticles20year350, by = "unique", all = T)
+distgeo_w_particles2 <- merge(distgeo_w_particles2, arrivedparticles20year350, by.x = "unique", by.y = "unique2", all = T)
+
+arrivedparticles20year75$unique <- paste("Source:", arrivedparticles20year75$source_station, "Sink:", arrivedparticles20year75$sink_station)
+arrivedparticles20year75$unique2 <- paste("Source:", arrivedparticles20year75$sink_station, "Sink:", arrivedparticles20year75$source_station)
+arrivedparticles20year75$Depth <- "0-200m"
+distgeo_w_particles3 <- merge(geographicdistances, arrivedparticles20year75, by = "unique", all = T)
+distgeo_w_particles3 <- merge(distgeo_w_particles3, arrivedparticles20year75, by.x = "unique", by.y = "unique2", all = T)
+
+geo_with_particles <- rbind(distgeo_w_particles1, distgeo_w_particles2)
+geo_with_particles <- rbind(geo_with_particles, distgeo_w_particles3)
+
+geo_with_particles$potential_final <- pmax(geo_with_particles$potential2.x, geo_with_particles$potential2.y, na.rm = T) #get maximum connectivity (since it's directional)
+
+geo_with_particles <- geo_with_particles[!is.na(geo_with_particles$Depth.x),] #remove rows without BCD (dropout samples and/or comparisons between the same location)
+
+#scale from 0-1
+geo_with_particles$potential_final <- geo_with_particles$potential_final/max(geo_with_particles$potential_final, na.rm=T)
+#if no particles made it, then the distance is maximized
+geo_with_particles$potential_final[is.na(geo_with_particles$potential_final)] <- 1
+#BCD_COI_with_particles$circulation_distance <- 1-BCD_COI_with_particles$potential_final
+#BCD_COI_with_particles$potential_final <- BCD_COI_with_particles$potential_final/max(BCD_COI_with_particles$potential_final)
+```
+
+##plot distance decay
+```{r}
+geographic_particles <- ggplot(geo_with_particles, aes(x = geo_distance, y = potential_final, group = Depth.x, color = Depth.x)) + 
+  geom_point(alpha = 0.4, size = .3) + 
+  xlab("Geographic Distance (km)") + 
+  ylab("Dispersal Distance") + 
+  ggtitle("Dispersal vs. Geographic Distance") + 
+  geom_smooth(data=geo_with_particles,
+               aes(x = geo_distance, y = potential_final, group = Depth.x, color = Depth.x), method = "loess", span = 2, show.legend = F)+ 
+   stat_cor(method = "spearman", label.x.npc = .36, label.y.npc = .5,
+            cor.coef.name = "rho", geom = "label", 
+            alternative = "two.sided", aes(label = paste(after_stat(r.label), cut(after_stat(p), 
+                                              breaks = c(-Inf, 0.001, 0.01, 0.05, Inf),
+                                              labels = c("'***'", "'**'", "'*'", "'ns'")), sep = "~','~")),
+            show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) ) +
+  theme_update(plot.title = element_text(hjust = 0))
+#+
+#  facet_wrap(.~Depth.x)
+geographic_particles
+
+
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/Dispersal_Geographic_Corr_linear.pdf", height =2.5, width = 4)
+geographic_particles
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/Dispersal_Geographic_Corr_linear.jpeg", height =2.5, width = 4, unit = "in", quality = 100, res = 300)
+geographic_particles
+dev.off()
+
+```
+
+
+

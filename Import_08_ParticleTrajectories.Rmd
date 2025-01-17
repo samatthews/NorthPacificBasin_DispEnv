@@ -1,0 +1,525 @@
+---
+title: "Import_08_ParticleTrajectories"
+output: html_document
+date: "2024-11-05"
+---
+#Define radius for arrival
+```{r}
+radius <- 350
+##how far does a particle travel in 30 days? > approx ~150km = shouldn't be a problem unless it passes through the edge of the station, 
+#radius <- 250
+```
+
+##75m
+```{r load data}
+traj <- read.csv("/Users/stephaniematthews/parcels_examples/mydata_OutputChapter3_CLM_1perday_20yearlife_21yearmodel_3daystep_30daystamps_75mdepth.csv")
+traj20year75 <- traj[!is.na(traj$z),]
+
+```
+
+
+Goal: count how many particles (unique trajectories) came within 1 radius of each location (dist_1 - dist_32)
+##calculate time to arrival
+```{r}
+trajectoriestf <- traj20year75
+
+trajectoriestf[,4:35][trajectoriestf[,4:35] == 0] <- Inf
+trajectoriestf[,4:35][trajectoriestf[,4:35] >= radius] <- Inf
+trajectoriestf[,4:35][trajectoriestf[,4:35] < radius] <- 1
+
+#get particles less than twenty years old, pivot them longer, keep only the ones that are arrived at a station, group by the location they're arrived to (name) and left from (relloc), count the number of distinct trajectories that have arrived at each from each
+arrivedparticles20year <- trajectoriestf %>% filter(age < 31536000*20) %>% pivot_longer(-c(trajectory, relloc, age, obs)) %>% filter(value == 1) %>%# group_by(name, relloc) %>%
+#  mutate(count = n_distinct(trajectory)) %>%
+  group_by(name, trajectory) %>% #group by the location they've arrived to (name) and the distinct trajectory (trajectory)
+  slice(which.min(age)) %>% #get the first time that each particle arrives to each location
+ # group_by(name, relloc) %>% #group by the location they've arrived to and the location they left from
+ # top_n(n=500, age) %>%
+ # summarize(timetoarrival = nth(age, 50)) #get the age of the 50th particle to arrive
+  group_by(name, relloc) %>% #group by the location they've arrived to and the location they left from
+  summarize(timetoarrival = mean(age, na.rm=TRUE), count = n_distinct(trajectory))
+
+arrivedparticles20year$source_station <- arrivedparticles20year$relloc
+arrivedparticles20year$sink_station <- as.numeric(stringr::str_split_i((arrivedparticles20year$name), "_", i = 2))
+arrivedparticles20year$time_months <- arrivedparticles20year$timetoarrival/2.628e+6 #time to arrival
+arrivedparticles20year$percentarrived <- arrivedparticles20year$count/731*100 #percent arrival
+arrivedparticles20year$potential <- arrivedparticles20year$time_months/arrivedparticles20year$percentarrived
+arrivedparticles20year$potential2 <- (100-arrivedparticles20year$percentarrived)*arrivedparticles20year$time_months
+arrivedparticles20year75 <- arrivedparticles20year
+
+```
+
+
+##350m
+```{r load data}
+traj <- read.csv("/Users/stephaniematthews/parcels_examples/mydata_OutputChapter3_CLM_1perday_20yearlife_21yearmodel_3daystep_30daystamps_350mdepth.csv")
+traj20year350 <- traj[!is.na(traj$z),]
+```
+
+##calculate time to arrival
+```{r}
+trajectoriestf <- traj20year350
+
+trajectoriestf[,4:35][trajectoriestf[,4:35] == 0] <- Inf
+trajectoriestf[,4:35][trajectoriestf[,4:35] >= radius] <- Inf
+trajectoriestf[,4:35][trajectoriestf[,4:35] < radius] <- 1
+
+#get particles less than twenty years old, pivot them longer, keep only the ones that are arrived at a station, group by the location they're arrived to (name) and left from (relloc), count the number of distinct trajectories that have arrived at each from each
+arrivedparticles20year <- trajectoriestf %>% filter(age < 31536000*20) %>% pivot_longer(-c(trajectory, relloc, age, obs)) %>% filter(value == 1) %>%# group_by(name, relloc) %>%
+#  mutate(count = n_distinct(trajectory)) %>%
+  group_by(name, trajectory) %>% #group by the location they've arrived to (name) and the distinct trajectory (trajectory)
+  slice(which.min(age)) %>% #get the first time that each particle arrives to each location
+ # group_by(name, relloc) %>% #group by the location they've arrived to and the location they left from
+ # top_n(n=500, age) %>%
+ # summarize(timetoarrival = nth(age, 50)) #get the age of the 50th particle to arrive
+  group_by(name, relloc) %>% #group by the location they've arrived to and the location they left from
+  summarize(timetoarrival = mean(age, na.rm=TRUE), count = n_distinct(trajectory))
+
+arrivedparticles20year$source_station <- arrivedparticles20year$relloc
+arrivedparticles20year$sink_station <- as.numeric(stringr::str_split_i((arrivedparticles20year$name), "_", i = 2))
+arrivedparticles20year$time_months <- arrivedparticles20year$timetoarrival/2.628e+6 #time to arrival
+arrivedparticles20year$percentarrived <- arrivedparticles20year$count/731*100 #percent arrival
+arrivedparticles20year$potential <- arrivedparticles20year$time_months/arrivedparticles20year$percentarrived
+arrivedparticles20year$potential2 <- (100-arrivedparticles20year$percentarrived)*arrivedparticles20year$time_months
+arrivedparticles20year350 <- arrivedparticles20year
+
+```
+
+
+
+##750m
+```{r load data}
+traj <- read.csv("/Users/stephaniematthews/parcels_examples/mydata_OutputChapter3_CLM_1perday_20yearlife_21yearmodel_3daystep_30daystamps_750mdepth.csv")
+traj20year750 <- traj[!is.na(traj$z),]
+```
+
+
+##calculate time to arrival
+```{r}
+trajectoriestf <- traj20year750
+
+trajectoriestf[,4:35][trajectoriestf[,4:35] == 0] <- Inf
+trajectoriestf[,4:35][trajectoriestf[,4:35] >= radius] <- Inf
+trajectoriestf[,4:35][trajectoriestf[,4:35] < radius] <- 1
+
+#get particles less than twenty years old, pivot them longer, keep only the ones that are arrived at a station, group by the location they're arrived to (name) and left from (relloc), count the number of distinct trajectories that have arrived at each from each
+arrivedparticles20year <- trajectoriestf %>% filter(age < 31536000*20) %>% pivot_longer(-c(trajectory, relloc, age, obs)) %>% filter(value == 1) %>%# group_by(name, relloc) %>%
+#  mutate(count = n_distinct(trajectory)) %>%
+  group_by(name, trajectory) %>% #group by the location they've arrived to (name) and the distinct trajectory (trajectory)
+  slice(which.min(age)) %>% #get the first time that each particle arrives to each location
+ # group_by(name, relloc) %>% #group by the location they've arrived to and the location they left from
+ # top_n(n=500, age) %>%
+ # summarize(timetoarrival = nth(age, 50)) #get the age of the 50th particle to arrive
+  group_by(name, relloc) %>% #group by the location they've arrived to and the location they left from
+  summarize(timetoarrival = mean(age, na.rm=TRUE), count = n_distinct(trajectory))
+
+arrivedparticles20year$source_station <- arrivedparticles20year$relloc
+arrivedparticles20year$sink_station <- as.numeric(stringr::str_split_i((arrivedparticles20year$name), "_", i = 2))
+arrivedparticles20year$time_months <- arrivedparticles20year$timetoarrival/2.628e+6 #time to arrival
+arrivedparticles20year$percentarrived <- arrivedparticles20year$count/731*100 #percent arrival
+arrivedparticles20year$potential <- arrivedparticles20year$time_months/arrivedparticles20year$percentarrived
+arrivedparticles20year$potential2 <- (100-arrivedparticles20year$percentarrived)*arrivedparticles20year$time_months
+arrivedparticles20year750 <- arrivedparticles20year
+
+```
+
+
+
+##save
+```{r}
+save(arrivedparticles20year75, arrivedparticles20year350, arrivedparticles20year750, file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/data_objects/20yearsTimedivArrival_350mradius.Rdat")
+```
+
+
+
+#plot full trajectories on a map
+
+```{r}
+library(mapdata)
+mp1 <- fortify(map(fill=TRUE, plot=FALSE))
+mp2 <- mp1
+mp2$long <- mp2$long + 360
+mp2$group <- mp2$group + max(mp2$group) + 1
+mp <- rbind(mp1, mp2)
+
+
+traj20year750$agemonths <- traj20year750$age/2.628e+6
+traj20year350$agemonths <- traj20year350$age/2.628e+6
+traj20year75$agemonths <- traj20year75$age/2.628e+6
+
+
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/trajectories_20yearlife_750mdepth.jpeg", height =12, width = 20, unit = "in", quality = 100, res = 300)
+ggplot(aes(x = long, y = lat, group = group), data = mp) +
+  geom_path(size = 0.15)  +
+  scale_x_continuous(limits = c(105, 290)) +
+  scale_y_continuous(limits = c(-10, 70)) +
+  theme_bw() +
+  xlab('Longitude') +
+  ylab('Latitude') +
+  geom_point(data = traj20year750[traj20year750$relloc %in% c(1:14,15:22,23:26,31:32),], aes(x = lon, y = lat, color = agemonths), inherit.aes = F, size = 0.05) +
+  facet_wrap(.~relloc) +
+  ggtitle("20 year circulation of particles released every 12 hours for 1 year, 750m depth") +
+  scale_color_viridis(option = "turbo")
+dev.off()
+
+
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/trajectories_20yearlife_350mdepth.jpeg", height =12, width = 20, unit = "in", quality = 100, res = 300)
+ggplot(aes(x = long, y = lat, group = group), data = mp) +
+  geom_path(size = 0.15)  +
+  scale_x_continuous(limits = c(105, 290)) +
+  scale_y_continuous(limits = c(-10, 70)) +
+  theme_bw() +
+  xlab('Longitude') +
+  ylab('Latitude') +
+  geom_point(data = traj20year350[traj20year350$relloc %in% c(1:14,15:22,23:26,31:32),], aes(x = lon, y = lat, color = agemonths), inherit.aes = F, size = 0.05) +
+  facet_wrap(.~relloc) +
+  ggtitle("20 year circulation of particles released every 12 hours for 1 year, 350m depth") +
+  scale_color_viridis(option = "turbo")
+dev.off()
+
+
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/trajectories_20yearlife_75mdepth.jpeg", height =12, width = 20, unit = "in", quality = 100, res = 300)
+ggplot(aes(x = long, y = lat, group = group), data = mp) +
+  geom_path(size = 0.15)  +
+  scale_x_continuous(limits = c(105, 290)) +
+  scale_y_continuous(limits = c(-10, 70)) +
+  theme_bw() +
+  xlab('Longitude') +
+  ylab('Latitude') +
+  geom_point(data = traj20year75[traj20year75$relloc %in% c(1:14,15:22,23:26,31:32),], aes(x = lon, y = lat, color = agemonths), inherit.aes = F, size = 0.05) +
+  facet_wrap(.~relloc) +
+  ggtitle("20 year circulation of particles released every 12 hours for 1 year, 75m depth") +
+  scale_color_viridis(option = "turbo")
+dev.off()
+
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/trajectories_10yearlife_750mdepth.jpeg", height =12, width = 20, unit = "in", quality = 100, res = 300)
+ggplot(aes(x = long, y = lat, group = group), data = mp) +
+  geom_path(size = 0.15)  +
+  scale_x_continuous(limits = c(105, 290)) +
+  scale_y_continuous(limits = c(-10, 70)) +
+  theme_bw() +
+  xlab('Longitude') +
+  ylab('Latitude') +
+  geom_point(data = traj20year750[traj20year750$relloc %in% c(1:14,15:22,23:26,31:32) & traj20year750$agemonths < 120,], aes(x = lon, y = lat, color = agemonths), inherit.aes = F, size = 0.05) +
+  facet_wrap(.~relloc) +
+  ggtitle("10 year circulation of particles released every 12 hours for 1 year, 750m depth") +
+  scale_color_viridis(option = "turbo")
+dev.off()
+
+
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/trajectories_10yearlife_350mdepth.jpeg", height =12, width = 20, unit = "in", quality = 100, res = 300)
+ggplot(aes(x = long, y = lat, group = group), data = mp) +
+  geom_path(size = 0.15)  +
+  scale_x_continuous(limits = c(105, 290)) +
+  scale_y_continuous(limits = c(-10, 70)) +
+  theme_bw() +
+  xlab('Longitude') +
+  ylab('Latitude') +
+  geom_point(data = traj20year350[traj20year350$relloc %in% c(1:14,15:22,23:26,31:32) & traj20year350$agemonths < 120,], aes(x = lon, y = lat, color = agemonths), inherit.aes = F, size = 0.05) +
+  facet_wrap(.~relloc) +
+  ggtitle("10 year circulation of particles released every 12 hours for 1 year, 350m depth") +
+  scale_color_viridis(option = "turbo")
+dev.off()
+
+
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/trajectories_10yearlife_75mdepth.jpeg", height =12, width = 20, unit = "in", quality = 100, res = 300)
+ggplot(aes(x = long, y = lat, group = group), data = mp) +
+  geom_path(size = 0.15)  +
+  scale_x_continuous(limits = c(105, 290)) +
+  scale_y_continuous(limits = c(-10, 70)) +
+  theme_bw() +
+  xlab('Longitude') +
+  ylab('Latitude') +
+  geom_point(data = traj20year75[traj20year75$relloc %in% c(1:14,15:22,23:26,31:32) & traj20year75$agemonths < 120,], aes(x = lon, y = lat, color = agemonths), inherit.aes = F, size = 0.05) +
+  facet_wrap(.~relloc) +
+  ggtitle("10 year circulation of particles released every 12 hours for 1 year, 75m depth") +
+  scale_color_viridis(option = "turbo")
+dev.off()
+
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/trajectories_5yearlife_750mdepth.jpeg", height =12, width = 20, unit = "in", quality = 100, res = 300)
+ggplot(aes(x = long, y = lat, group = group), data = mp) +
+  geom_path(size = 0.15)  +
+  scale_x_continuous(limits = c(105, 290)) +
+  scale_y_continuous(limits = c(-10, 70)) +
+  theme_bw() +
+  xlab('Longitude') +
+  ylab('Latitude') +
+  geom_point(data = traj20year750[traj20year750$relloc %in% c(1:14,15:22,23:26,31:32) & traj20year750$agemonths < 60,], aes(x = lon, y = lat, color = agemonths), inherit.aes = F, size = 0.05) +
+  facet_wrap(.~relloc) +
+  ggtitle("5 year circulation of particles released every 12 hours for 1 year, 750m depth") +
+  scale_color_viridis(option = "turbo")
+dev.off()
+
+
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/trajectories_5yearlife_350mdepth.jpeg", height =12, width = 20, unit = "in", quality = 100, res = 300)
+ggplot(aes(x = long, y = lat, group = group), data = mp) +
+  geom_path(size = 0.15)  +
+  scale_x_continuous(limits = c(105, 290)) +
+  scale_y_continuous(limits = c(-10, 70)) +
+  theme_bw() +
+  xlab('Longitude') +
+  ylab('Latitude') +
+  geom_point(data = traj20year350[traj20year350$relloc %in% c(1:14,15:22,23:26,31:32) & traj20year350$agemonths < 60,], aes(x = lon, y = lat, color = agemonths), inherit.aes = F, size = 0.05) +
+  facet_wrap(.~relloc) +
+  ggtitle("5 year circulation of particles released every 12 hours for 1 year, 350m depth") +
+  scale_color_viridis(option = "turbo")
+dev.off()
+
+
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/trajectories_5yearlife_75mdepth.jpeg", height =12, width = 20, unit = "in", quality = 100, res = 300)
+ggplot(aes(x = long, y = lat, group = group), data = mp) +
+  geom_path(size = 0.15)  +
+  scale_x_continuous(limits = c(105, 290)) +
+  scale_y_continuous(limits = c(-10, 70)) +
+  theme_bw() +
+  xlab('Longitude') +
+  ylab('Latitude') +
+  geom_point(data = traj20year75[traj20year75$relloc %in% c(1:14,15:22,23:26,31:32) & traj20year75$agemonths < 60,], aes(x = lon, y = lat, color = agemonths), inherit.aes = F, size = 0.05) +
+  facet_wrap(.~relloc) +
+  ggtitle("5 year circulation of particles released every 12 hours for 1 year, 75m depth") +
+  scale_color_viridis(option = "turbo")
+dev.off()
+
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/trajectories_2yearlife_750mdepth.jpeg", height =12, width = 20, unit = "in", quality = 100, res = 300)
+ggplot(aes(x = long, y = lat, group = group), data = mp) +
+  geom_path(size = 0.15)  +
+  scale_x_continuous(limits = c(105, 290)) +
+  scale_y_continuous(limits = c(-10, 70)) +
+  theme_bw() +
+  xlab('Longitude') +
+  ylab('Latitude') +
+  geom_point(data = traj20year750[traj20year750$relloc %in% c(1:14,15:22,23:26,31:32) & traj20year750$agemonths < 24,], aes(x = lon, y = lat, color = agemonths), inherit.aes = F, size = 0.05) +
+  facet_wrap(.~relloc) +
+  ggtitle("2 year circulation of particles released every 12 hours for 1 year, 750m depth") +
+  scale_color_viridis(option = "turbo")
+dev.off()
+
+
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/trajectories_2yearlife_350mdepth.jpeg", height =12, width = 20, unit = "in", quality = 100, res = 300)
+ggplot(aes(x = long, y = lat, group = group), data = mp) +
+  geom_path(size = 0.15)  +
+  scale_x_continuous(limits = c(105, 290)) +
+  scale_y_continuous(limits = c(-10, 70)) +
+  theme_bw() +
+  xlab('Longitude') +
+  ylab('Latitude') +
+  geom_point(data = traj20year350[traj20year350$relloc %in% c(1:14,15:22,23:26,31:32) & traj20year350$agemonths < 24,], aes(x = lon, y = lat, color = agemonths), inherit.aes = F, size = 0.05) +
+  facet_wrap(.~relloc) +
+  ggtitle("2 year circulation of particles released every 12 hours for 1 year, 350m depth") +
+  scale_color_viridis(option = "turbo")
+dev.off()
+
+
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/trajectories_2yearlife_75mdepth.jpeg", height =12, width = 20, unit = "in", quality = 100, res = 300)
+ggplot(aes(x = long, y = lat, group = group), data = mp) +
+  geom_path(size = 0.15)  +
+  scale_x_continuous(limits = c(105, 290)) +
+  scale_y_continuous(limits = c(-10, 70)) +
+  theme_bw() +
+  xlab('Longitude') +
+  ylab('Latitude') +
+  geom_point(data = traj20year75[traj20year75$relloc %in% c(1:14,15:22,23:26,31:32) & traj20year75$agemonths < 24,], aes(x = lon, y = lat, color = agemonths), inherit.aes = F, size = 0.05) +
+  facet_wrap(.~relloc) +
+  ggtitle("2 year circulation of particles released every 12 hours for 1 year, 75m depth") +
+  scale_color_viridis(option = "turbo")
+dev.off()
+```
+
+#calculate arrival by REGIONS
+##epi
+```{r}
+trajectoriestf <- traj20year75
+trajectoriestf[,4:35][trajectoriestf[,4:35] == 0] <- Inf
+trajectoriestf[,4:35][trajectoriestf[,4:35] >= radius] <- Inf
+trajectoriestf[,4:35][trajectoriestf[,4:35] < radius] <- 1
+
+arrivedparticles20year <- trajectoriestf %>% filter(age < 31536000*20) %>% pivot_longer(-c(trajectory, relloc)) %>% filter(value == 1) 
+arrivedparticles20year$sinkloc <- as.numeric(stringr::str_split_i((arrivedparticles20year$name), "_", i = 2))
+
+arrivedparticles20year$sourceregion <- NA
+arrivedparticles20year$sourceregion[arrivedparticles20year$relloc %in% c(1, 10, 13, 2, 24, 3, 4, 5, 6, 9)] <- "NPSG"
+arrivedparticles20year$sourceregion[arrivedparticles20year$relloc %in% c(11, 12, 16, 17, 18, 19)] <- "WWD"
+arrivedparticles20year$sourceregion[arrivedparticles20year$relloc %in% c(14, 15, 21, 22)] <- "KUR"
+arrivedparticles20year$sourceregion[arrivedparticles20year$relloc %in% c(20, 31, 7, 8)] <- "ENP"
+arrivedparticles20year$sourceregion[arrivedparticles20year$relloc %in% c(23, 32)] <- "SP"
+arrivedparticles20year$sourceregion[arrivedparticles20year$relloc %in% c(25, 26, 27, 28, 29, 30)] <- "CCE"
+
+arrivedparticles20year$sinkregion <- NA
+arrivedparticles20year$sinkregion[arrivedparticles20year$sinkloc %in% c(1, 10, 13, 2, 24, 3, 4, 5, 6, 9)] <- "NPSG"
+arrivedparticles20year$sinkregion[arrivedparticles20year$sinkloc %in% c(11, 12, 16, 17, 18, 19)] <- "WWD"
+arrivedparticles20year$sinkregion[arrivedparticles20year$sinkloc %in% c(14, 15, 21, 22)] <- "KUR"
+arrivedparticles20year$sinkregion[arrivedparticles20year$sinkloc %in% c(20, 31, 7, 8)] <- "ENP"
+arrivedparticles20year$sinkregion[arrivedparticles20year$sinkloc %in% c(23, 32)] <- "SP"
+arrivedparticles20year$sinkregion[arrivedparticles20year$sinkloc %in% c(25, 26, 27, 28, 29, 30)] <- "CCE"
+
+arrivedregions20year_75 <- arrivedparticles20year %>% group_by(sinkregion, sourceregion) %>%
+  summarise(count = n_distinct(trajectory))
+arrivedregions20year_75 <- arrivedregions20year_75[!is.na(arrivedregions20year_75$sinkregion),]
+arrivedregions20year_75$releasedparticles <- NA
+arrivedregions20year_75$releasedparticles[arrivedregions20year_75$sourceregion == "NPSG"] <- max(arrivedregions20year_75$count[arrivedregions20year_75$sourceregion == "NPSG"])
+arrivedregions20year_75$releasedparticles[arrivedregions20year_75$sourceregion == "WWD"] <- max(arrivedregions20year_75$count[arrivedregions20year_75$sourceregion == "WWD"])
+arrivedregions20year_75$releasedparticles[arrivedregions20year_75$sourceregion == "KUR"] <- max(arrivedregions20year_75$count[arrivedregions20year_75$sourceregion == "KUR"])
+arrivedregions20year_75$releasedparticles[arrivedregions20year_75$sourceregion == "ENP"] <- max(arrivedregions20year_75$count[arrivedregions20year_75$sourceregion == "ENP"])
+arrivedregions20year_75$releasedparticles[arrivedregions20year_75$sourceregion == "SP"] <- max(arrivedregions20year_75$count[arrivedregions20year_75$sourceregion == "SP"])
+arrivedregions20year_75$releasedparticles[arrivedregions20year_75$sourceregion == "CCE"] <- max(arrivedregions20year_75$count[arrivedregions20year_75$sourceregion == "CCE"])
+
+arrivedregions20year_75$potential <- arrivedregions20year_75$count/arrivedregions20year_75$releasedparticles
+head(arrivedregions20year_75)
+
+```
+
+##upper meso
+```{r}
+trajectoriestf <- traj20year350
+trajectoriestf[,4:35][trajectoriestf[,4:35] == 0] <- Inf
+trajectoriestf[,4:35][trajectoriestf[,4:35] >= radius] <- Inf
+trajectoriestf[,4:35][trajectoriestf[,4:35] < radius] <- 1
+
+arrivedparticles20year <- trajectoriestf %>% filter(age < 31536000*20) %>% pivot_longer(-c(trajectory, relloc)) %>% filter(value == 1) 
+arrivedparticles20year$sinkloc <- as.numeric(stringr::str_split_i((arrivedparticles20year$name), "_", i = 2))
+
+arrivedparticles20year$sourceregion <- NA
+arrivedparticles20year$sourceregion[arrivedparticles20year$relloc %in% c(1, 10, 13, 2, 24, 3, 4, 5, 6, 9)] <- "NPSG"
+arrivedparticles20year$sourceregion[arrivedparticles20year$relloc %in% c(11, 12, 16, 17, 18, 19)] <- "WWD"
+arrivedparticles20year$sourceregion[arrivedparticles20year$relloc %in% c(14, 15, 21, 22)] <- "KUR"
+arrivedparticles20year$sourceregion[arrivedparticles20year$relloc %in% c(20, 31, 7, 8)] <- "ENP"
+arrivedparticles20year$sourceregion[arrivedparticles20year$relloc %in% c(23, 32)] <- "SP"
+arrivedparticles20year$sourceregion[arrivedparticles20year$relloc %in% c(25, 26, 27, 28, 29, 30)] <- "CCE"
+
+arrivedparticles20year$sinkregion <- NA
+arrivedparticles20year$sinkregion[arrivedparticles20year$sinkloc %in% c(1, 10, 13, 2, 24, 3, 4, 5, 6, 9)] <- "NPSG"
+arrivedparticles20year$sinkregion[arrivedparticles20year$sinkloc %in% c(11, 12, 16, 17, 18, 19)] <- "WWD"
+arrivedparticles20year$sinkregion[arrivedparticles20year$sinkloc %in% c(14, 15, 21, 22)] <- "KUR"
+arrivedparticles20year$sinkregion[arrivedparticles20year$sinkloc %in% c(20, 31, 7, 8)] <- "ENP"
+arrivedparticles20year$sinkregion[arrivedparticles20year$sinkloc %in% c(23, 32)] <- "SP"
+arrivedparticles20year$sinkregion[arrivedparticles20year$sinkloc %in% c(25, 26, 27, 28, 29, 30)] <- "CCE"
+
+arrivedregions20year_350 <- arrivedparticles20year %>% group_by(sinkregion, sourceregion) %>%
+  summarise(count = n_distinct(trajectory))
+arrivedregions20year_350 <- arrivedregions20year_350[!is.na(arrivedregions20year_350$sinkregion),]
+arrivedregions20year_350$releasedparticles <- NA
+arrivedregions20year_350$releasedparticles[arrivedregions20year_350$sourceregion == "NPSG"] <- max(arrivedregions20year_350$count[arrivedregions20year_350$sourceregion == "NPSG"])
+arrivedregions20year_350$releasedparticles[arrivedregions20year_350$sourceregion == "WWD"] <- max(arrivedregions20year_350$count[arrivedregions20year_350$sourceregion == "WWD"])
+arrivedregions20year_350$releasedparticles[arrivedregions20year_350$sourceregion == "KUR"] <- max(arrivedregions20year_350$count[arrivedregions20year_350$sourceregion == "KUR"])
+arrivedregions20year_350$releasedparticles[arrivedregions20year_350$sourceregion == "ENP"] <- max(arrivedregions20year_350$count[arrivedregions20year_350$sourceregion == "ENP"])
+arrivedregions20year_350$releasedparticles[arrivedregions20year_350$sourceregion == "SP"] <- max(arrivedregions20year_350$count[arrivedregions20year_350$sourceregion == "SP"])
+arrivedregions20year_350$releasedparticles[arrivedregions20year_350$sourceregion == "CCE"] <- max(arrivedregions20year_350$count[arrivedregions20year_350$sourceregion == "CCE"])
+
+arrivedregions20year_350$potential <- arrivedregions20year_350$count/arrivedregions20year_350$releasedparticles
+head(arrivedregions20year_350)
+
+```
+
+##low meso
+```{r}
+trajectoriestf <- traj20year750
+trajectoriestf[,4:35][trajectoriestf[,4:35] == 0] <- Inf
+trajectoriestf[,4:35][trajectoriestf[,4:35] >= radius] <- Inf
+trajectoriestf[,4:35][trajectoriestf[,4:35] < radius] <- 1
+
+arrivedparticles20year <- trajectoriestf %>% filter(age < 31536000*20) %>% pivot_longer(-c(trajectory, relloc)) %>% filter(value == 1) 
+arrivedparticles20year$sinkloc <- as.numeric(stringr::str_split_i((arrivedparticles20year$name), "_", i = 2))
+
+arrivedparticles20year$sourceregion <- NA
+arrivedparticles20year$sourceregion[arrivedparticles20year$relloc %in% c(1, 10, 13, 2, 24, 3, 4, 5, 6, 9)] <- "NPSG"
+arrivedparticles20year$sourceregion[arrivedparticles20year$relloc %in% c(11, 12, 16, 17, 18, 19)] <- "WWD"
+arrivedparticles20year$sourceregion[arrivedparticles20year$relloc %in% c(14, 15, 21, 22)] <- "KUR"
+arrivedparticles20year$sourceregion[arrivedparticles20year$relloc %in% c(20, 31, 7, 8)] <- "ENP"
+arrivedparticles20year$sourceregion[arrivedparticles20year$relloc %in% c(23, 32)] <- "SP"
+arrivedparticles20year$sourceregion[arrivedparticles20year$relloc %in% c(25, 26, 27, 28, 29, 30)] <- "CCE"
+
+arrivedparticles20year$sinkregion <- NA
+arrivedparticles20year$sinkregion[arrivedparticles20year$sinkloc %in% c(1, 10, 13, 2, 24, 3, 4, 5, 6, 9)] <- "NPSG"
+arrivedparticles20year$sinkregion[arrivedparticles20year$sinkloc %in% c(11, 12, 16, 17, 18, 19)] <- "WWD"
+arrivedparticles20year$sinkregion[arrivedparticles20year$sinkloc %in% c(14, 15, 21, 22)] <- "KUR"
+arrivedparticles20year$sinkregion[arrivedparticles20year$sinkloc %in% c(20, 31, 7, 8)] <- "ENP"
+arrivedparticles20year$sinkregion[arrivedparticles20year$sinkloc %in% c(23, 32)] <- "SP"
+arrivedparticles20year$sinkregion[arrivedparticles20year$sinkloc %in% c(25, 26, 27, 28, 29, 30)] <- "CCE"
+
+arrivedregions20year_750 <- arrivedparticles20year %>% group_by(sinkregion, sourceregion) %>%
+  summarise(count = n_distinct(trajectory))
+
+arrivedregions20year_750 <- arrivedregions20year_750[!is.na(arrivedregions20year_750$sinkregion),]
+arrivedregions20year_750$releasedparticles <- NA
+arrivedregions20year_750$releasedparticles[arrivedregions20year_750$sourceregion == "NPSG"] <- max(arrivedregions20year_750$count[arrivedregions20year_750$sourceregion == "NPSG"])
+arrivedregions20year_750$releasedparticles[arrivedregions20year_750$sourceregion == "WWD"] <- max(arrivedregions20year_750$count[arrivedregions20year_750$sourceregion == "WWD"])
+arrivedregions20year_750$releasedparticles[arrivedregions20year_750$sourceregion == "KUR"] <- max(arrivedregions20year_750$count[arrivedregions20year_750$sourceregion == "KUR"])
+arrivedregions20year_750$releasedparticles[arrivedregions20year_750$sourceregion == "ENP"] <- max(arrivedregions20year_750$count[arrivedregions20year_750$sourceregion == "ENP"])
+arrivedregions20year_750$releasedparticles[arrivedregions20year_750$sourceregion == "SP"] <- max(arrivedregions20year_750$count[arrivedregions20year_750$sourceregion == "SP"])
+arrivedregions20year_750$releasedparticles[arrivedregions20year_750$sourceregion == "CCE"] <- max(arrivedregions20year_750$count[arrivedregions20year_750$sourceregion == "CCE"])
+
+arrivedregions20year_750$potential <- arrivedregions20year_750$count/arrivedregions20year_750$releasedparticles
+head(arrivedregions20year_750)
+```
+
+##save
+```{r}
+save(arrivedregions20year_750, arrivedregions20year_350, arrivedregions20year_75, file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/data_objects/regions_arrivedparticles.rdat")
+
+```
+
+#make figure with subset of trajectories
+##
+```{r}
+library(mapdata)
+mp1 <- fortify(map(fill=TRUE, plot=FALSE))
+mp2 <- mp1
+mp2$long <- mp2$long + 360
+mp2$group <- mp2$group + max(mp2$group) + 1
+mp <- rbind(mp1, mp2)
+
+province_points <- readxl::read_excel("~/Documents/Chapter4/Organization_Pacific_Basin_Comprehensive_v2.xlsx", sheet = "Table_ForPub")
+
+
+traj20year750$agemonths <- traj20year750$age/2.628e+6
+traj20year350$agemonths <- traj20year350$age/2.628e+6
+traj20year75$agemonths <- traj20year75$age/2.628e+6
+
+traj20year750$ageyears <- traj20year750$agemonths/12
+traj20year350$ageyears <- traj20year350$agemonths/12
+traj20year75$ageyears <- traj20year75$agemonths/12
+
+
+traj20year750$depth <- "500-1000m"
+traj20year350$depth <- "200-500m"
+traj20year75$depth <- "0-200m"
+
+traj3depths <- rbind(traj20year750, traj20year350)
+traj3depths <- rbind(traj3depths, traj20year75)
+
+traj3depths_subset <- traj3depths[traj3depths$relloc %in% c(12, 18, 19),]
+
+
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/trajectories_9panel.jpeg", height =12, width = 20, unit = "in", quality = 100, res = 300)
+ggplot(aes(x = long, y = lat, group = group), data = mp) +
+  geom_path(size = 0.15)  +
+  scale_x_continuous(limits = c(105, 290)) +
+  scale_y_continuous(limits = c(-10, 70)) +
+  theme_bw() +
+  xlab('Longitude (E)') +
+  ylab('Latitude (N)') +
+  geom_point(data = traj3depths_subset, aes(x = lon, y = lat, color = ageyears), inherit.aes = F, size = 0.05) +
+  geom_point(data = province_points, aes(x=`Lon. (E)`, y=`Lat. (N)`), size = 2, inherit.aes = F) + 
+  facet_grid(depth~relloc) +
+  scale_color_viridis(option = "turbo", name = "Age (years)")
+dev.off()
+
+# jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/trajectories_20yearlife_750mdepth.jpeg", height =12, width = 20, unit = "in", quality = 100, res = 300)
+# ggplot(aes(x = long, y = lat, group = group), data = mp) +
+#   geom_path(size = 0.15)  +
+#   scale_x_continuous(limits = c(105, 290)) +
+#   scale_y_continuous(limits = c(-10, 70)) +
+#   theme_bw() +
+#   xlab('Longitude') +
+#   ylab('Latitude') +
+#   geom_point(data = traj20year750[traj20year750$relloc %in% c(1:14,15:22,23:26,31:32),], aes(x = lon, y = lat, color = agemonths), inherit.aes = F, size = 0.05) +
+#   facet_wrap(.~relloc) +
+#   ggtitle("20 year circulation of particles released every 12 hours for 1 year, 750m depth") +
+#   scale_color_viridis(option = "turbo")
+# dev.off()
+```
+
+
+```{r}
+```
+
+

@@ -1,0 +1,241 @@
+---
+title: "Import_01_SummarizeSatelliteData"
+output: html_document
+date: "2024-10-31"
+---
+
+1) load data for each location
+pull out values of interest: 
+2) mean yearly total 
+3) mean of yearly maximums
+4) mean of yearly minimums
+5) mean of yearly means
+6) mean amplitude (delta between min and max)
+
+- do this for ef (epi food) and export flux (meso food), as well as SST
+
+```{r load libraries}
+library(magrittr)
+library(tidyr)
+
+
+
+```
+
+
+1) load data for each location
+
+```{r import CHL data}
+CHL1.14 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/NewPoints_March2023/CHL_1-14_sorted.csv")
+CHL1 <- CHL1.14[CHL1.14$Mask == 1,]
+CHL2 <- CHL1.14[CHL1.14$Mask == 2,]
+CHL3 <- CHL1.14[CHL1.14$Mask == 3,]
+CHL4 <- CHL1.14[CHL1.14$Mask == 4,]
+CHL5 <- CHL1.14[CHL1.14$Mask == 5,]
+CHL6 <- CHL1.14[CHL1.14$Mask == 6,]
+CHL7 <- CHL1.14[CHL1.14$Mask == 7,]
+CHL8 <- CHL1.14[CHL1.14$Mask == 8,]
+CHL9 <- CHL1.14[CHL1.14$Mask == 9,]
+CHL10 <-CHL1.14[CHL1.14$Mask == 10,]
+CHL11 <-CHL1.14[CHL1.14$Mask == 11,]
+CHL12 <-CHL1.14[CHL1.14$Mask == 12,]
+CHL13 <-CHL1.14[CHL1.14$Mask == 13,]
+CHL14 <-CHL1.14[CHL1.14$Mask == 14,]
+CHL15 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/NewPoints_March2023/CHL_15.csv")
+CHL16 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/CHL_csv/E_statist_grid_map4k_circles200km_filled_05_0.csv")
+CHL17 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/CHL_csv/E_statist_grid_map4k_circles200km_filled_06_0.csv")
+CHL18 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/CHL_csv/E_statist_grid_map4k_circles200km_filled_15_0.csv")
+CHL19 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/CHL_csv/E_statist_grid_map4k_circles200km_filled_13_0.csv")
+CHL20 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/CHL_csv/E_statist_grid_map4k_circles200km_filled_03_0.csv")
+CHL21 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/CHL_csv/E_statist_grid_map4k_circles200km_filled_09_0.csv")
+CHL22 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/CHL_csv/E_statist_grid_map4k_circles200km_filled_07_0.csv")
+CHL23 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/CHL_csv/E_statist_grid_map4k_circles200km_filled_14_0.csv")
+CHL23 <- CHL23[CHL23$Mean != -99,]
+CHL24 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/CHL_csv/E_statist_grid_map4k_circles200km_filled_38_0.csv")
+CHL25 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/CHL_csv/E_statist_grid_map4k_circles200km_filled_36_0.csv")
+CHL26 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/CHL_csv/E_statist_grid_map4k_circles200km_filled_34_0.csv")
+CHL27 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/CHL_csv/E_statist_grid_map4k_circles200km_filled_24_0.csv")
+CHL28 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/CHL_csv/E_statist_grid_map4k_circles200km_filled_22_0.csv")
+CHL29 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/CHL_csv/E_statist_grid_map4k_circles200km_filled_20_0.csv")
+CHL30 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/CHL_csv/E_statist_grid_map4k_circles200km_filled_18_0.csv")
+CHL31 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/CHL_csv/E_statist_grid_map4k_circles200km_filled_47_0.csv")
+CHL32 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/CHL_csv/E_statist_grid_map4k_circles200km_filled_39_0.csv")
+CHL32 <- CHL32[CHL32$Mean != -99,]
+
+```
+
+
+```{r import ef data}
+ef1.14 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/NewPoints_March2023/efYork_1-14_sorted.csv")
+ef1 <- ef1.14[ef1.14$Mask == 1,]
+ef2 <- ef1.14[ef1.14$Mask == 2,]
+ef3 <- ef1.14[ef1.14$Mask == 3,]
+ef4 <- ef1.14[ef1.14$Mask == 4,]
+ef5 <- ef1.14[ef1.14$Mask == 5,]
+ef6 <- ef1.14[ef1.14$Mask == 6,]
+ef7 <- ef1.14[ef1.14$Mask == 7,]
+ef8 <- ef1.14[ef1.14$Mask == 8,]
+ef9 <- ef1.14[ef1.14$Mask == 9,]
+ef10 <-ef1.14[ef1.14$Mask == 10,]
+ef11 <-ef1.14[ef1.14$Mask == 11,]
+ef12 <-ef1.14[ef1.14$Mask == 12,]
+ef13 <-ef1.14[ef1.14$Mask == 13,]
+ef14 <-ef1.14[ef1.14$Mask == 14,]
+ef15 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/NewPoints_March2023/efYork_15.csv")
+
+ef16 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/ef/csv/M_statist_grid_map4k_circles200km_filled_5_0.csv")
+ef17 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/ef/csv/M_statist_grid_map4k_circles200km_filled_6_0.csv")
+ef18 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/ef/csv/M_statist_grid_map4k_circles200km_filled_15_0.csv")
+ef19 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/ef/csv/M_statist_grid_map4k_circles200km_filled_13_0.csv")
+ef20 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/ef/csv/M_statist_grid_map4k_circles200km_filled_3_0.csv")
+ef21 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/ef/csv/M_statist_grid_map4k_circles200km_filled_10_0.csv")
+ef22 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/ef/csv/M_statist_grid_map4k_circles200km_filled_7_0.csv")
+ef23 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/ef/csv/M_statist_grid_map4k_circles200km_filled_14_0.csv")
+ef23 <- ef23[ef23$Mean != -99,]
+ef24 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/ef/csv/M_statist_grid_map4k_circles200km_filled_38_0.csv")
+ef25 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/ef/csv/M_statist_grid_map4k_circles200km_filled_36_0.csv")
+ef26 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/ef/csv/M_statist_grid_map4k_circles200km_filled_34_0.csv")
+ef27 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/ef/csv/M_statist_grid_map4k_circles200km_filled_24_0.csv")
+ef28 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/ef/csv/M_statist_grid_map4k_circles200km_filled_22_0.csv")
+ef29 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/ef/csv/M_statist_grid_map4k_circles200km_filled_20_0.csv")
+ef30 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/ef/csv/M_statist_grid_map4k_circles200km_filled_18_0.csv")
+ef31 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/ef/csv/M_statist_grid_map4k_circles200km_filled_47_0.csv")
+ef32 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/ef/csv/M_statist_grid_map4k_circles200km_filled_39_0.csv")
+ef32 <- ef32[ef32$Mean != -99,]
+
+```
+
+
+```{r import NPP data}
+NPP1.14 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/NewPoints_March2023/NPP_1-14_sorted.csv")
+NPP1 <- NPP1.14[NPP1.14$Mask == 1,]
+NPP2 <- NPP1.14[NPP1.14$Mask == 2,]
+NPP3 <- NPP1.14[NPP1.14$Mask == 3,]
+NPP4 <- NPP1.14[NPP1.14$Mask == 4,]
+NPP5 <- NPP1.14[NPP1.14$Mask == 5,]
+NPP6 <- NPP1.14[NPP1.14$Mask == 6,]
+NPP7 <- NPP1.14[NPP1.14$Mask == 7,]
+NPP8 <- NPP1.14[NPP1.14$Mask == 8,]
+NPP9 <- NPP1.14[NPP1.14$Mask == 9,]
+NPP10 <-NPP1.14[NPP1.14$Mask == 10,]
+NPP11 <-NPP1.14[NPP1.14$Mask == 11,]
+NPP12 <-NPP1.14[NPP1.14$Mask == 12,]
+NPP13 <-NPP1.14[NPP1.14$Mask == 13,]
+NPP14 <-NPP1.14[NPP1.14$Mask == 14,]
+NPP15 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/NewPoints_March2023/NPP_15.csv")
+
+NPP16 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/NPP_cv/M_statist_grid_map4k_circles200km_filled_05_0.csv")
+NPP17 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/NPP_cv/M_statist_grid_map4k_circles200km_filled_06_0.csv")
+NPP18 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/NPP_cv/M_statist_grid_map4k_circles200km_filled_15_0.csv")
+NPP19 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/NPP_cv/M_statist_grid_map4k_circles200km_filled_13_0.csv")
+NPP20 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/NPP_cv/M_statist_grid_map4k_circles200km_filled_03_0.csv")
+NPP21 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/NPP_cv/M_statist_grid_map4k_circles200km_filled_09_0.csv")
+NPP22 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/NPP_cv/M_statist_grid_map4k_circles200km_filled_07_0.csv")
+NPP23 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/NPP_cv/M_statist_grid_map4k_circles200km_filled_14_0.csv")
+NPP23 <- NPP23[NPP23$Mean != -99,]
+NPP24 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/NPP_cv/M_statist_grid_map4k_circles200km_filled_38_0.csv")
+NPP25 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/NPP_cv/M_statist_grid_map4k_circles200km_filled_36_0.csv")
+NPP26 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/NPP_cv/M_statist_grid_map4k_circles200km_filled_34_0.csv")
+NPP27 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/NPP_cv/M_statist_grid_map4k_circles200km_filled_24_0.csv")
+NPP28 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/NPP_cv/M_statist_grid_map4k_circles200km_filled_22_0.csv")
+NPP29 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/NPP_cv/M_statist_grid_map4k_circles200km_filled_20_0.csv")
+NPP30 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/NPP_cv/M_statist_grid_map4k_circles200km_filled_18_0.csv")
+NPP31 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/NPP_cv/M_statist_grid_map4k_circles200km_filled_47_0.csv")
+NPP32 <- read.csv("~/Documents/Chapter4/SatelliteDataFromMati/originalpoints_June2022/NPP_cv/M_statist_grid_map4k_circles200km_filled_39_0.csv")
+NPP32 <- NPP32[NPP32$Mean != -99,]
+```
+
+pull out values of interest: 
+
+```{r}
+chlorophylls <- list(CHL1, CHL2, CHL3, CHL4, CHL5, CHL6, CHL7, CHL8, CHL9, CHL10, CHL11, CHL12, CHL13, CHL14, CHL15, CHL16, CHL17, CHL18, CHL19, CHL20, CHL21, CHL22, CHL23, CHL24, CHL25, CHL26, CHL27, CHL28, CHL29, CHL30, CHL31, CHL32)
+
+
+calculate_yearlies <- function(exportflux){
+  meanyearlytotal <- sum(exportflux[,c("Mean")])/12
+  meanyearlymax <- exportflux %>%
+    dplyr::group_by(SYear) %>%
+    dplyr::slice(which.max(Mean)) %>%
+    dplyr::pull(Mean) %>%
+    mean()
+  meanyearlymin <- exportflux %>%
+    dplyr::group_by(SYear) %>%
+    dplyr::slice(which.min(Mean)) %>%
+    dplyr::pull(Mean) %>%
+    mean()
+  meanmean <- mean(exportflux[,c("Mean")])
+  meanamplitude <- meanyearlymax-meanyearlymin
+t(data.frame(meanyearlytotal, meanyearlymax, meanyearlymin, meanmean, meanamplitude))
+}
+
+out_CHL <- lapply(chlorophylls, calculate_yearlies) %>% dplyr::bind_cols()
+colnames(out_CHL) <- seq(1:32)
+rownames(out_CHL) <- c("chl_meanyearlytotal", "chl_meanyearlymax", "chl_meanyearlymin", "chl_meanmean", "chl_meanamplitude")
+
+```
+
+
+```{r}
+efs <- list(ef1, ef2, ef3, ef4, ef5, ef6, ef7, ef8, ef9, ef10, ef11, ef12, ef13, ef14, ef15, ef16, ef17, ef18, ef19, ef20, ef21, ef22, ef23, ef24, ef25, ef26, ef27, ef28, ef29, ef30, ef31, ef32)
+
+
+calculate_yearlies <- function(exportflux){
+  meanyearlytotal <- sum(exportflux[,c("Mean")])/12
+  meanyearlymax <- exportflux %>%
+    dplyr::group_by(SYear) %>%
+    dplyr::slice(which.max(Mean)) %>%
+    dplyr::pull(Mean) %>%
+    mean()
+  meanyearlymin <- exportflux %>%
+    dplyr::group_by(SYear) %>%
+    dplyr::slice(which.min(Mean)) %>%
+    dplyr::pull(Mean) %>%
+    mean()
+  meanmean <- mean(exportflux[,c("Mean")])
+  meanamplitude <- meanyearlymax-meanyearlymin
+t(data.frame(meanyearlytotal, meanyearlymax, meanyearlymin, meanmean, meanamplitude))
+}
+
+out_ef <- lapply(efs, calculate_yearlies) %>% dplyr::bind_cols()
+colnames(out_ef) <- seq(1:32)
+rownames(out_ef) <- c("ef_meanyearlytotal", "ef_meanyearlymax", "ef_meanyearlymin", "ef_meanmean", "ef_meanamplitude")
+
+```
+
+
+
+```{r}
+NPPs <- list(NPP1, NPP2, NPP3, NPP4, NPP5, NPP6, NPP7, NPP8, NPP9, NPP10, NPP11, NPP12, NPP13, NPP14, NPP15, NPP16, NPP17, NPP18, NPP19, NPP20, NPP21, NPP22, NPP23, NPP24, NPP25, NPP26, NPP27, NPP28, NPP29, NPP30, NPP31, NPP32)
+
+
+calculate_yearlies <- function(exportflux){
+  meanyearlytotal <- sum(exportflux[,c("Mean")])/12
+  meanyearlymax <- exportflux %>%
+    dplyr::group_by(SYear) %>%
+    dplyr::slice(which.max(Mean)) %>%
+    dplyr::pull(Mean) %>%
+    mean()
+  meanyearlymin <- exportflux %>%
+    dplyr::group_by(SYear) %>%
+    dplyr::slice(which.min(Mean)) %>%
+    dplyr::pull(Mean) %>%
+    mean()
+  meanmean <- mean(exportflux[,c("Mean")])
+  meanamplitude <- meanyearlymax-meanyearlymin
+t(data.frame(meanyearlytotal, meanyearlymax, meanyearlymin, meanmean, meanamplitude))
+}
+
+out_npp <- lapply(NPPs, calculate_yearlies) %>% dplyr::bind_cols()
+colnames(out_npp) <- seq(1:32)
+rownames(out_npp) <- c("npp_meanyearlytotal", "npp_meanyearlymax", "npp_meanyearlymin", "npp_meanmean", "npp_meanamplitude")
+
+```
+
+```{r}
+tnpp <- t(data.frame(out_npp))
+write.csv(tnpp, file = "data_objects/npp_meanyearly.csv")
+
+
+```
+
+

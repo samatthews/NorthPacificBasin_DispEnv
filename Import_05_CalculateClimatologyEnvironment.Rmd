@@ -1,0 +1,569 @@
+---
+title: "Import_05_CalculateClimatologyEnvironment"
+output: html_document
+date: "2024-10-31"
+---
+
+#load libraries
+```{r}
+library(ncdf4) # package for netcdf manipulation
+library(raster) # package for raster manipulation
+library(rgdal) # package for geospatial analysis
+library(ggplot2) # package for plotting
+```
+
+Note: salinity: salinity[psu] = sali*1000+35
+Note: depth: 2.50000000000 to 5900.00000000000 (54 points, avg. res. 111.274)
+
+#SALINITY
+##get data
+```{r}
+nc_data <- nc_open('/Users/stephaniematthews/ofesdata/sali00000.nc')
+lon <- ncvar_get(nc_data, "lon")
+lat <- ncvar_get(nc_data, "lat", verbose = F)
+salinity1 <- ncvar_get(nc_data, "sali") # store the data in a 3-dimensional array
+fillvalue <- ncatt_get(nc_data, "sali", "_FillValue")
+levels_m <- ncvar_get(nc_data, "lev")
+fillvalue
+nc_close(nc_data) 
+nc_data <- nc_open('/Users/stephaniematthews/ofesdata/sali00001.nc')
+salinity2 <- ncvar_get(nc_data, "sali") # store the data in a 3-dimensional array
+nc_close(nc_data) 
+nc_data <- nc_open('/Users/stephaniematthews/ofesdata/sali00002.nc')
+salinity3 <- ncvar_get(nc_data, "sali") # store the data in a 3-dimensional array
+nc_close(nc_data) 
+nc_data <- nc_open('/Users/stephaniematthews/ofesdata/sali00003.nc')
+salinity4 <- ncvar_get(nc_data, "sali") # store the data in a 3-dimensional array
+nc_close(nc_data) 
+nc_data <- nc_open('/Users/stephaniematthews/ofesdata/sali00004.nc')
+salinity5 <- ncvar_get(nc_data, "sali") # store the data in a 3-dimensional array
+nc_close(nc_data) 
+nc_data <- nc_open('/Users/stephaniematthews/ofesdata/sali00005.nc')
+salinity6 <- ncvar_get(nc_data, "sali") # store the data in a 3-dimensional array
+nc_close(nc_data) 
+nc_data <- nc_open('/Users/stephaniematthews/ofesdata/sali00006.nc')
+salinity7 <- ncvar_get(nc_data, "sali") # store the data in a 3-dimensional array
+nc_close(nc_data) 
+nc_data <- nc_open('/Users/stephaniematthews/ofesdata/sali00007.nc')
+salinity8 <- ncvar_get(nc_data, "sali") # store the data in a 3-dimensional array
+nc_close(nc_data) 
+nc_data <- nc_open('/Users/stephaniematthews/ofesdata/sali00008.nc')
+salinity9 <- ncvar_get(nc_data, "sali") # store the data in a 3-dimensional array
+nc_close(nc_data) 
+nc_data <- nc_open('/Users/stephaniematthews/ofesdata/sali00009.nc')
+salinity10 <- ncvar_get(nc_data, "sali") # store the data in a 3-dimensional array
+nc_close(nc_data) 
+nc_data <- nc_open('/Users/stephaniematthews/ofesdata/sali00010.nc')
+salinity11 <- ncvar_get(nc_data, "sali") # store the data in a 3-dimensional array
+nc_close(nc_data) 
+nc_data <- nc_open('/Users/stephaniematthews/ofesdata/sali00011.nc')
+salinity12 <- ncvar_get(nc_data, "sali") # store the data in a 3-dimensional array
+nc_close(nc_data) 
+```
+
+##reassign NA value
+```{r}
+salinity1[salinity1 == fillvalue$value] <- NA
+salinity2[salinity2 == fillvalue$value] <- NA
+salinity3[salinity3 == fillvalue$value] <- NA
+salinity4[salinity4 == fillvalue$value] <- NA
+salinity5[salinity5 == fillvalue$value] <- NA
+salinity6[salinity6 == fillvalue$value] <- NA
+salinity7[salinity7 == fillvalue$value] <- NA
+salinity8[salinity8 == fillvalue$value] <- NA
+salinity9[salinity9 == fillvalue$value] <- NA
+salinity10[salinity10 == fillvalue$value] <- NA
+salinity11[salinity11 == fillvalue$value] <- NA
+salinity12[salinity12 == fillvalue$value] <- NA
+```
+
+##format as brick
+```{r}
+r_brick1 <- brick(salinity1, xmn=min(lat), xmx=max(lat), ymn=min(lon), ymx=max(lon), crs=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs+ towgs84=0,0,0"))
+r_brick2 <- brick(salinity2, xmn=min(lat), xmx=max(lat), ymn=min(lon), ymx=max(lon), crs=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs+ towgs84=0,0,0"))
+r_brick3 <- brick(salinity3, xmn=min(lat), xmx=max(lat), ymn=min(lon), ymx=max(lon), crs=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs+ towgs84=0,0,0"))
+r_brick4 <- brick(salinity4, xmn=min(lat), xmx=max(lat), ymn=min(lon), ymx=max(lon), crs=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs+ towgs84=0,0,0"))
+r_brick5 <- brick(salinity5, xmn=min(lat), xmx=max(lat), ymn=min(lon), ymx=max(lon), crs=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs+ towgs84=0,0,0"))
+r_brick6 <- brick(salinity6, xmn=min(lat), xmx=max(lat), ymn=min(lon), ymx=max(lon), crs=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs+ towgs84=0,0,0"))
+r_brick7 <- brick(salinity7, xmn=min(lat), xmx=max(lat), ymn=min(lon), ymx=max(lon), crs=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs+ towgs84=0,0,0"))
+r_brick8 <- brick(salinity8, xmn=min(lat), xmx=max(lat), ymn=min(lon), ymx=max(lon), crs=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs+ towgs84=0,0,0"))
+r_brick9 <- brick(salinity9, xmn=min(lat), xmx=max(lat), ymn=min(lon), ymx=max(lon), crs=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs+ towgs84=0,0,0"))
+r_brick10 <- brick(salinity10, xmn=min(lat), xmx=max(lat), ymn=min(lon), ymx=max(lon), crs=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs+ towgs84=0,0,0"))
+r_brick11 <- brick(salinity11, xmn=min(lat), xmx=max(lat), ymn=min(lon), ymx=max(lon), crs=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs+ towgs84=0,0,0"))
+r_brick12 <- brick(salinity12, xmn=min(lat), xmx=max(lat), ymn=min(lon), ymx=max(lon), crs=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs+ towgs84=0,0,0"))
+
+r_brick1 <- flip(t(r_brick1), direction='y')
+r_brick2 <- flip(t(r_brick2), direction='y')
+r_brick3 <- flip(t(r_brick3), direction='y')
+r_brick4 <- flip(t(r_brick4), direction='y')
+r_brick5 <- flip(t(r_brick5), direction='y')
+r_brick6 <- flip(t(r_brick6), direction='y')
+r_brick7 <- flip(t(r_brick7), direction='y')
+r_brick8 <- flip(t(r_brick8), direction='y')
+r_brick9 <- flip(t(r_brick9), direction='y')
+r_brick10 <- flip(t(r_brick10), direction='y')
+r_brick11 <- flip(t(r_brick11), direction='y')
+r_brick12 <- flip(t(r_brick12), direction='y')
+```
+
+##get data for each location
+```{r}
+# traj10year$lon[traj10year$lon > 180] <- traj10year$lon[traj10year$lon > 180] - 360
+metadata <- readxl::read_excel("/Users/stephaniematthews/Documents/Chapter4/Organization_Pacific_Basin_Comprehensive_v2.xlsx", sheet = "Locations")
+samplelocationcoords <- metadata[,c("Lat(North)", "Lon(West)", "Final Number")]
+colnames(samplelocationcoords) <- c("Lat.N.", "Lon.W.", "Location.ID")
+  #unique(data.frame(sample_data(zoops18S)[,c("Lat.N.", "Lon.W.", "Location.ID")]))
+samplelocationcoords$Lon.E. <- samplelocationcoords$Lon.W. + 360
+
+salinitycalcs <- function(samplelocationcoords) {
+  salinityprofiles1 <- NULL
+  salinityprofiles2 <- NULL
+  salinityprofiles3 <- NULL
+  salinityprofiles4 <- NULL
+  salinityprofiles5 <- NULL
+  salinityprofiles6 <- NULL
+  salinityprofiles7 <- NULL
+  salinityprofiles8 <- NULL
+  salinityprofiles9 <- NULL
+  salinityprofiles10 <- NULL
+  salinityprofiles11 <- NULL
+  salinityprofiles12 <- NULL
+  for (samplelocation in 1:nrow(samplelocationcoords)) {
+    toolik_lon <- samplelocationcoords[samplelocation,4]
+    toolik_lat <- samplelocationcoords[samplelocation,1]
+    salinityprofilessingle1 <- raster::extract(r_brick1, SpatialPoints(cbind(toolik_lon,toolik_lat)), method='simple', buffer = 200*1000, fun = mean)#buffer in m for radius around which to extract points
+    salinityprofilessingle2 <- raster::extract(r_brick2, SpatialPoints(cbind(toolik_lon,toolik_lat)), method='simple', buffer = 200*1000, fun = mean)
+    salinityprofilessingle3 <- raster::extract(r_brick3, SpatialPoints(cbind(toolik_lon,toolik_lat)), method='simple', buffer = 200*1000, fun = mean)
+    salinityprofilessingle4 <- raster::extract(r_brick4, SpatialPoints(cbind(toolik_lon,toolik_lat)), method='simple', buffer = 200*1000, fun = mean)
+    salinityprofilessingle5 <- raster::extract(r_brick5, SpatialPoints(cbind(toolik_lon,toolik_lat)), method='simple', buffer = 200*1000, fun = mean)
+    salinityprofilessingle6 <- raster::extract(r_brick6, SpatialPoints(cbind(toolik_lon,toolik_lat)), method='simple', buffer = 200*1000, fun = mean)
+    salinityprofilessingle7 <- raster::extract(r_brick7, SpatialPoints(cbind(toolik_lon,toolik_lat)), method='simple', buffer = 200*1000, fun = mean)
+    salinityprofilessingle8 <- raster::extract(r_brick8, SpatialPoints(cbind(toolik_lon,toolik_lat)), method='simple', buffer = 200*1000, fun = mean)
+    salinityprofilessingle9 <- raster::extract(r_brick9, SpatialPoints(cbind(toolik_lon,toolik_lat)), method='simple', buffer = 200*1000, fun = mean)
+    salinityprofilessingle10 <- raster::extract(r_brick10, SpatialPoints(cbind(toolik_lon,toolik_lat)), method='simple', buffer = 200*1000, fun = mean)
+    salinityprofilessingle11 <- raster::extract(r_brick11, SpatialPoints(cbind(toolik_lon,toolik_lat)), method='simple', buffer = 200*1000, fun = mean)
+    salinityprofilessingle12 <- raster::extract(r_brick12, SpatialPoints(cbind(toolik_lon,toolik_lat)), method='simple', buffer = 200*1000, fun = mean)
+    salinityprofiles1 <- rbind(salinityprofiles1, salinityprofilessingle1)
+    salinityprofiles2 <- rbind(salinityprofiles2, salinityprofilessingle2)
+    salinityprofiles3 <- rbind(salinityprofiles3, salinityprofilessingle3)
+    salinityprofiles4 <- rbind(salinityprofiles4, salinityprofilessingle4)
+    salinityprofiles5 <- rbind(salinityprofiles5, salinityprofilessingle5)
+    salinityprofiles6 <- rbind(salinityprofiles6, salinityprofilessingle6)
+    salinityprofiles7 <- rbind(salinityprofiles7, salinityprofilessingle7)
+    salinityprofiles8 <- rbind(salinityprofiles8, salinityprofilessingle8)
+    salinityprofiles9 <- rbind(salinityprofiles9, salinityprofilessingle9)
+    salinityprofiles10 <- rbind(salinityprofiles10, salinityprofilessingle10)
+    salinityprofiles11 <- rbind(salinityprofiles11, salinityprofilessingle11)
+    salinityprofiles12 <- rbind(salinityprofiles12, salinityprofilessingle12)
+  }
+  rownames(salinityprofiles1)  <- paste(samplelocationcoords$Location.ID, "Jan")
+  rownames(salinityprofiles2)  <- paste(samplelocationcoords$Location.ID, "Feb")
+  rownames(salinityprofiles3)  <- paste(samplelocationcoords$Location.ID, "Mar")
+  rownames(salinityprofiles4)  <- paste(samplelocationcoords$Location.ID, "Apr")
+  rownames(salinityprofiles5)  <- paste(samplelocationcoords$Location.ID, "May")
+  rownames(salinityprofiles6)  <- paste(samplelocationcoords$Location.ID, "Jun")
+  rownames(salinityprofiles7)  <- paste(samplelocationcoords$Location.ID, "Jul")
+  rownames(salinityprofiles8)  <- paste(samplelocationcoords$Location.ID, "Aug")
+  rownames(salinityprofiles9)  <- paste(samplelocationcoords$Location.ID, "Sep")
+  rownames(salinityprofiles10) <- paste(samplelocationcoords$Location.ID, "Oct")
+  rownames(salinityprofiles11) <- paste(samplelocationcoords$Location.ID, "Nov")
+  rownames(salinityprofiles12) <- paste(samplelocationcoords$Location.ID, "Dec")
+  
+  salinityprofilesall <- rbind(salinityprofiles1, salinityprofiles2) %>% 
+    rbind(salinityprofiles3)  %>% 
+    rbind(salinityprofiles4)  %>% 
+    rbind(salinityprofiles5)  %>% 
+    rbind(salinityprofiles6)  %>% 
+    rbind(salinityprofiles7)  %>% 
+    rbind(salinityprofiles8)  %>% 
+    rbind(salinityprofiles9)  %>% 
+    rbind(salinityprofiles10) %>% 
+    rbind(salinityprofiles11) %>% 
+    rbind(salinityprofiles12)
+
+  print(salinityprofilesall)
+}
+
+salinityout <- salinitycalcs(samplelocationcoords)
+colnames(salinityout) <- levels_m
+```
+
+##plot salinity profiles
+```{r}
+sallong <- data.frame(salinityout) %>% tibble::rownames_to_column(var = "Row") %>% pivot_longer(-Row, names_to = "depth", values_to = "salinity" )
+sallong$Location <- stringr::str_split_i((sallong$Row), " ", i = 1)
+sallong$Month <- stringr::str_split_i((sallong$Row), " ", i = 2)
+sallong$Depth_m <- as.numeric(gsub("X","",as.character(sallong$depth)))
+#sallong$Depth_m <- (as.numeric(stringr::str_split_i((sallong$depth), "[.]", i = 2))*111.27)-108.77
+sallong$salinity_calc2 <- (sallong$salinity+35)#*1000
+sallong$salinity_calc <- (sallong$salinity*1000)+35
+  
+ggplot(sallong, aes(x=Depth_m, y=salinity_calc, group=Month)) +
+  geom_line() + # make this a line plot
+  ggtitle("Mean Salinity 200km around each station") +     # Set title
+  theme_bw() + # use the black and white theme + 
+  coord_flip() +
+  facet_wrap(.~Location) + 
+  xlim(1000,0)
+```
+
+
+
+#TEMPERATURE
+##get data
+```{r}
+nc_data <- nc_open('/Users/stephaniematthews/ofesdata/temp00000.nc')
+lon <- ncvar_get(nc_data, "lon")
+lat <- ncvar_get(nc_data, "lat", verbose = F)
+temp1 <- ncvar_get(nc_data, "temp") # store the data in a 3-dimensional array
+fillvalue <- ncatt_get(nc_data, "temp", "_FillValue")
+levels_m <- ncvar_get(nc_data, "lev")
+fillvalue
+nc_close(nc_data) 
+nc_data <- nc_open('/Users/stephaniematthews/ofesdata/temp00001.nc')
+temp2 <- ncvar_get(nc_data, "temp") # store the data in a 3-dimensional array
+nc_close(nc_data) 
+nc_data <- nc_open('/Users/stephaniematthews/ofesdata/temp00002.nc')
+temp3 <- ncvar_get(nc_data, "temp") # store the data in a 3-dimensional array
+nc_close(nc_data) 
+nc_data <- nc_open('/Users/stephaniematthews/ofesdata/temp00003.nc')
+temp4 <- ncvar_get(nc_data, "temp") # store the data in a 3-dimensional array
+nc_close(nc_data) 
+nc_data <- nc_open('/Users/stephaniematthews/ofesdata/temp00004.nc')
+temp5 <- ncvar_get(nc_data, "temp") # store the data in a 3-dimensional array
+nc_close(nc_data) 
+nc_data <- nc_open('/Users/stephaniematthews/ofesdata/temp00005.nc')
+temp6 <- ncvar_get(nc_data, "temp") # store the data in a 3-dimensional array
+nc_close(nc_data) 
+nc_data <- nc_open('/Users/stephaniematthews/ofesdata/temp00006.nc')
+temp7 <- ncvar_get(nc_data, "temp") # store the data in a 3-dimensional array
+nc_close(nc_data) 
+nc_data <- nc_open('/Users/stephaniematthews/ofesdata/temp00007.nc')
+temp8 <- ncvar_get(nc_data, "temp") # store the data in a 3-dimensional array
+nc_close(nc_data) 
+nc_data <- nc_open('/Users/stephaniematthews/ofesdata/temp00008.nc')
+temp9 <- ncvar_get(nc_data, "temp") # store the data in a 3-dimensional array
+nc_close(nc_data) 
+nc_data <- nc_open('/Users/stephaniematthews/ofesdata/temp00009.nc')
+temp10 <- ncvar_get(nc_data, "temp") # store the data in a 3-dimensional array
+nc_close(nc_data) 
+nc_data <- nc_open('/Users/stephaniematthews/ofesdata/temp00010.nc')
+temp11 <- ncvar_get(nc_data, "temp") # store the data in a 3-dimensional array
+nc_close(nc_data) 
+nc_data <- nc_open('/Users/stephaniematthews/ofesdata/temp00011.nc')
+temp12 <- ncvar_get(nc_data, "temp") # store the data in a 3-dimensional array
+nc_close(nc_data) 
+```
+
+##reassign NA value
+```{r}
+temp1[temp1 == fillvalue$value] <- NA
+temp2[temp2 == fillvalue$value] <- NA
+temp3[temp3 == fillvalue$value] <- NA
+temp4[temp4 == fillvalue$value] <- NA
+temp5[temp5 == fillvalue$value] <- NA
+temp6[temp6 == fillvalue$value] <- NA
+temp7[temp7 == fillvalue$value] <- NA
+temp8[temp8 == fillvalue$value] <- NA
+temp9[temp9 == fillvalue$value] <- NA
+temp10[temp10 == fillvalue$value] <- NA
+temp11[temp11 == fillvalue$value] <- NA
+temp12[temp12 == fillvalue$value] <- NA
+```
+
+##format as brick
+```{r}
+r_brick1 <- brick(temp1, xmn=min(lat), xmx=max(lat), ymn=min(lon), ymx=max(lon), crs=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs+ towgs84=0,0,0"))
+r_brick2 <- brick(temp2, xmn=min(lat), xmx=max(lat), ymn=min(lon), ymx=max(lon), crs=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs+ towgs84=0,0,0"))
+r_brick3 <- brick(temp3, xmn=min(lat), xmx=max(lat), ymn=min(lon), ymx=max(lon), crs=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs+ towgs84=0,0,0"))
+r_brick4 <- brick(temp4, xmn=min(lat), xmx=max(lat), ymn=min(lon), ymx=max(lon), crs=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs+ towgs84=0,0,0"))
+r_brick5 <- brick(temp5, xmn=min(lat), xmx=max(lat), ymn=min(lon), ymx=max(lon), crs=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs+ towgs84=0,0,0"))
+r_brick6 <- brick(temp6, xmn=min(lat), xmx=max(lat), ymn=min(lon), ymx=max(lon), crs=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs+ towgs84=0,0,0"))
+r_brick7 <- brick(temp7, xmn=min(lat), xmx=max(lat), ymn=min(lon), ymx=max(lon), crs=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs+ towgs84=0,0,0"))
+r_brick8 <- brick(temp8, xmn=min(lat), xmx=max(lat), ymn=min(lon), ymx=max(lon), crs=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs+ towgs84=0,0,0"))
+r_brick9 <- brick(temp9, xmn=min(lat), xmx=max(lat), ymn=min(lon), ymx=max(lon), crs=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs+ towgs84=0,0,0"))
+r_brick10 <- brick(temp10, xmn=min(lat), xmx=max(lat), ymn=min(lon), ymx=max(lon), crs=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs+ towgs84=0,0,0"))
+r_brick11 <- brick(temp11, xmn=min(lat), xmx=max(lat), ymn=min(lon), ymx=max(lon), crs=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs+ towgs84=0,0,0"))
+r_brick12 <- brick(temp12, xmn=min(lat), xmx=max(lat), ymn=min(lon), ymx=max(lon), crs=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs+ towgs84=0,0,0"))
+
+r_brick1 <- flip(t(r_brick1), direction='y')
+r_brick2 <- flip(t(r_brick2), direction='y')
+r_brick3 <- flip(t(r_brick3), direction='y')
+r_brick4 <- flip(t(r_brick4), direction='y')
+r_brick5 <- flip(t(r_brick5), direction='y')
+r_brick6 <- flip(t(r_brick6), direction='y')
+r_brick7 <- flip(t(r_brick7), direction='y')
+r_brick8 <- flip(t(r_brick8), direction='y')
+r_brick9 <- flip(t(r_brick9), direction='y')
+r_brick10 <- flip(t(r_brick10), direction='y')
+r_brick11 <- flip(t(r_brick11), direction='y')
+r_brick12 <- flip(t(r_brick12), direction='y')
+```
+
+##get data for each location
+```{r}
+# traj10year$lon[traj10year$lon > 180] <- traj10year$lon[traj10year$lon > 180] - 360
+metadata <- readxl::read_excel("/Users/stephaniematthews/Documents/Chapter4/Organization_Pacific_Basin_Comprehensive_v2.xlsx", sheet = "Locations")
+samplelocationcoords <- metadata[,c("Lat(North)", "Lon(West)", "Final Number")]
+colnames(samplelocationcoords) <- c("Lat.N.", "Lon.W.", "Location.ID")
+  #unique(data.frame(sample_data(zoops18S)[,c("Lat.N.", "Lon.W.", "Location.ID")]))
+samplelocationcoords$Lon.E. <- samplelocationcoords$Lon.W. + 360
+
+tempcalcs <- function(samplelocationcoords) {
+  tempprofiles1 <- NULL
+  tempprofiles2 <- NULL
+  tempprofiles3 <- NULL
+  tempprofiles4 <- NULL
+  tempprofiles5 <- NULL
+  tempprofiles6 <- NULL
+  tempprofiles7 <- NULL
+  tempprofiles8 <- NULL
+  tempprofiles9 <- NULL
+  tempprofiles10 <- NULL
+  tempprofiles11 <- NULL
+  tempprofiles12 <- NULL
+  for (samplelocation in 1:nrow(samplelocationcoords)) {
+    toolik_lon <- samplelocationcoords[samplelocation,4]
+    toolik_lat <- samplelocationcoords[samplelocation,1]
+    tempprofilessingle1 <- raster::extract(r_brick1, SpatialPoints(cbind(toolik_lon,toolik_lat)), method='simple', buffer = 200*1000, fun = mean)#buffer in m for radius around which to extract points
+    tempprofilessingle2 <- raster::extract(r_brick2, SpatialPoints(cbind(toolik_lon,toolik_lat)), method='simple', buffer = 200*1000, fun = mean)
+    tempprofilessingle3 <- raster::extract(r_brick3, SpatialPoints(cbind(toolik_lon,toolik_lat)), method='simple', buffer = 200*1000, fun = mean)
+    tempprofilessingle4 <- raster::extract(r_brick4, SpatialPoints(cbind(toolik_lon,toolik_lat)), method='simple', buffer = 200*1000, fun = mean)
+    tempprofilessingle5 <- raster::extract(r_brick5, SpatialPoints(cbind(toolik_lon,toolik_lat)), method='simple', buffer = 200*1000, fun = mean)
+    tempprofilessingle6 <- raster::extract(r_brick6, SpatialPoints(cbind(toolik_lon,toolik_lat)), method='simple', buffer = 200*1000, fun = mean)
+    tempprofilessingle7 <- raster::extract(r_brick7, SpatialPoints(cbind(toolik_lon,toolik_lat)), method='simple', buffer = 200*1000, fun = mean)
+    tempprofilessingle8 <- raster::extract(r_brick8, SpatialPoints(cbind(toolik_lon,toolik_lat)), method='simple', buffer = 200*1000, fun = mean)
+    tempprofilessingle9 <- raster::extract(r_brick9, SpatialPoints(cbind(toolik_lon,toolik_lat)), method='simple', buffer = 200*1000, fun = mean)
+    tempprofilessingle10 <- raster::extract(r_brick10, SpatialPoints(cbind(toolik_lon,toolik_lat)), method='simple', buffer = 200*1000, fun = mean)
+    tempprofilessingle11 <- raster::extract(r_brick11, SpatialPoints(cbind(toolik_lon,toolik_lat)), method='simple', buffer = 200*1000, fun = mean)
+    tempprofilessingle12 <- raster::extract(r_brick12, SpatialPoints(cbind(toolik_lon,toolik_lat)), method='simple', buffer = 200*1000, fun = mean)
+    tempprofiles1 <- rbind(tempprofiles1, tempprofilessingle1)
+    tempprofiles2 <- rbind(tempprofiles2, tempprofilessingle2)
+    tempprofiles3 <- rbind(tempprofiles3, tempprofilessingle3)
+    tempprofiles4 <- rbind(tempprofiles4, tempprofilessingle4)
+    tempprofiles5 <- rbind(tempprofiles5, tempprofilessingle5)
+    tempprofiles6 <- rbind(tempprofiles6, tempprofilessingle6)
+    tempprofiles7 <- rbind(tempprofiles7, tempprofilessingle7)
+    tempprofiles8 <- rbind(tempprofiles8, tempprofilessingle8)
+    tempprofiles9 <- rbind(tempprofiles9, tempprofilessingle9)
+    tempprofiles10 <- rbind(tempprofiles10, tempprofilessingle10)
+    tempprofiles11 <- rbind(tempprofiles11, tempprofilessingle11)
+    tempprofiles12 <- rbind(tempprofiles12, tempprofilessingle12)
+  }
+  rownames(tempprofiles1)  <- paste(samplelocationcoords$Location.ID, "Jan")
+  rownames(tempprofiles2)  <- paste(samplelocationcoords$Location.ID, "Feb")
+  rownames(tempprofiles3)  <- paste(samplelocationcoords$Location.ID, "Mar")
+  rownames(tempprofiles4)  <- paste(samplelocationcoords$Location.ID, "Apr")
+  rownames(tempprofiles5)  <- paste(samplelocationcoords$Location.ID, "May")
+  rownames(tempprofiles6)  <- paste(samplelocationcoords$Location.ID, "Jun")
+  rownames(tempprofiles7)  <- paste(samplelocationcoords$Location.ID, "Jul")
+  rownames(tempprofiles8)  <- paste(samplelocationcoords$Location.ID, "Aug")
+  rownames(tempprofiles9)  <- paste(samplelocationcoords$Location.ID, "Sep")
+  rownames(tempprofiles10) <- paste(samplelocationcoords$Location.ID, "Oct")
+  rownames(tempprofiles11) <- paste(samplelocationcoords$Location.ID, "Nov")
+  rownames(tempprofiles12) <- paste(samplelocationcoords$Location.ID, "Dec")
+  
+  tempprofilesall <- rbind(tempprofiles1, tempprofiles2) %>% 
+    rbind(tempprofiles3)  %>% 
+    rbind(tempprofiles4)  %>% 
+    rbind(tempprofiles5)  %>% 
+    rbind(tempprofiles6)  %>% 
+    rbind(tempprofiles7)  %>% 
+    rbind(tempprofiles8)  %>% 
+    rbind(tempprofiles9)  %>% 
+    rbind(tempprofiles10) %>% 
+    rbind(tempprofiles11) %>% 
+    rbind(tempprofiles12)
+
+  print(tempprofilesall)
+}
+
+tempout <- tempcalcs(samplelocationcoords)
+colnames(tempout) <- levels_m
+
+```
+
+##plot temperature profiles
+```{r}
+tlong <- data.frame(tempout) %>% tibble::rownames_to_column(var = "Row") %>% pivot_longer(-Row, names_to = "depth", values_to = "temp" )
+tlong$Location <- stringr::str_split_i((tlong$Row), " ", i = 1)
+tlong$Month <- stringr::str_split_i((tlong$Row), " ", i = 2)
+tlong$Depth_m <- as.numeric(gsub("X","",as.character(sallong$depth)))
+#tlong$Depth_m <- (as.numeric(stringr::str_split_i((tlong$depth), "[.]", i = 2))*111.27)-108.77
+#sallong$temp_calc <- (sallong$temp+35)#*1000
+  
+ggplot(tlong, aes(x=Depth_m, y=temp, group=Month)) +
+  geom_line() + # make this a line plot
+  ggtitle("Mean Temp 200km around each station") +     # Set title
+  theme_bw() + # use the black and white theme + 
+  coord_flip() +
+  facet_wrap(.~Location) + 
+  xlim(1000,0)
+```
+
+
+
+#calculate means 
+```{r}
+tlong$net <- NA
+tlong$net[tlong$Depth_m %in% c(2.50000,    7.56156,   12.80628,   18.35124,   24.30616,   30.77062,   37.83170,   45.56174,   54.01666,   63.23449,   73.23449,   84.01666,   95.56174,  107.83170,  120.77062,  134.30615,  148.35124,  162.80627,  177.56155,  192.50000)] <- "0-200m"
+tlong$net[tlong$Depth_m %in% c(207.50000,  223.17186,  240.85361,  261.86606,  287.50168,  319.01346,  357.60428,  404.41656,  460.52264)] <- "200-500m"
+tlong$net[tlong$Depth_m %in% c(526.91559,  604.50061,  694.08759,  796.38379,  911.98822, 1041.38635)] <- "500-1000m"
+tlong <- tlong[tlong$Depth_m < 1050,]
+
+sallong$net <- NA
+sallong$net[sallong$Depth_m %in% c(2.50000,    7.56156,   12.80628,   18.35124,   24.30616,   30.77062,   37.83170,   45.56174,   54.01666,   63.23449,   73.23449,   84.01666,   95.56174,  107.83170,  120.77062,  134.30615,  148.35124,  162.80627,  177.56155,  192.50000)] <- "0-200m"
+sallong$net[sallong$Depth_m %in% c(207.50000,  223.17186,  240.85361,  261.86606,  287.50168,  319.01346,  357.60428,  404.41656,  460.52264)] <- "200-500m"
+sallong$net[sallong$Depth_m %in% c(558.85,670.12, 781.39, 892.66, 1003.93)] <- "500-1000m"
+sallong$net[sallong$Depth_m %in% c(526.91559,  604.50061,  694.08759,  796.38379,  911.98822, 1041.38635)] <- "500-1000m"
+sallong <- sallong[sallong$Depth_m < 1050,]
+
+
+tmeans <- tlong %>% dplyr::summarize(.by = c("net", "Location", "Month"), mean = mean(temp))
+smeans <- sallong %>% dplyr::summarize(.by = c("net", "Location", "Month"), mean = mean(salinity_calc))
+
+tmeanswide <- tmeans %>% pivot_wider(names_from = c(Location, net), values_from = mean, names_glue = "{Location} {net}") %>% t()
+smeanswide <- smeans %>% pivot_wider(names_from = c(Location, net), values_from = mean, names_glue = "{Location} {net}") %>% t()
+
+colnames(tmeanswide) <- paste("Temp, ", tmeanswide[1,])
+colnames(smeanswide) <- paste("Sal, ", smeanswide[1,])
+
+tmeanswide <- data.frame(tmeanswide[-1,])
+smeanswide <- data.frame(smeanswide[-1,])
+```
+
+
+#COI
+#merge with sample metadata
+```{r}
+insitu <- data.frame(sample_data(zoopsCOI))
+insitu <- insitu[,c(1:41)]
+insitu$uniqueidentifier <- sample_names(zoopsCOI)
+insitu$formerging <- paste(insitu$StationID, insitu$depth_bin)
+
+tmeanswide$formerging <- rownames(tmeanswide)
+smeanswide$formerging <- rownames(smeanswide)
+
+insituandmodel <- merge(insitu, tmeanswide, by = "formerging", all.x = T, all.y = F)
+insituandmodel <- merge(insituandmodel, smeanswide, by = "formerging", all.x = T, all.y = F)
+
+```
+
+#plot in situ vs model
+```{r}
+
+sal3depths <- insituandmodel %>% dplyr::select(starts_with("Sal..."), ends_with("Sal"), depth_bin)
+
+temp3depths <- insituandmodel %>% dplyr::select(starts_with("Temp..."), ends_with("Temp"), depth_bin)
+
+#tlong <- data.frame(tempout) %>% tibble::rownames_to_column(var = "Row") %>% pivot_longer(-Row, names_to = "depth", values_to = "temp" ) %dplyr::select(!depth_bin) %>%
+salcomparison <- sal3depths %>%  pivot_longer(-c(MaxSal, MeanSal, MinSal, depth_bin), names_to = "Month", values_to = "ModelSalinity") %>% dplyr::mutate_at(c('ModelSalinity'), as.numeric) %>% ggplot(aes(x = MeanSal, y = ModelSalinity)) + geom_point() + facet_wrap(.~depth_bin, scales = "free") + geom_abline(slope=1, intercept=0) + xlab("Measured Salinity (mean)") + ylab("Modeled Salinity\n(monthly mean)") 
+
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/Salinity_climatology_vs_insitu.jpeg", height =2, width = 6.5, unit = "in", quality = 100, res = 300)
+salcomparison
+dev.off()
+
+tempcomparison <- temp3depths %>% pivot_longer(-c(MaxTemp, MeanTemp, MinTemp, depth_bin), names_to = "Month", values_to = "ModelTemperature") %>% dplyr::mutate_at(c('ModelTemperature'), as.numeric) %>% ggplot(aes(x = MeanTemp, y = ModelTemperature)) + geom_point() + facet_wrap(.~depth_bin, scales = "free") + geom_abline(slope=1, intercept=0)+ xlab("Measured Temperature (mean)") + ylab("Modeled Temperature\n(monthly mean)")
+
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/Temp_climatology_vs_insitu.jpeg", height =2, width = 6.5, unit = "in", quality = 100, res = 300)
+tempcomparison
+dev.off()
+
+```
+
+#calculate annual amplitude and means
+```{r}
+insituandmodel <- insituandmodel %>% mutate_at(c("Temp...Jan", "Temp...Feb", "Temp...Mar", "Temp...Apr", "Temp...May", "Temp...Jun", "Temp...Jul", "Temp...Aug", "Temp...Sep", "Temp...Oct", "Temp...Nov", "Temp...Dec", "Sal...Jan", "Sal...Feb", "Sal...Mar", "Sal...Apr", "Sal...May", "Sal...Jun", "Sal...Jul", "Sal...Aug", "Sal...Sep", "Sal...Oct", "Sal...Nov", "Sal...Dec"), as.numeric)
+
+insituandmodel$meanModelTemp <- rowMeans(insituandmodel[,c("Temp...Jan", "Temp...Feb", "Temp...Mar", "Temp...Apr", "Temp...May", "Temp...Jun", "Temp...Jul", "Temp...Aug", "Temp...Sep", "Temp...Oct", "Temp...Nov", "Temp...Dec")])
+insituandmodel$meanModelSal <- rowMeans(insituandmodel[,c("Sal...Jan", "Sal...Feb", "Sal...Mar", "Sal...Apr", "Sal...May", "Sal...Jun", "Sal...Jul", "Sal...Aug", "Sal...Sep", "Sal...Oct", "Sal...Nov", "Sal...Dec")])
+insituandmodel <- insituandmodel %>% 
+  rowwise() %>% 
+  mutate(maxModelTemp = as.numeric(max(c_across(starts_with("Temp...")))), minModelTemp = as.numeric(min(c_across(starts_with("Temp...")))),
+         maxModelSal = as.numeric(max(c_across(starts_with("Sal...")))), minModelSal = as.numeric(min(c_across(starts_with("Sal...")))))
+insituandmodel$ampModelTemp <- insituandmodel$maxModelTemp - insituandmodel$minModelTemp
+insituandmodel$ampModelSal <- insituandmodel$maxModelSal - insituandmodel$minModelSal
+insituandmodel <- data.frame(insituandmodel)
+
+insituandmodel <- insituandmodel[!is.na(insituandmodel$depth_bin),]
+rownames(insituandmodel) <- insituandmodel$uniqueidentifier
+sample_data(zoopsCOI) <- sample_data(insituandmodel)
+
+```
+
+
+#18S
+#merge with sample metadata
+```{r}
+insitu <- data.frame(sample_data(zoops18S))
+insitu <- insitu[,c(1:41)]
+insitu$uniqueidentifier <- sample_names(zoops18S)
+insitu$formerging <- paste(insitu$StationID, insitu$depth_bin)
+
+tmeanswide$formerging <- rownames(tmeanswide)
+smeanswide$formerging <- rownames(smeanswide)
+
+insituandmodel <- merge(insitu, tmeanswide, by = "formerging", all.x = T, all.y = F)
+insituandmodel <- merge(insituandmodel, smeanswide, by = "formerging", all.x = T, all.y = F)
+
+```
+
+#plot in situ vs model
+```{r}
+
+sal3depths <- insituandmodel %>% dplyr::select(starts_with("Sal..."), ends_with("Sal"), depth_bin)
+salepi <- sal3depths[sal3depths$depth_bin == "0-200m",]
+salupme <- sal3depths[sal3depths$depth_bin == "200-500m",]
+sallowme <- sal3depths[sal3depths$depth_bin == "500-1000m",]
+
+temp3depths <- insituandmodel %>% dplyr::select(starts_with("Temp..."), ends_with("Temp"), depth_bin)
+tempepi <- temp3depths[temp3depths$depth_bin == "0-200m",]
+tempupme <- temp3depths[temp3depths$depth_bin == "200-500m",]
+templowme <- temp3depths[temp3depths$depth_bin == "500-1000m",]
+
+#tlong <- data.frame(tempout) %>% tibble::rownames_to_column(var = "Row") %>% pivot_longer(-Row, names_to = "depth", values_to = "temp" ) %dplyr::select(!depth_bin) %>%
+sal3depths %>%  pivot_longer(-c(MaxSal, MeanSal, MinSal, depth_bin), names_to = "Month", values_to = "ModelSalinity") %>% dplyr::mutate_at(c('ModelSalinity'), as.numeric) %>% ggplot(aes(x = MeanSal, y = ModelSalinity)) + geom_point() + facet_wrap(.~depth_bin, scales = "free")+ geom_abline(slope=1, intercept=0)
+
+temp3depths %>%  pivot_longer(-c(MaxTemp, MeanTemp, MinTemp, depth_bin), names_to = "Month", values_to = "ModelTemperature") %>% dplyr::mutate_at(c('ModelTemperature'), as.numeric) %>% ggplot(aes(x = MeanTemp, y = ModelTemperature)) + geom_point() + facet_wrap(.~depth_bin, scales = "free")+ geom_abline(slope=1, intercept=0)
+
+```
+
+#calculate annual amplitude and means
+```{r}
+insituandmodel <- insituandmodel %>% mutate_at(c("Temp...Jan", "Temp...Feb", "Temp...Mar", "Temp...Apr", "Temp...May", "Temp...Jun", "Temp...Jul", "Temp...Aug", "Temp...Sep", "Temp...Oct", "Temp...Nov", "Temp...Dec", "Sal...Jan", "Sal...Feb", "Sal...Mar", "Sal...Apr", "Sal...May", "Sal...Jun", "Sal...Jul", "Sal...Aug", "Sal...Sep", "Sal...Oct", "Sal...Nov", "Sal...Dec"), as.numeric)
+
+insituandmodel$meanModelTemp <- rowMeans(insituandmodel[,c("Temp...Jan", "Temp...Feb", "Temp...Mar", "Temp...Apr", "Temp...May", "Temp...Jun", "Temp...Jul", "Temp...Aug", "Temp...Sep", "Temp...Oct", "Temp...Nov", "Temp...Dec")])
+insituandmodel$meanModelSal <- rowMeans(insituandmodel[,c("Sal...Jan", "Sal...Feb", "Sal...Mar", "Sal...Apr", "Sal...May", "Sal...Jun", "Sal...Jul", "Sal...Aug", "Sal...Sep", "Sal...Oct", "Sal...Nov", "Sal...Dec")])
+insituandmodel <- insituandmodel %>% 
+  rowwise() %>% 
+  mutate(maxModelTemp = as.numeric(max(c_across(starts_with("Temp...")))), minModelTemp = as.numeric(min(c_across(starts_with("Temp...")))),
+         maxModelSal = as.numeric(max(c_across(starts_with("Sal...")))), minModelSal = as.numeric(min(c_across(starts_with("Sal...")))))
+insituandmodel$ampModelTemp <- insituandmodel$maxModelTemp - insituandmodel$minModelTemp
+insituandmodel$ampModelSal <- insituandmodel$maxModelSal - insituandmodel$minModelSal
+insituandmodel <- data.frame(insituandmodel)
+
+insituandmodel <- insituandmodel[!is.na(insituandmodel$depth_bin),]
+rownames(insituandmodel) <- insituandmodel$uniqueidentifier
+sample_data(zoops18S) <- sample_data(insituandmodel)
+```
+
+```{r}
+#save(zoops18S, zoopsCOI, file = "~/Documents/Chapter4/BasinScale_AllSamples_v1/CleanZooplanktonPhyloseqs.rdat")
+
+```
+
+
+```{r}
+```
+
+
+
+
+
+
+
+
+
+
+
+

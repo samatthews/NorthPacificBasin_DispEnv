@@ -1,0 +1,171 @@
+---
+title: "Analyze_07_Mantel"
+output: html_document
+date: "2024-11-19"
+---
+
+
+```{r setup, include=FALSE}
+library(microshades)
+library(phyloseq)
+library(vegan)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(metagMisc)
+#library(viridis)
+library(RColorBrewer)
+library(ggExtra)
+library(beepr)
+library(readxl)
+library(ggforce)
+library(ggrepel)
+library(ggpubr)
+library(cowplot)
+library(ggtext)
+library(sp)
+library(vegan)
+library(grid)
+library(ggsci)
+set.seed(00110011)
+theme_set(theme_bw())
+theme_update(plot.title = element_text(hjust = 0.5))
+depthcolors <- c("#4DAF4A", "#E41A1C", "#984EA3")
+names(depthcolors) <- c("0-200m", "200-500m", "500-1000m")
+markercolors <- c("#D81B60","#1E88E5")
+names(markercolors) <- c("18S", "COI")
+
+```
+
+```{r}
+load("~/Documents/Chapter4/BasinScale_Analysis_v2_2024/data_objects/CleanZooplanktonPhyloseqs.rdat")
+```
+
+
+# environment similarity:community similarity
+- Does epipelagic/mesopelagic community similarity covary with environmental similarity? 
+- Can I calculate distance among samples and test for correlation with environmental differences? 
+- Is environmental similarity the same as biogeochemical provinces? Consider whether to include biogeochemical provinces
+
+-> we'll use bray-curtis similarity, since there's variability in sampling type and depth bins etc 
+##get distance matrixes, 18S
+```{r community distance}
+#subset to depths
+epi18 <- subset_samples(zoops18S, depthbin == "0-200m")
+upmeso18 <- subset_samples(zoops18S, depthbin == "200-500m")
+lowmeso18 <- subset_samples(zoops18S, depthbin == "500-1000m")
+
+#bray curtis
+bc.epi18 <- phyloseq::distance(epi18, method = "bray")
+bc.upmeso18 <- phyloseq::distance(upmeso18, method = "bray")
+bc.lowmeso18 <- phyloseq::distance(lowmeso18, method = "bray")
+
+#model temp
+epi18.modtemp <- as(sample_data(epi18), "data.frame") %>% dplyr::select(ends_with("meanModelTemp")) %>% dist(method = "maximum")
+upmeso18.modtemp <- as(sample_data(upmeso18), "data.frame") %>% dplyr::select("meanModelTemp") %>% dist(method = "maximum")
+lowmeso18.modtemp <- as(sample_data(lowmeso18), "data.frame") %>% dplyr::select("meanModelTemp") %>% dist(method = "maximum")
+
+#model salinity
+epi18.modsal <- as(sample_data(epi18), "data.frame") %>% dplyr::select(ends_with("meanModelSal")) %>% dist(method = "maximum")
+upmeso18.modsal <- as(sample_data(upmeso18), "data.frame") %>% dplyr::select("meanModelSal") %>% dist(method = "maximum")
+lowmeso18.modsal <- as(sample_data(lowmeso18), "data.frame") %>% dplyr::select("meanModelSal") %>% dist(method = "maximum")
+
+#measured temp
+epi18.temp <- as(sample_data(epi18), "data.frame") %>% dplyr::select(ends_with("MeanTemp")) %>% dist(method = "maximum")
+upmeso18.temp <- as(sample_data(upmeso18), "data.frame") %>% dplyr::select("MeanTemp") %>% dist(method = "maximum")
+lowmeso18.temp <- as(sample_data(lowmeso18), "data.frame") %>% dplyr::select("MeanTemp") %>% dist(method = "maximum")
+
+#measured salinity
+epi18.sal <- as(sample_data(epi18), "data.frame") %>% dplyr::select(ends_with("MeanSal")) %>% dist(method = "maximum")
+upmeso18.sal <- as(sample_data(upmeso18), "data.frame") %>% dplyr::select("MeanSal") %>% dist(method = "maximum")
+lowmeso18.sal <- as(sample_data(lowmeso18), "data.frame") %>% dplyr::select("MeanSal") %>% dist(method = "maximum")
+
+#measured oxygen
+epi18.oxy <- as(sample_data(epi18), "data.frame") %>% dplyr::select(ends_with("MeanOxy")) %>% dist(method = "maximum")
+upmeso18.oxy <- as(sample_data(upmeso18), "data.frame") %>% dplyr::select("MeanOxy") %>% dist(method = "maximum")
+lowmeso18.oxy <- as(sample_data(lowmeso18), "data.frame") %>% dplyr::select("MeanOxy") %>% dist(method = "maximum")
+
+#NPP
+epi18.npp <- as(sample_data(epi18), "data.frame") %>% dplyr::select(ends_with("npp_meanyearlytotal")) %>% dist(method = "maximum")
+upmeso18.npp <- as(sample_data(upmeso18), "data.frame") %>% dplyr::select("npp_meanyearlytotal") %>% dist(method = "maximum")
+lowmeso18.npp <- as(sample_data(lowmeso18), "data.frame") %>% dplyr::select("npp_meanyearlytotal") %>% dist(method = "maximum")
+
+#EF
+epi18.ef <- as(sample_data(epi18), "data.frame") %>% dplyr::select(ends_with("ef_meanyearlytotal")) %>% dist(method = "maximum")
+upmeso18.ef <- as(sample_data(upmeso18), "data.frame") %>% dplyr::select("ef_meanyearlytotal") %>% dist(method = "maximum")
+lowmeso18.ef <- as(sample_data(lowmeso18), "data.frame") %>% dplyr::select("ef_meanyearlytotal") %>% dist(method = "maximum")
+
+
+
+out <- mantel(epi18.modtemp, bc.epi18, method = "spearman")
+mantel(bc.upmeso18, upmeso18.temp, method = "spearman")
+mantel(bc.lowmeso18, lowmeso18.temp, method = "spearman")
+
+
+data.frame(cbind(epi18.temp, bc.epi18)) %>% 
+  ggplot(aes(x=epi18.temp, y=bc.epi18)) +
+  geom_point(alpha = 0.4, size = .3) + 
+#  geom_point()  +theme_bw()+ theme_classic() + 
+#  stat_smooth(method = lm, se = T, color = "black") + 
+#  geom_point() + theme(text = element_text(size = 16)) 
+#  facet_grid(~name_fac, scales = "free_x", labeller = label_parsed) +
+  #xlab("Environmental difference") + 
+  xlab(expression(paste(Delta, " Environment"))) + 
+  ylab("Bray-Curtis Dissimilarity (BCD)") + 
+  ggtitle("COI")+ 
+   stat_cor(method = "spearman", label.x.npc = .35, label.y.npc = 0.75,
+            cor.coef.name = "rho",
+            alternative = "greater", geom = "label", 
+          #  aes(label = paste(after_stat(r), cut(after_stat(p), 
+          #                                    breaks = c(-Inf, 0.001, 0.01, 0.05, Inf),
+          #                                    labels = c("'***'", "'**'", "'*'", "'ns'")), sep = "~','~") ),
+            show.legend = F) + 
+    geom_smooth(method = "loess",  show.legend=F) + 
+#  scale_color_manual(values = depthcolors, name = "Depth range")+
+ #    guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) )  + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+```
+
+```{r}
+dist_bray_COI <- phyloseq::distance(zoopsCOI, method = "bray")
+
+```
+
+```{r}
+###time matrix
+###this makes a matrix with differences between each sample in time
+df_md_18 <- as(sample_data(zoops18S), "data.frame")
+temp.dist.18 <- df_md_18 %>% dplyr::select(ends_with("meanModelTemp")) %>% dist(method = "maximum")
+temp.matrix.18 <- as.matrix(temp.dist.18)
+```
+
+
+```{r}
+mantel(dist_bray_18, temp.dist.18, method = "spearman")
+
+
+```
+
+
+```{r}
+
+
+dataP = data.frame(cbind(dist_bray_18, temp.dist.18))
+
+
+library(ggplot2)
+p <- ggplot(dataP, aes(BrayForPlotVir, BrayForPlotBac)) +
+  geom_point()  +theme_bw()+ theme_classic() + 
+  stat_smooth(method = lm, se = T, color = "black") + 
+  geom_point() + theme(text = element_text(size = 16)) + 
+  xlab("\nDistance between pairs in viral ASVs (Bray)") +
+  ylab("Distance between pairs in bacterial ASVs (Bray)\n")
+
+
+p
+
+
+```
+

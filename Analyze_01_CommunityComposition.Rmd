@@ -1,0 +1,923 @@
+---
+title: "Analyze_01_CommunityComposition"
+output: html_document
+date: "2024-11-04"
+---
+```{r setup, include=FALSE}
+library(microshades)
+library(phyloseq)
+library(vegan)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(metagMisc)
+#library(viridis)
+library(RColorBrewer)
+library(ggExtra)
+library(beepr)
+library(readxl)
+library(ggforce)
+library(ggrepel)
+library(ggpubr)
+library(cowplot)
+library(ggtext)
+library(sp)
+library(vegan)
+library(grid)
+library(ggsci)
+set.seed(00110011)
+theme_set(theme_bw())
+theme_update(plot.title = element_text(hjust = 0.5))
+depthcolors <- c("#4DAF4A", "#E41A1C", "#984EA3")
+names(depthcolors) <- c("0-200m", "200-500m", "500-1000m")
+markercolors <- c("#D81B60","#1E88E5")
+names(markercolors) <- c("18S", "COI")
+
+```
+
+define modified plot_bar function that will keep unused levels in legend
+```{r}
+plot_bar <- function (physeq, x = "Sample", y = "Abundance", fill = NULL, 
+  title = NULL, facet_grid = NULL) 
+{
+  mdf = psmelt(physeq)
+  p = ggplot(mdf, aes_string(x = x, y = y, fill = fill))
+  p = p + geom_bar(stat = "identity", position = "stack", 
+    color = "black", show.legend = TRUE)
+  p = p + theme(axis.text.x = element_text(angle = -90, hjust = 0))
+  if (!is.null(facet_grid)) {
+    p <- p + facet_grid(facet_grid)
+  }
+  if (!is.null(title)) {
+    p <- p + ggtitle(title)
+  }
+  return(p)
+}
+
+```
+
+
+
+```{r}
+load("~/Documents/Chapter4/BasinScale_Analysis_v2_2024/data_objects/CleanZooplanktonPhyloseqs.rdat")
+
+```
+
+#plot community composition for all samples
+
+##by region
+```{r}
+RegionDepth18S <- zoops18S
+sample_data(RegionDepth18S)$formerging <- paste(sample_data(RegionDepth18S)$NewRegion, sample_data(RegionDepth18S)$depth_bin, sep = ":")
+RegionDepth18S <- merge_samples(RegionDepth18S, group = "formerging")
+sample_data(RegionDepth18S)$NewRegion <- stringr::str_split_i(sample_names(RegionDepth18S), ":", i = 1)
+sample_data(RegionDepth18S)$depth_bin <- stringr::str_split_i(sample_names(RegionDepth18S), ":", i = 2)
+tax_table(RegionDepth18S)[,"Phylum"][tax_table(RegionDepth18S)[,"Phylum"] == "Bryozoa"] <- "Other"
+tax_table(RegionDepth18S)[,"Phylum"][tax_table(RegionDepth18S)[,"Phylum"] == "Nemertea"] <- "Other"
+tax_table(RegionDepth18S)[,"Phylum"][tax_table(RegionDepth18S)[,"Phylum"] == "Platyhelminthes"] <- "Other"
+tax_table(RegionDepth18S)[,"Phylum"][tax_table(RegionDepth18S)[,"Phylum"] == "Sipuncula"] <- "Other"
+RegionDepth18S_glom <- tax_glom(transform_sample_counts(RegionDepth18S,  function(x) x / sum(x)), "Phylum")
+
+RegionDepthCOI <- zoopsCOI
+sample_data(RegionDepthCOI)$formerging <- paste(sample_data(RegionDepthCOI)$NewRegion, sample_data(RegionDepthCOI)$depth_bin, sep = ":")
+RegionDepthCOI <- merge_samples(RegionDepthCOI, group = "formerging")
+sample_data(RegionDepthCOI)$NewRegion <- stringr::str_split_i(sample_names(RegionDepthCOI), ":", i = 1)
+sample_data(RegionDepthCOI)$depth_bin <- stringr::str_split_i(sample_names(RegionDepthCOI), ":", i = 2)
+tax_table(RegionDepthCOI)[,"Phylum"][tax_table(RegionDepthCOI)[,"Phylum"] == "Bryozoa"] <- "Other"
+tax_table(RegionDepthCOI)[,"Phylum"][tax_table(RegionDepthCOI)[,"Phylum"] == "Nemertea"] <- "Other"
+tax_table(RegionDepthCOI)[,"Phylum"][tax_table(RegionDepthCOI)[,"Phylum"] == "Platyhelminthes"] <- "Other"
+tax_table(RegionDepthCOI)[,"Phylum"][tax_table(RegionDepthCOI)[,"Phylum"] == "Sipuncula"] <- "Other"
+RegionDepthCOI_glom <- tax_glom(transform_sample_counts(RegionDepthCOI,  function(x) x / sum(x)), "Phylum")
+
+zoopsCOI_glom <- zoopsCOI
+tax_table(zoopsCOI_glom)[,"Phylum"][tax_table(zoopsCOI_glom)[,"Phylum"] == "Bryozoa"] <- "Other"
+tax_table(zoopsCOI_glom)[,"Phylum"][tax_table(zoopsCOI_glom)[,"Phylum"] == "Nemertea"] <- "Other"
+tax_table(zoopsCOI_glom)[,"Phylum"][tax_table(zoopsCOI_glom)[,"Phylum"] == "Platyhelminthes"] <- "Other"
+tax_table(zoopsCOI_glom)[,"Phylum"][tax_table(zoopsCOI_glom)[,"Phylum"] == "Sipuncula"] <- "Other"
+RegionDepth18S <- zoops18S
+sample_data(RegionDepth18S)$formerging <- paste(sample_data(RegionDepth18S)$NewRegion, sample_data(RegionDepth18S)$depth_bin, sep = ":")
+RegionDepth18S <- merge_samples(RegionDepth18S, group = "formerging")
+sample_data(RegionDepth18S)$NewRegion <- stringr::str_split_i(sample_names(RegionDepth18S), ":", i = 1)
+sample_data(RegionDepth18S)$depth_bin <- stringr::str_split_i(sample_names(RegionDepth18S), ":", i = 2)
+tax_table(RegionDepth18S)[,"Phylum"][tax_table(RegionDepth18S)[,"Phylum"] == "Bryozoa"] <- "Other"
+tax_table(RegionDepth18S)[,"Phylum"][tax_table(RegionDepth18S)[,"Phylum"] == "Nemertea"] <- "Other"
+tax_table(RegionDepth18S)[,"Phylum"][tax_table(RegionDepth18S)[,"Phylum"] == "Platyhelminthes"] <- "Other"
+tax_table(RegionDepth18S)[,"Phylum"][tax_table(RegionDepth18S)[,"Phylum"] == "Sipuncula"] <- "Other"
+RegionDepth18S_glom <- tax_glom(transform_sample_counts(RegionDepth18S,  function(x) x / sum(x)), "Phylum")
+
+region_names <- c("Coastal CA" = "Coastal CA",
+                    "N. NPSG" = "N. NPSG",
+                    "WWD & Subpolar" = "WWD &\nSubpolar",
+                    "Kuroshio Curr." = "Kuroshio\nCurr.",
+                    "Tropical" = "Tropical",
+                    "Core NPSG" = "Core NPSG",
+                  "0-200m" ="0 -\n200 m",
+                  "200-500m" = "200 -\n500 m",
+                  "500-1000m" = "500 -\n1000 m") 
+composition18S <- plot_bar(RegionDepth18S_glom, fill = "Phylum", x = "depth_bin") + 
+  coord_flip() +
+  facet_grid(.~NewRegion, scales = "free", labeller = as_labeller(region_names)) + 
+  scale_x_discrete(limits=rev) +
+      scale_y_continuous(breaks = scales::pretty_breaks(n = 3)) + 
+    scale_fill_manual(values = c("Annelida"="#006400","Arthropoda"="#0000EE", "Chaetognatha" = "#FF6EB4", "Cnidaria" = "#FFC125", "Ctenophora" = "#9A32CD", "Mollusca" = "#EE2C2C", "Other" = "#00C5CD"))+ 
+  xlab("Depth (m)") + 
+  ylab("Relative abundance") + 
+  ggtitle("18S") + 
+  theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=0.5))+ 
+  theme(strip.text = element_text(margin = margin(1,0.1,1,0.1)))
+
+
+compositionCOI <- plot_bar(RegionDepthCOI_glom, fill = "Phylum", x = "depth_bin") + 
+  coord_flip() +
+  scale_x_discrete(limits=rev) +
+  facet_grid(.~NewRegion, scales = "free", labeller = as_labeller(region_names)) + 
+       scale_y_continuous(breaks = scales::pretty_breaks(n = 3)) + 
+   scale_fill_manual(values = c("Annelida"="#006400","Arthropoda"="#0000EE", "Chaetognatha" = "#FF6EB4", "Cnidaria" = "#FFC125", "Ctenophora" = "#9A32CD", "Mollusca" = "#EE2C2C", "Other" = "#00C5CD"))+ 
+  xlab("Depth (m)") + 
+  ylab("Relative abundance") + 
+  ggtitle("COI")+ 
+  theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=0.5))+ 
+  theme(strip.text = element_text(margin = margin(1,0.1,1,0.1)))
+
+compositionBOTH <- ggarrange(composition18S + ylab(NULL), compositionCOI + ylab(NULL), common.legend = T, ncol = 1, nrow = 2, labels = c("a)", "b)"), legend = "right")
+compositionBOTH <- annotate_figure(compositionBOTH, bottom = "Relative abundance")
+
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/CommunityComposition_bothmarkers_Phyla.pdf", height =4, width = 8)
+compositionBOTH
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/CommunityComposition_bothmarkers_Phyla.jpeg", height =4, width = 8, unit = "in", quality = 100, res = 300)
+compositionBOTH
+dev.off()
+
+
+
+RegionDepth18S_glom <- subset_taxa(zoops18S, Phylum == "Arthropoda")
+sample_data(RegionDepth18S_glom)$formerging <- paste(sample_data(RegionDepth18S_glom)$NewRegion, sample_data(RegionDepth18S_glom)$depth_bin, sep = ":")
+RegionDepth18S_glom <- merge_samples(RegionDepth18S_glom, group = "formerging")
+sample_data(RegionDepth18S_glom)$NewRegion <- stringr::str_split_i(sample_names(RegionDepth18S_glom), ":", i = 1)
+sample_data(RegionDepth18S_glom)$depth_bin <- stringr::str_split_i(sample_names(RegionDepth18S_glom), ":", i = 2)
+tax_table(RegionDepth18S_glom)[,"Order"][tax_table(RegionDepth18S_glom)[,"Order"] == "Harpacticoida"] <- "Other"
+tax_table(RegionDepth18S_glom)[,"Order"][tax_table(RegionDepth18S_glom)[,"Order"] == "Lepadiformes"] <- "Other"
+tax_table(RegionDepth18S_glom)[,"Order"][tax_table(RegionDepth18S_glom)[,"Order"] == "Lithoglyptida"] <- "Other"
+tax_table(RegionDepth18S_glom)[,"Order"][tax_table(RegionDepth18S_glom)[,"Order"] == "Mormonilloida"] <- "Other"
+tax_table(RegionDepth18S_glom)[,"Order"][tax_table(RegionDepth18S_glom)[,"Order"] == "Sessilia"] <- "Other"
+tax_table(RegionDepth18S_glom)[,"Order"][tax_table(RegionDepth18S_glom)[,"Order"] == "Siphonostomatoida"] <- "Other"
+tax_table(RegionDepth18S_glom)[,"Order"][tax_table(RegionDepth18S_glom)[,"Order"] == "Onychopoda"] <- "Other"
+tax_table(RegionDepth18S_glom)[,"Order"][tax_table(RegionDepth18S_glom)[,"Order"] == "Myodocopida"] <- "Other"
+tax_table(RegionDepth18S_glom)[,"Order"][tax_table(RegionDepth18S_glom)[,"Order"] == "Ctenopoda"] <- "Other"
+RegionDepth18S_glom <- tax_glom(transform_sample_counts(RegionDepth18S_glom,  function(x) x / sum(x)), "Order")
+composition18Sarth <- plot_bar(RegionDepth18S_glom, fill = "Order", x = "depth_bin") + 
+  coord_flip() +
+  facet_grid(.~NewRegion, scales = "free", labeller = as_labeller(region_names)) + 
+  scale_x_discrete(limits=rev) +
+      scale_y_continuous(breaks = scales::pretty_breaks(n = 3)) + 
+    scale_fill_manual(values = c("Amphipoda"="#e41a1c","Calanoida"="#377eb8", "Cyclopoida" = "#ff7f00", "Decapoda" = "#984ea3", "Euphausiacea" = "#ffff33", "Halocyprida" = "#4daf4a", "Lophogastrida" = "#a65628", "Other" = "#f781bf"), limits = c("Amphipoda", "Calanoida", "Cyclopoida", "Decapoda", "Euphausiacea", "Halocyprida", "Lophogastrida", "Other"), drop = F)+ 
+  xlab("Depth (m)") + 
+  ylab("Relative abundance") + 
+  ggtitle("18S")+ 
+  theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=0.5))+ 
+  theme(strip.text = element_text(margin = margin(1,0.1,1,0.1)))
+composition18Sarth
+
+
+
+
+RegionDepthCOI_glom <- subset_taxa(zoopsCOI, Phylum == "Arthropoda")
+sample_data(RegionDepthCOI_glom)$formerging <- paste(sample_data(RegionDepthCOI_glom)$NewRegion, sample_data(RegionDepthCOI_glom)$depth_bin, sep = ":")
+RegionDepthCOI_glom <- merge_samples(RegionDepthCOI_glom, group = "formerging")
+sample_data(RegionDepthCOI_glom)$NewRegion <- stringr::str_split_i(sample_names(RegionDepthCOI_glom), ":", i = 1)
+sample_data(RegionDepthCOI_glom)$depth_bin <- stringr::str_split_i(sample_names(RegionDepthCOI_glom), ":", i = 2)
+tax_table(RegionDepthCOI_glom)[,"Order"][tax_table(RegionDepthCOI_glom)[,"Order"] == "Harpacticoida"] <- "Other"
+tax_table(RegionDepthCOI_glom)[,"Order"][tax_table(RegionDepthCOI_glom)[,"Order"] == "Lepadiformes"] <- "Other"
+tax_table(RegionDepthCOI_glom)[,"Order"][tax_table(RegionDepthCOI_glom)[,"Order"] == "Lithoglyptida"] <- "Other"
+tax_table(RegionDepthCOI_glom)[,"Order"][tax_table(RegionDepthCOI_glom)[,"Order"] == "Mormonilloida"] <- "Other"
+tax_table(RegionDepthCOI_glom)[,"Order"][tax_table(RegionDepthCOI_glom)[,"Order"] == "Sessilia"] <- "Other"
+tax_table(RegionDepthCOI_glom)[,"Order"][tax_table(RegionDepthCOI_glom)[,"Order"] == "Siphonostomatoida"] <- "Other"
+tax_table(RegionDepthCOI_glom)[,"Order"][tax_table(RegionDepthCOI_glom)[,"Order"] == "Onychopoda"] <- "Other"
+tax_table(RegionDepthCOI_glom)[,"Order"][tax_table(RegionDepthCOI_glom)[,"Order"] == "Myodocopida"] <- "Other"
+tax_table(RegionDepthCOI_glom)[,"Order"][tax_table(RegionDepthCOI_glom)[,"Order"] == "Ctenopoda"] <- "Other"
+RegionDepthCOI_glom <- tax_glom(transform_sample_counts(RegionDepthCOI_glom,  function(x) x / sum(x)), "Order")
+compositionCOIarth <- plot_bar(RegionDepthCOI_glom, fill = "Order", x = "depth_bin") + 
+  coord_flip() +
+  scale_x_discrete(limits=rev) +
+      scale_y_continuous(breaks = scales::pretty_breaks(n = 3)) + 
+  facet_grid(.~NewRegion, scales = "free", labeller = as_labeller(region_names)) + 
+    scale_fill_manual(values = c("Amphipoda"="#e41a1c","Calanoida"="#377eb8", "Cyclopoida" = "#ff7f00", "Decapoda" = "#984ea3", "Euphausiacea" = "#ffff33", "Halocyprida" = "#4daf4a", "Lophogastrida" = "#a65628", "Other" = "#f781bf"), limits = c("Amphipoda", "Calanoida", "Cyclopoida", "Decapoda", "Euphausiacea", "Halocyprida", "Lophogastrida", "Other"), drop = F)+ 
+  xlab("Depth (m)") + 
+  ylab("Relative abundance") + 
+  ggtitle("COI")+ 
+  theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=0.5))+ 
+  theme(strip.text = element_text(margin = margin(1,0.1,1,0.1)))
+compositionCOIarth
+
+compositionBOTH <- ggarrange(composition18S + ylab(NULL) + ggtitle("18S, All Zooplankton"), compositionCOI + ylab(NULL) + ggtitle("COI, All Zooplankton"), common.legend = T, ncol = 1, nrow = 2, labels = c("a)", "b)"), legend = "right")
+arthBOTH <- ggarrange(composition18Sarth + ylab(NULL) + ggtitle("18S, Arthropoda"), compositionCOIarth + ylab(NULL) + ggtitle("COI, Arthropoda"), common.legend = T, ncol = 1, nrow = 2, labels = c("c)", "d)"), legend = "right")
+arthBOTH <- annotate_figure(arthBOTH, bottom = "Relative abundance")
+
+BOTHBOTH <- ggarrange(compositionBOTH, arthBOTH, ncol = 1, nrow = 2)
+
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/CommunityComposition_bothmarkers_Phyla_and_Order.pdf", height =5.7, width = 8)
+BOTHBOTH
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/CommunityComposition_bothmarkers_Phyla_and_Order.jpeg", height =5.5, width = 8, unit = "in", quality = 100, res = 300)
+BOTHBOTH
+dev.off()
+
+```
+
+##by region, individual samples
+```{r}
+
+
+zoops18S_glom <- zoops18S
+tax_table(zoops18S_glom)[,"Phylum"][tax_table(zoops18S_glom)[,"Phylum"] == "Bryozoa"] <- "Other"
+tax_table(zoops18S_glom)[,"Phylum"][tax_table(zoops18S_glom)[,"Phylum"] == "Nemertea"] <- "Other"
+tax_table(zoops18S_glom)[,"Phylum"][tax_table(zoops18S_glom)[,"Phylum"] == "Platyhelminthes"] <- "Other"
+tax_table(zoops18S_glom)[,"Phylum"][tax_table(zoops18S_glom)[,"Phylum"] == "Sipuncula"] <- "Other"
+zoops18S_glom <- tax_glom(transform_sample_counts(zoops18S_glom,  function(x) x / sum(x)), "Phylum")
+sample_data(zoops18S_glom)$tow <- paste(sample_data(zoops18S_glom)$StationID, stringr::str_split_i((sample_data(zoops18S_glom)$Diel), "", i=1), sep = ", ")
+compsmp18S <- plot_bar(transform_sample_counts(tax_glom(zoops18S_glom, "Phylum"), function(x) x / sum(x)), fill = "Phylum", x = "tow") + 
+  facet_grid(depth_bin~NewRegion, scales = "free", space = "free_x", labeller = as_labeller(region_names)) + 
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 3)) + 
+    scale_fill_manual(values = c("Annelida"="#006400","Arthropoda"="#0000EE", "Chaetognatha" = "#FF6EB4", "Cnidaria" = "#FFC125", "Ctenophora" = "#9A32CD", "Mollusca" = "#EE2C2C", "Other" = "#00C5CD"))
+compsmp18S <- compsmp18S + 
+  #scale_x_discrete(labels = compsmp18S$data$StationID) + 
+  xlab("Sampling location") + 
+  ylab("Relative abundance, 18S")
+
+zoopsCOI_glom <- zoopsCOI
+tax_table(zoopsCOI_glom)[,"Phylum"][tax_table(zoopsCOI_glom)[,"Phylum"] == "Bryozoa"] <- "Other"
+tax_table(zoopsCOI_glom)[,"Phylum"][tax_table(zoopsCOI_glom)[,"Phylum"] == "Nemertea"] <- "Other"
+tax_table(zoopsCOI_glom)[,"Phylum"][tax_table(zoopsCOI_glom)[,"Phylum"] == "Platyhelminthes"] <- "Other"
+tax_table(zoopsCOI_glom)[,"Phylum"][tax_table(zoopsCOI_glom)[,"Phylum"] == "Sipuncula"] <- "Other"
+zoopsCOI_glom <- tax_glom(transform_sample_counts(zoopsCOI_glom,  function(x) x / sum(x)), "Phylum")
+sample_data(zoopsCOI_glom)$tow <- paste(sample_data(zoopsCOI_glom)$StationID, stringr::str_split_i((sample_data(zoopsCOI_glom)$Diel), "", i = 1), sep = ", ")
+compsmpCOI <- plot_bar(transform_sample_counts(tax_glom(zoopsCOI_glom, "Phylum"), function(x) x / sum(x)), fill = "Phylum", x = "tow") + 
+  facet_grid(depth_bin~NewRegion, scales = "free", space = "free_x", labeller = as_labeller(region_names)) + 
+    scale_y_continuous(breaks = scales::pretty_breaks(n = 3)) + 
+    scale_fill_manual(values = c("Annelida"="#006400","Arthropoda"="#0000EE", "Chaetognatha" = "#FF6EB4", "Cnidaria" = "#FFC125", "Ctenophora" = "#9A32CD", "Mollusca" = "#EE2C2C", "Other" = "#00C5CD"))
+compsmpCOI <- compsmpCOI + 
+  #scale_x_discrete(labels = compsmpCOI$data$StationID) + 
+  xlab("Sampling location") + 
+  ylab("Relative abundance, COI")
+
+zoops18S_glom <- subset_taxa(zoops18S, Phylum == "Arthropoda")
+zoops18S_glom <- tax_glom(transform_sample_counts(zoops18S_glom,  function(x) x / sum(x)), "Order")
+tax_table(zoops18S_glom)[,"Order"][tax_table(zoops18S_glom)[,"Order"] == "Harpacticoida"] <- "Other"
+tax_table(zoops18S_glom)[,"Order"][tax_table(zoops18S_glom)[,"Order"] == "Lepadiformes"] <- "Other"
+tax_table(zoops18S_glom)[,"Order"][tax_table(zoops18S_glom)[,"Order"] == "Lithoglyptida"] <- "Other"
+tax_table(zoops18S_glom)[,"Order"][tax_table(zoops18S_glom)[,"Order"] == "Mormonilloida"] <- "Other"
+tax_table(zoops18S_glom)[,"Order"][tax_table(zoops18S_glom)[,"Order"] == "Sessilia"] <- "Other"
+tax_table(zoops18S_glom)[,"Order"][tax_table(zoops18S_glom)[,"Order"] == "Siphonostomatoida"] <- "Other"
+
+sample_data(zoops18S_glom)$tow <- paste(sample_data(zoops18S_glom)$StationID, stringr::str_split_i((sample_data(zoops18S_glom)$Diel), "", i=1), sep = ", ")
+arth18S <- plot_bar(transform_sample_counts(tax_glom(zoops18S_glom, "Order"), function(x) x / sum(x)), fill = "Order", x = "tow") + 
+  facet_grid(depth_bin~NewRegion, scales = "free", space = "free_x", labeller = as_labeller(region_names)) + 
+    scale_y_continuous(breaks = scales::pretty_breaks(n = 3)) + 
+    scale_fill_manual(values = c("Amphipoda"="#e41a1c","Calanoida"="#377eb8", "Cyclopoida" = "#ff7f00", "Decapoda" = "#984ea3", "Euphausiacea" = "#ffff33", "Halocyprida" = "#4daf4a", "Lophogastrida" = "#a65628", "Other" = "#f781bf"), limits = c("Amphipoda", "Calanoida", "Cyclopoida", "Decapoda", "Euphausiacea", "Halocyprida", "Lophogastrida", "Other"))
+arth18S <- arth18S + 
+  #scale_x_discrete(labels = compsmp18S$data$StationID) + 
+  xlab("Sampling location") + 
+  ylab("Relative abundance, 18S")
+
+zoopsCOI_glom <- subset_taxa(zoopsCOI, Phylum == "Arthropoda")
+zoopsCOI_glom <- tax_glom(transform_sample_counts(zoopsCOI_glom,  function(x) x / sum(x)), "Order")
+tax_table(zoopsCOI_glom)[,"Order"][tax_table(zoopsCOI_glom)[,"Order"] == "Harpacticoida"] <- "Other"
+tax_table(zoopsCOI_glom)[,"Order"][tax_table(zoopsCOI_glom)[,"Order"] == "Lepadiformes"] <- "Other"
+tax_table(zoopsCOI_glom)[,"Order"][tax_table(zoopsCOI_glom)[,"Order"] == "Lithoglyptida"] <- "Other"
+tax_table(zoopsCOI_glom)[,"Order"][tax_table(zoopsCOI_glom)[,"Order"] == "Mormonilloida"] <- "Other"
+tax_table(zoopsCOI_glom)[,"Order"][tax_table(zoopsCOI_glom)[,"Order"] == "Sessilia"] <- "Other"
+tax_table(zoopsCOI_glom)[,"Order"][tax_table(zoopsCOI_glom)[,"Order"] == "Siphonostomatoida"] <- "Other"
+tax_table(zoopsCOI_glom)[,"Order"][tax_table(zoopsCOI_glom)[,"Order"] == "Onychopoda"] <- "Other"
+tax_table(zoopsCOI_glom)[,"Order"][tax_table(zoopsCOI_glom)[,"Order"] == "Myodocopida"] <- "Other"
+tax_table(zoopsCOI_glom)[,"Order"][tax_table(zoopsCOI_glom)[,"Order"] == "Ctenopoda"] <- "Other"
+sample_data(zoopsCOI_glom)$tow <- paste(sample_data(zoopsCOI_glom)$StationID, stringr::str_split_i((sample_data(zoopsCOI_glom)$Diel), "", i = 1), sep = ", ")
+arthcoi <- plot_bar(transform_sample_counts(tax_glom(zoopsCOI_glom, "Order"), function(x) x / sum(x)), fill = "Order", x = "tow") + 
+  facet_grid(depth_bin~NewRegion, scales = "free", space = "free_x", labeller = as_labeller(region_names)) + 
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 3)) + 
+    scale_fill_manual(values = c("Amphipoda"="#e41a1c","Calanoida"="#377eb8", "Cyclopoida" = "#ff7f00", "Decapoda" = "#984ea3", "Euphausiacea" = "#ffff33", "Halocyprida" = "#4daf4a", "Lophogastrida" = "#a65628", "Other" = "#f781bf"), limits = c("Amphipoda", "Calanoida", "Cyclopoida", "Decapoda", "Euphausiacea", "Halocyprida", "Lophogastrida", "Other"))
+arthcoi <- arthcoi + 
+  xlab("Sampling location") + 
+  ylab("Relative abundance, COI")
+
+
+compositionBOTH <- ggarrange(compsmp18S, compsmpCOI, common.legend = T, ncol = 1, nrow = 2, labels = c("a)", "b)"), legend = "right")
+compositionARTH <- ggarrange(arth18S, arthcoi, common.legend = T, ncol = 1, nrow = 2, labels = c("c)", "d)"), legend = "right")
+
+compositionFOUR <- ggarrange(compositionBOTH, compositionARTH, ncol = 1, nrow = 2)
+  
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/CommunityComposition_bothmarkers_Phyla_bysample.pdf", height =6, width = 8.5)
+compositionBOTH
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/CommunityComposition_bothmarkers_Phyla_bysample.jpeg", height =6, width = 8.5, unit = "in", quality = 100, res = 300)
+compositionBOTH
+dev.off()
+
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/CommunityComposition_bothmarkers_Phyla_and_Order_bysample.pdf", height =10, width = 8.5)
+compositionFOUR
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/CommunityComposition_bothmarkers_Phyla_and_Order_bysample.jpeg", height =10, width = 8.5, unit = "in", quality = 100, res = 300)
+compositionFOUR
+dev.off()
+
+```
+
+
+
+#plot richness across latitudes
+## by latitudinal gradient within depths
+```{r}
+sample_data(zoops18S)$LatitudeLine <- NA
+sample_data(zoops18S)$LatitudeLine[sample_data(zoops18S)$Location.ID  %in% c(23,19,17,16,18,1,2,3,6)] <- "Central"
+sample_data(zoops18S)$LatitudeLine[sample_data(zoops18S)$Location.ID  %in% c(32,11,12,13,10,31,20)] <- "Eastern"
+centralpacific18S <- subset_samples(zoops18S, Location.ID %in% c(23,19,17,16,18,1,2,3,6))
+easternpacific18S <- subset_samples(zoops18S, Location.ID %in% c(32,11,12,13,10,31,20))
+
+sample_data(zoopsCOI)$LatitudeLine <- NA
+sample_data(zoopsCOI)$LatitudeLine[sample_data(zoopsCOI)$Location.ID  %in% c(23,19,17,16,18,1,2,3,6)] <- "Central"
+sample_data(zoopsCOI)$LatitudeLine[sample_data(zoopsCOI)$Location.ID  %in% c(32,11,12,13,10,31,20)] <- "Eastern"
+centralpacificCOI <- subset_samples(zoopsCOI, Location.ID %in% c(23,19,17,16,18,1,2,3,6))
+easternpacificCOI <- subset_samples(zoopsCOI, Location.ID %in% c(32,11,12,13,10,31,20))
+
+ordersC_18s <- sort(table(c((tax_table(centralpacific18S)[,c("Order")]))), decreasing = T)
+ordersE_18s <- sort(table(c((tax_table(easternpacific18S)[,c("Order")]))), decreasing = T)
+orders_18s <- names(sort(table(c(tax_table(easternpacific18S)[,c("Order")], tax_table(centralpacificCOI)[,c("Order")]))))
+
+ordersC_coi <- sort(table(c((tax_table(centralpacificCOI)[,c("Order")]))), decreasing = T)
+ordersE_coi <- sort(table(c((tax_table(easternpacificCOI)[,c("Order")]))), decreasing = T)
+orders_coi <- names(sort(table(c(tax_table(easternpacificCOI)[,c("Order")], tax_table(centralpacificCOI)[,c("Order")]))))
+
+ps_list_18S <- list(subset_taxa(centralpacific18S, Order == names(ordersC_18s)[1]),
+                subset_taxa(centralpacific18S, Order == names(ordersC_18s)[2]),
+                subset_taxa(centralpacific18S, Order == names(ordersC_18s)[3]),
+                subset_taxa(centralpacific18S, Order == names(ordersC_18s)[4]),
+                subset_taxa(centralpacific18S, Order == names(ordersC_18s)[5]),
+                subset_taxa(centralpacific18S, Order == names(ordersC_18s)[6]),
+                subset_taxa(centralpacific18S, Order == names(ordersC_18s)[7]),
+                subset_taxa(centralpacific18S, Order == names(ordersC_18s)[8]),
+                centralpacific18S,
+                subset_taxa(easternpacific18S, Order == names(ordersE_18s)[1]),
+                subset_taxa(easternpacific18S, Order == names(ordersE_18s)[2]),
+                subset_taxa(easternpacific18S, Order == names(ordersE_18s)[3]),
+                subset_taxa(easternpacific18S, Order == names(ordersE_18s)[4]),
+                subset_taxa(easternpacific18S, Order == names(ordersE_18s)[5]),
+                subset_taxa(easternpacific18S, Order == names(ordersE_18s)[6]),
+                subset_taxa(easternpacific18S, Order == names(ordersE_18s)[7]),
+                subset_taxa(easternpacific18S, Order == names(ordersE_18s)[8]),
+                easternpacific18S)
+
+ps_list_COI <- list(subset_taxa(centralpacificCOI, Order == names(ordersC_coi)[1]),
+                subset_taxa(centralpacificCOI, Order == names(ordersC_coi)[2]),
+                subset_taxa(centralpacificCOI, Order == names(ordersC_coi)[3]),
+                subset_taxa(centralpacificCOI, Order == names(ordersC_coi)[4]),
+                subset_taxa(centralpacificCOI, Order == names(ordersC_coi)[5]),
+                subset_taxa(centralpacificCOI, Order == names(ordersC_coi)[6]),
+                subset_taxa(centralpacificCOI, Order == names(ordersC_coi)[7]),
+               # subset_taxa(centralpacificCOI, Order == names(ordersC_coi)[8]),
+                centralpacificCOI,
+                subset_taxa(easternpacificCOI, Order == names(ordersE_coi)[1]),
+                subset_taxa(easternpacificCOI, Order == names(ordersE_coi)[2]),
+                subset_taxa(easternpacificCOI, Order == names(ordersE_coi)[3]),
+                subset_taxa(easternpacificCOI, Order == names(ordersE_coi)[4]),
+                subset_taxa(easternpacificCOI, Order == names(ordersE_coi)[5]),
+                subset_taxa(easternpacificCOI, Order == names(ordersE_coi)[6]),
+                subset_taxa(easternpacificCOI, Order == names(ordersE_coi)[7]),
+               # subset_taxa(easternpacificCOI, Order == names(ordersE_coi)[8]),
+                easternpacificCOI)
+
+names(ps_list_18S) <- c(names(ordersC_18s)[1:8], "All taxa", names(ordersE_18s)[1:8], "All taxa")
+names(ps_list_COI) <- c(names(ordersC_coi)[1:7], "All taxa", names(ordersE_coi)[1:7], "All taxa")
+
+richness18S <- ps_list_18S %>%
+    # convert otu_table to presence/absence
+    purrr::map(transform_sample_counts, function(x) 1 * (x > 0)) %>%
+    # Sample sum will now be the number of present taxa
+    purrr::map(sample_sums)
+richness18S
+
+richness18S <- ps_list_18S %>%
+    purrr::map(otu_table) %>%
+    purrr::map(vegan::estimateR, index = "chao")
+richness18S
+richness18S <- lapply(richness18S, function(x) return(x[2,]))
+richness18S
+
+
+richnessCOI <- ps_list_COI %>%
+    # convert otu_table to presence/absence
+    purrr::map(transform_sample_counts, function(x) 1 * (x > 0)) %>%
+    # Sample sum will now be the number of present taxa
+    purrr::map(sample_sums)
+richnessCOI
+
+richnessCOI <- ps_list_COI %>%
+    purrr::map(otu_table) %>%
+    purrr::map(vegan::estimateR, index = "chao", display = "S.chao1")
+richnessCOI <- lapply(richnessCOI, function(x) return(x[2,]))
+richnessCOI
+
+tbl18s <- richness18S %>%
+    purrr::map(tibble::enframe, "Sample", "Richness") %>%
+    bind_rows(.id = "Rank")
+sam18s <- sample_data(zoops18S) %>% as_tibble(rownames = "Sample")
+tbl18s <- left_join(tbl18s, sam18s, by = "Sample")
+tbl18s <- tbl18s %>%
+    mutate(Rank = factor(Rank))
+
+tblCOI <- richnessCOI %>%
+    purrr::map(tibble::enframe, "Sample", "Richness") %>%
+    dplyr::bind_rows(.id = "Rank")
+samCOI <- sample_data(zoopsCOI) %>% as_tibble(rownames = "Sample")
+tblCOI <- left_join(tblCOI, samCOI, by = "Sample")
+tblCOI <- tblCOI %>%
+    mutate(Rank = factor(Rank))
+
+
+mycols <- c("black", 
+            "#e31a1c", 
+            "#1f78b4",  
+            "#b2df8a", 
+            "#33a02c", 
+            "#fb9a99", 
+            "#a6cee3",  
+            "#fdbf6f", 
+            "#ff7f00",
+            "#6a3d9a", 
+            "#cab2d6", 
+            "#ffff99", 
+            "#b15928")
+            
+names(mycols) <- c("All taxa", unique(c(names(ordersC_18s)[1:8], names(ordersC_coi)[1:8])))
+
+richness18S <- ggplot(tbl18s, aes(x = Lat.N., y = Richness, group = Rank, color = Rank)) + 
+  geom_point() + 
+  geom_smooth(method = "loess", span = 0.35, se = F, size = 0.5) +
+#  geom_line() + 
+  facet_grid(depth_bin~LatitudeLine) + 
+  scale_color_manual(values = mycols, limits = names(mycols), name = "Taxon") +
+  #scale_color_manual(values = c("black", "black", "#a6cee3", "#e31a1c", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928", "grey")) + 
+  coord_flip() + 
+ # scale_y_log10() +
+  xlab("Latitude (°N)") + 
+  ylab("Estimated richness (Chao)") + 
+  ggtitle("18S")
+richness18S
+
+richnessCOI <- ggplot(tblCOI, aes(x = Lat.N., y = Richness, group = Rank, color = Rank)) + 
+  geom_point() + 
+  geom_smooth(method = "loess", span = 0.35, se = F, size = 0.5) +
+ # geom_line() + 
+  facet_grid(depth_bin~LatitudeLine) + 
+  scale_color_manual(values = mycols, limits = names(mycols), name = "Taxon") +
+  #scale_color_manual(values = c("black", "black", "#a6cee3", "#e31a1c", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928", "grey")) + 
+  coord_flip() + 
+  #scale_y_log10() +
+  xlab("Latitude (°N)") + 
+  ylab("Estimated richness (Chao)") + 
+  ggtitle("COI")
+richnessCOI
+
+both <- ggarrange(richness18S, richnessCOI, common.legend = T, legend = "right", labels = c("a)", "b)"))
+both
+
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/Latitude_richness_bydepth.pdf", height =5, width = 7.5)
+both
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/Latitude_richness_bydepth.jpeg", height =5, width = 7.5, unit = "in", quality = 100, res = 300)
+both
+dev.off()
+```
+
+## by latitudinal gradient, total 0-1000m
+```{r}
+sample_data(zoops18S)$LatitudeLine <- NA
+sample_data(zoops18S)$LatitudeLine[sample_data(zoops18S)$Location.ID  %in% c(23,19,17,16,18,1,2,3,6)] <- "Central"
+sample_data(zoops18S)$LatitudeLine[sample_data(zoops18S)$Location.ID  %in% c(32,11,12,13,10,31,20)] <- "Eastern"
+transects18S <- subset_samples(zoops18S, Location.ID %in% c(23,19,17,16,18,1,2,3,6,32,11,12,13,10,31,20))
+transects18S <- merge_samples(transects18S, "Location.ID")
+sample_data(transects18S)$LatitudeLine[sample_data(transects18S)$Location.ID  %in% c(23,19,17,16,18,1,2,3,6)] <- "Central"
+sample_data(transects18S)$LatitudeLine[sample_data(transects18S)$Location.ID  %in% c(32,11,12,13,10,31,20)] <- "Eastern"
+centralpacific18S <- subset_samples(transects18S, Location.ID %in% c(23,19,17,16,18,1,2,3,6))
+centralpacific18S <- merge_samples(centralpacific18S, "Location.ID")
+easternpacific18S <- subset_samples(transects18S, Location.ID %in% c(32,11,12,13,10,31,20))
+easternpacific18S <- merge_samples(easternpacific18S, "Location.ID")
+
+sample_data(zoopsCOI)$LatitudeLine <- NA
+sample_data(zoopsCOI)$LatitudeLine[sample_data(zoopsCOI)$Location.ID  %in% c(23,19,17,16,18,1,2,3,6)] <- "Central"
+sample_data(zoopsCOI)$LatitudeLine[sample_data(zoopsCOI)$Location.ID  %in% c(32,11,12,13,10,31,20)] <- "Eastern"
+transectsCOI <- subset_samples(zoopsCOI, Location.ID %in% c(23,19,17,16,18,1,2,3,6,32,11,12,13,10,31,20))
+transectsCOI <- merge_samples(transectsCOI, "Location.ID")
+sample_data(transectsCOI)$LatitudeLine[sample_data(transectsCOI)$Location.ID  %in% c(23,19,17,16,18,1,2,3,6)] <- "Central"
+sample_data(transectsCOI)$LatitudeLine[sample_data(transectsCOI)$Location.ID  %in% c(32,11,12,13,10,31,20)] <- "Eastern"
+centralpacificCOI <- subset_samples(transectsCOI, Location.ID %in% c(23,19,17,16,18,1,2,3,6))
+centralpacificCOI <- merge_samples(centralpacificCOI, "Location.ID")
+easternpacificCOI <- subset_samples(transectsCOI, Location.ID %in% c(32,11,12,13,10,31,20))
+easternpacificCOI <- merge_samples(easternpacificCOI, "Location.ID")
+
+ordersC_18s <- sort(table(c((tax_table(centralpacific18S)[,c("Order")]))), decreasing = T)
+ordersE_18s <- sort(table(c((tax_table(easternpacific18S)[,c("Order")]))), decreasing = T)
+orders_18s <- names(sort(table(c(tax_table(easternpacific18S)[,c("Order")], tax_table(centralpacificCOI)[,c("Order")]))))
+
+ordersC_coi <- sort(table(c((tax_table(centralpacificCOI)[,c("Order")]))), decreasing = T)
+ordersE_coi <- sort(table(c((tax_table(easternpacificCOI)[,c("Order")]))), decreasing = T)
+orders_coi <- names(sort(table(c(tax_table(easternpacificCOI)[,c("Order")], tax_table(centralpacificCOI)[,c("Order")]))))
+
+ps_list_18S <- list(subset_taxa(centralpacific18S, Order == names(ordersC_18s)[1]),
+                subset_taxa(centralpacific18S, Order == names(ordersC_18s)[2]),
+                subset_taxa(centralpacific18S, Order == names(ordersC_18s)[3]),
+                subset_taxa(centralpacific18S, Order == names(ordersC_18s)[4]),
+                subset_taxa(centralpacific18S, Order == names(ordersC_18s)[5]),
+                subset_taxa(centralpacific18S, Order == names(ordersC_18s)[6]),
+                subset_taxa(centralpacific18S, Order == names(ordersC_18s)[7]),
+                subset_taxa(centralpacific18S, Order == names(ordersC_18s)[8]),
+                centralpacific18S,
+                subset_taxa(easternpacific18S, Order == names(ordersE_18s)[1]),
+                subset_taxa(easternpacific18S, Order == names(ordersE_18s)[2]),
+                subset_taxa(easternpacific18S, Order == names(ordersE_18s)[3]),
+                subset_taxa(easternpacific18S, Order == names(ordersE_18s)[4]),
+                subset_taxa(easternpacific18S, Order == names(ordersE_18s)[5]),
+                subset_taxa(easternpacific18S, Order == names(ordersE_18s)[6]),
+                subset_taxa(easternpacific18S, Order == names(ordersE_18s)[7]),
+                subset_taxa(easternpacific18S, Order == names(ordersE_18s)[8]),
+                easternpacific18S)
+
+ps_list_COI <- list(subset_taxa(centralpacificCOI, Order == names(ordersC_coi)[1]),
+                subset_taxa(centralpacificCOI, Order == names(ordersC_coi)[2]),
+                subset_taxa(centralpacificCOI, Order == names(ordersC_coi)[3]),
+                subset_taxa(centralpacificCOI, Order == names(ordersC_coi)[4]),
+                subset_taxa(centralpacificCOI, Order == names(ordersC_coi)[5]),
+                subset_taxa(centralpacificCOI, Order == names(ordersC_coi)[6]),
+                subset_taxa(centralpacificCOI, Order == names(ordersC_coi)[7]),
+               # subset_taxa(centralpacificCOI, Order == names(ordersC_coi)[8]),
+                centralpacificCOI,
+                subset_taxa(easternpacificCOI, Order == names(ordersE_coi)[1]),
+                subset_taxa(easternpacificCOI, Order == names(ordersE_coi)[2]),
+                subset_taxa(easternpacificCOI, Order == names(ordersE_coi)[3]),
+                subset_taxa(easternpacificCOI, Order == names(ordersE_coi)[4]),
+                subset_taxa(easternpacificCOI, Order == names(ordersE_coi)[5]),
+                subset_taxa(easternpacificCOI, Order == names(ordersE_coi)[6]),
+                subset_taxa(easternpacificCOI, Order == names(ordersE_coi)[7]),
+               # subset_taxa(easternpacificCOI, Order == names(ordersE_coi)[8]),
+                easternpacificCOI)
+
+names(ps_list_18S) <- c(names(ordersC_18s)[1:8], "All taxa", names(ordersE_18s)[1:8], "All taxa")
+names(ps_list_COI) <- c(names(ordersC_coi)[1:7], "All taxa", names(ordersE_coi)[1:7], "All taxa")
+
+richness18S <- ps_list_18S %>%
+    # convert otu_table to presence/absence
+    purrr::map(transform_sample_counts, function(x) 1 * (x > 0)) %>%
+    # Sample sum will now be the number of present taxa
+    purrr::map(sample_sums)
+richness18S
+
+richness18S <- ps_list_18S %>%
+    purrr::map(otu_table) %>%
+    purrr::map(vegan::estimateR, index = "chao")
+richness18S
+richness18S <- lapply(richness18S, function(x) return(x[2,]))
+richness18S
+
+
+richnessCOI <- ps_list_COI %>%
+    # convert otu_table to presence/absence
+    purrr::map(transform_sample_counts, function(x) 1 * (x > 0)) %>%
+    # Sample sum will now be the number of present taxa
+    purrr::map(sample_sums)
+richnessCOI
+
+richnessCOI <- ps_list_COI %>%
+    purrr::map(otu_table) %>%
+    purrr::map(vegan::estimateR, index = "chao", display = "S.chao1")
+richnessCOI <- lapply(richnessCOI, function(x) return(x[2,]))
+richnessCOI
+
+tbl18s <- richness18S %>%
+    purrr::map(tibble::enframe, "Sample", "Richness") %>%
+    bind_rows(.id = "Rank")
+sam18s <- sample_data(transects18S) %>% as_tibble(rownames = "Sample")
+#sam18s$Sample <- sam18s$Location.ID
+tbl18s <- left_join(tbl18s, sam18s, by = "Sample")
+tbl18s <- tbl18s %>%
+    mutate(Rank = factor(Rank))
+
+tblCOI <- richnessCOI %>%
+    purrr::map(tibble::enframe, "Sample", "Richness") %>%
+    dplyr::bind_rows(.id = "Rank")
+samCOI <- sample_data(transectsCOI) %>% as_tibble(rownames = "Sample")
+tblCOI <- left_join(tblCOI, samCOI, by = "Sample")
+tblCOI <- tblCOI %>%
+    mutate(Rank = factor(Rank))
+
+#ggplot(tbl, aes(Rank, Richness, color = LatitudeLine)) +
+#    ggbeeswarm::geom_quasirandom()
+#    # or use geom_jitter() if you don't have ggbeeswarm
+
+
+
+#mycols <- c("All taxa" = "black", 
+#            names(ordersC)[1] = "#a6cee3")
+#, 
+#            names(ordersC)[2] = "#1f78b4",  
+#            names(ordersC)[3] = "#33a02c", 
+#            names(ordersC)[4] = "#fb9a99", 
+#            names(ordersC)[5] = "#e31a1c", 
+#            names(ordersC)[6] = "#fdbf6f",  
+#            names(ordersC)[7] = "#cab2d6", 
+#            names(ordersC)[8] = "#6a3d9a")
+
+mycols <- c("black", 
+            "#e31a1c", 
+            "#1f78b4",  
+            "#b2df8a", 
+            "#33a02c", 
+            "#fb9a99", 
+            "#a6cee3",  
+            "#fdbf6f", 
+            "#ff7f00",
+            "#6a3d9a", 
+            "#cab2d6", 
+            "#ffff99", 
+            "#b15928")
+            
+names(mycols) <- c("All taxa", unique(c(names(ordersC_18s)[1:8], names(ordersC_coi)[1:8])))
+
+richness18S <- ggplot(tbl18s, aes(x = Lat.N., y = Richness, group = Rank, color = Rank)) + 
+  geom_point() + 
+  geom_smooth(method = "loess", span = 0.35, se = F, size = 0.5) +
+#  geom_line() + 
+  facet_grid(.~LatitudeLine) + 
+  scale_color_manual(values = mycols, limits = names(mycols), name = "Taxon") +
+  #scale_color_manual(values = c("black", "black", "#a6cee3", "#e31a1c", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928", "grey")) + 
+  coord_flip() + 
+ # scale_y_log10() +
+  xlab("Latitude (°N)") + 
+  ylab("Estimated richness (Chao)") + 
+  ggtitle("18S")+
+  theme(legend.key.height = unit(.35, 'cm'))
+richness18S
+
+richnessCOI <- ggplot(tblCOI, aes(x = Lat.N., y = Richness, group = Rank, color = Rank)) + 
+  geom_point() + 
+  geom_smooth(method = "loess", span = 0.35, se = F, size = 0.5) +
+ # geom_line() + 
+  facet_grid(.~LatitudeLine) + 
+  scale_color_manual(values = mycols, limits = names(mycols), name = "Taxon") +
+  #scale_color_manual(values = c("black", "black", "#a6cee3", "#e31a1c", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928", "grey")) + 
+  coord_flip() + 
+  #scale_y_log10() +
+  xlab("Latitude (°N)") + 
+  ylab("Estimated richness (Chao)") + 
+  ggtitle("COI") +
+  theme(legend.key.height = unit(.35, 'cm'))
+richnessCOI
+
+both <- ggarrange(richness18S, richnessCOI, common.legend = T, legend = "right", labels = c("a)", "b)"))
+both
+
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/Latitude_richness_0-1000m.pdf", height =2.5, width = 7.5)
+both
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/Latitude_richness_0-1000m.jpeg", height =2.5, width = 7.5, unit = "in", quality = 100, res = 300)
+both
+dev.off()
+```
+
+
+##by latitudinal gradient, within and total
+```{r add total richness across depth}
+
+zoops18S_totaldepth <- zoops18S
+sample_data(zoops18S_totaldepth)$formerging <- paste(sample_data(zoops18S_totaldepth)$Location.ID, sample_data(zoops18S_totaldepth)$Diel)
+zoops18S_totaldepth <- merge_samples(zoops18S_totaldepth, "formerging")
+zoopsCOI_totaldepth <- zoopsCOI
+sample_data(zoopsCOI_totaldepth)$formerging <- paste(sample_data(zoopsCOI_totaldepth)$Location.ID, sample_data(zoopsCOI_totaldepth)$Diel)
+zoopsCOI_totaldepth <- merge_samples(zoopsCOI_totaldepth, "formerging")
+
+sample_data(zoops18S_totaldepth)$LatitudeLine[sample_data(zoops18S_totaldepth)$Location.ID  %in% c(23,19,17,16,18,1,2,3,6)] <- "Central"
+sample_data(zoops18S_totaldepth)$LatitudeLine[sample_data(zoops18S_totaldepth)$Location.ID  %in% c(32,11,12,13,10,31,20)] <- "Eastern"
+sample_data(zoopsCOI_totaldepth)$LatitudeLine[sample_data(zoopsCOI_totaldepth)$Location.ID  %in% c(23,19,17,16,18,1,2,3,6)] <- "Central"
+sample_data(zoopsCOI_totaldepth)$LatitudeLine[sample_data(zoopsCOI_totaldepth)$Location.ID  %in% c(32,11,12,13,10,31,20)] <- "Eastern"
+
+
+centralpacific18S_total <- subset_samples(zoops18S_totaldepth, Location.ID %in% c(23,19,17,16,18,1,2,3,6))
+easternpacific18S_total <- subset_samples(zoops18S_totaldepth, Location.ID %in% c(32,11,12,13,10,31,20))
+centralpacificCOI_total <- subset_samples(zoopsCOI_totaldepth, Location.ID %in% c(23,19,17,16,18,1,2,3,6))
+easternpacificCOI_total <- subset_samples(zoopsCOI_totaldepth, Location.ID %in% c(32,11,12,13,10,31,20))
+
+
+
+ordersC_18s_total <- sort(table(c((tax_table(centralpacific18S_total)[,c("Order")]))), decreasing = T)
+ordersE_18s_total <- sort(table(c((tax_table(easternpacific18S_total)[,c("Order")]))), decreasing = T)
+orders_18s_total <- names(sort(table(c(tax_table(centralpacific18S_total)[,c("Order")], tax_table(easternpacific18S_total)[,c("Order")]))))
+
+ordersC_coi_total <- sort(table(c((tax_table(centralpacificCOI_total)[,c("Order")]))), decreasing = T)
+ordersE_coi_total <- sort(table(c((tax_table(easternpacificCOI_total)[,c("Order")]))), decreasing = T)
+orders_coi_total <- names(sort(table(c(tax_table(centralpacificCOI_total)[,c("Order")], tax_table(easternpacificCOI_total)[,c("Order")]))))
+
+ps_list_18S_total <- list(subset_taxa(centralpacific18S_total, Order == names(ordersC_18s_total)[1]),
+                subset_taxa(centralpacific18S_total, Order == names(ordersC_18s_total)[2]),
+                subset_taxa(centralpacific18S_total, Order == names(ordersC_18s_total)[3]),
+                subset_taxa(centralpacific18S_total, Order == names(ordersC_18s_total)[4]),
+                subset_taxa(centralpacific18S_total, Order == names(ordersC_18s_total)[5]),
+                subset_taxa(centralpacific18S_total, Order == names(ordersC_18s_total)[6]),
+                subset_taxa(centralpacific18S_total, Order == names(ordersC_18s_total)[7]),
+                subset_taxa(centralpacific18S_total, Order == names(ordersC_18s_total)[8]),
+                centralpacific18S_total,
+                subset_taxa(easternpacific18S_total, Order == names(ordersE_18s_total)[1]),
+                subset_taxa(easternpacific18S_total, Order == names(ordersE_18s_total)[2]),
+                subset_taxa(easternpacific18S_total, Order == names(ordersE_18s_total)[3]),
+                subset_taxa(easternpacific18S_total, Order == names(ordersE_18s_total)[4]),
+                subset_taxa(easternpacific18S_total, Order == names(ordersE_18s_total)[5]),
+                subset_taxa(easternpacific18S_total, Order == names(ordersE_18s_total)[6]),
+                subset_taxa(easternpacific18S_total, Order == names(ordersE_18s_total)[7]),
+                subset_taxa(easternpacific18S_total, Order == names(ordersE_18s_total)[8]),
+                easternpacific18S_total)
+
+ps_list_COI_total <- list(subset_taxa(centralpacificCOI_total, Order == names(ordersC_coi_total)[1]),
+                subset_taxa(centralpacificCOI_total, Order == names(ordersC_coi_total)[2]),
+                subset_taxa(centralpacificCOI_total, Order == names(ordersC_coi_total)[3]),
+                subset_taxa(centralpacificCOI_total, Order == names(ordersC_coi_total)[4]),
+                subset_taxa(centralpacificCOI_total, Order == names(ordersC_coi_total)[5]),
+                subset_taxa(centralpacificCOI_total, Order == names(ordersC_coi_total)[6]),
+                subset_taxa(centralpacificCOI_total, Order == names(ordersC_coi_total)[7]),
+               # subset_taxa(centralpacificCOI_total, Order == names(ordersC_coi_total)[8]),
+                centralpacificCOI_total,
+                subset_taxa(easternpacificCOI_total, Order == names(ordersE_coi_total)[1]),
+                subset_taxa(easternpacificCOI_total, Order == names(ordersE_coi_total)[2]),
+                subset_taxa(easternpacificCOI_total, Order == names(ordersE_coi_total)[3]),
+                subset_taxa(easternpacificCOI_total, Order == names(ordersE_coi_total)[4]),
+                subset_taxa(easternpacificCOI_total, Order == names(ordersE_coi_total)[5]),
+                subset_taxa(easternpacificCOI_total, Order == names(ordersE_coi_total)[6]),
+                subset_taxa(easternpacificCOI_total, Order == names(ordersE_coi_total)[7]),
+               # subset_taxa(easternpacificCOI_total, Order == names(ordersE_coi_total)[8]),
+                easternpacificCOI_total)
+
+names(ps_list_18S_total) <- c(names(ordersC_18s_total)[1:8], "All taxa", names(ordersE_18s_total)[1:8], "All taxa")
+names(ps_list_COI_total) <- c(names(ordersC_coi_total)[1:7], "All taxa", names(ordersE_coi_total)[1:7], "All taxa")
+
+##
+
+
+richness18S_total <- ps_list_18S_total %>%
+    # convert otu_table to presence/absence
+    purrr::map(transform_sample_counts, function(x) 1 * (x > 0)) %>%
+    # Sample sum will now be the number of present taxa
+    purrr::map(sample_sums)
+richness18S_total
+
+richness18S_total <- ps_list_18S_total %>%
+    purrr::map(otu_table) %>%
+    purrr::map(vegan::estimateR, index = "chao")
+richness18S_total
+richness18S_total <- lapply(richness18S_total, function(x) return(x[2,]))
+richness18S_total
+
+
+richnessCOI_total <- ps_list_COI_total %>%
+    # convert otu_table to presence/absence
+    purrr::map(transform_sample_counts, function(x) 1 * (x > 0)) %>%
+    # Sample sum will now be the number of present taxa
+    purrr::map(sample_sums)
+richnessCOI_total
+
+richnessCOI_total <- ps_list_COI_total %>%
+    purrr::map(otu_table) %>%
+    purrr::map(vegan::estimateR, index = "chao", display = "S.chao1")
+richnessCOI_total <- lapply(richnessCOI_total, function(x) return(x[2,]))
+richnessCOI_total
+
+
+
+tbl18s_total <- richness18S_total %>%
+    purrr::map(tibble::enframe, "Sample", "Richness") %>%
+    bind_rows(.id = "Rank")
+sam18s_total <- sample_data(zoops18S_totaldepth) %>% as_tibble(rownames = "Sample")
+tbl18s_total <- left_join(tbl18s_total, sam18s_total, by = "Sample")
+tbl18s_total <- tbl18s_total %>%
+    mutate(Rank = factor(Rank))
+tbl18s_total$depth_bin <- "Total, 0-1000m"
+
+tblCOI_total <- richnessCOI_total %>%
+    purrr::map(tibble::enframe, "Sample", "Richness") %>%
+    dplyr::bind_rows(.id = "Rank")
+samCOI_total <- sample_data(zoopsCOI_totaldepth) %>% as_tibble(rownames = "Sample")
+tblCOI_total <- left_join(tblCOI_total, samCOI_total, by = "Sample")
+tblCOI_total <- tblCOI_total %>%
+    mutate(Rank = factor(Rank))
+tblCOI_total$depth_bin <- "Total, 0-1000m"
+
+
+tblCOI_total <- rbind(tblCOI_total, tblCOI)
+tblCOI_total_new <- tblCOI_total %>% group_by(Location.ID, depth_bin, Rank) %>% mutate(meanrichness = mean(Richness)) %>% select(Lat.N., Richness, Rank, depth_bin, LatitudeLine, meanrichness, Location.ID) %>% ungroup()
+
+tbl18s_total <- rbind(tbl18s_total, tbl18s)
+tbl18s_total_new <- tbl18s_total %>% group_by(Location.ID, depth_bin, Rank) %>% mutate(meanrichness = mean(Richness)) %>% select(Lat.N., Richness, Rank, depth_bin, LatitudeLine, meanrichness, Location.ID) %>% ungroup()
+
+richness18S_total <- ggplot(tbl18s_total_new, aes(x = Lat.N., y = Richness, group = Rank, color = Rank)) + 
+  geom_point(show.legend = TRUE) + 
+  geom_line(aes(x=Lat.N., y = meanrichness), size = 0.2, show.legend = TRUE) +
+#  geom_line() + 
+  facet_grid(depth_bin~LatitudeLine) + 
+  scale_color_manual(values = mycols, limits = names(mycols), name = "Taxon") +
+  #scale_color_manual(values = c("black", "black", "#a6cee3", "#e31a1c", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928", "grey")) + 
+  coord_flip() + 
+ # scale_y_log10() +
+  xlab("Latitude (°N)") + 
+  ylab("Estimated richness (Chao)") + 
+  ggtitle("18S") + 
+  theme(axis.text.x = element_text(angle=90, vjust = 0.5))
+richness18S_total
+
+richnessCOI_total <- ggplot(tblCOI_total_new, aes(x = Lat.N., y = Richness, group = Rank, color = Rank)) + 
+  geom_point( show.legend = TRUE) + 
+  geom_line(aes(x=Lat.N., y = meanrichness), size = 0.2, show.legend = TRUE) +
+ # geom_line() + 
+  facet_grid(depth_bin~LatitudeLine, scales = "free") + 
+  scale_color_manual(values = mycols, limits = names(mycols), name = "Taxon") +
+  #scale_color_manual(values = c("black", "black", "#a6cee3", "#e31a1c", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928", "grey")) + 
+  coord_flip() + 
+  #scale_y_log10() +
+  xlab("Latitude (°N)") + 
+  ylab("Estimated richness (Chao)") + 
+  ggtitle("COI")+ 
+  theme(axis.text.x = element_text(angle=90, vjust = 0.5))
+richnessCOI_total
+
+
+both <- ggarrange(richness18S_total, richnessCOI_total, common.legend = T, legend = "right", labels = c("a)", "b)"))
+both
+
+
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/Latitude_richness_3depthsandtotal.pdf", height =6, width = 7.5)
+both
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/Latitude_richness_3depthsandtotal.jpeg", height =6, width = 7.5, unit = "in", quality = 100, res = 300)
+both
+dev.off()
+```
+
+##separate taxonomic groups
+```{r}
+
+
+richness18S_bytaxon <- ggplot(tbl18s_total_new[!(tbl18s_total_new$Rank %in% c( "All taxa")),], aes(x = Lat.N., y = Richness, group = LatitudeLine, color = LatitudeLine)) + 
+  geom_point(show.legend = TRUE) + 
+  geom_line(aes(x=Lat.N., y = meanrichness), size = 0.2, show.legend = TRUE) +
+#  geom_line() + 
+  facet_grid(depth_bin~Rank, scales = "free_x") + 
+ # scale_color_manual(values = mycols, limits = names(mycols), name = "Taxon") +
+  scale_color_manual(values = c( "#33a02c", "#6a3d9a"), name = "Transect") + 
+  coord_flip() + 
+ # scale_y_log10() +
+  xlab("Latitude (°N)") + 
+  ylab("Estimated richness (Chao)") + 
+  ggtitle("18S") + 
+  theme(axis.text.x = element_text(angle=90, vjust = 0.5))
+richness18S_bytaxon
+
+richnessCOI_bytaxon <- ggplot(tblCOI_total_new[!(tblCOI_total_new$Rank %in% c("All taxa")),], aes(x = Lat.N., y = Richness, group = LatitudeLine, color = LatitudeLine)) + 
+  geom_point( show.legend = TRUE) + 
+  geom_line(aes(x=Lat.N., y = meanrichness), size = 0.2, show.legend = TRUE) +
+ # geom_line() + 
+  facet_grid(depth_bin~Rank, scales = "free_x") + 
+ # scale_color_manual(values = mycols, limits = names(mycols), name = "Taxon") +
+  scale_color_manual(values = c( "#33a02c", "#6a3d9a"), name = "Transect") + 
+  coord_flip() + 
+  #scale_y_log10() +
+  xlab("Latitude (°N)") + 
+  ylab("Estimated richness (Chao)") + 
+  ggtitle("COI")+ 
+  theme(axis.text.x = element_text(angle=90, vjust = 0.5))
+richnessCOI_bytaxon
+
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/Latitude_richness_bytaxon18S.pdf", height =6, width = 8.5)
+richness18S_bytaxon
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/Latitude_richness_bytaxon18S.jpeg", height =6, width = 8.5, unit = "in", quality = 100, res = 300)
+richness18S_bytaxon
+dev.off()
+
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/Latitude_richness_bytaxonCOI.pdf", height =6, width = 8.5)
+richnessCOI_bytaxon
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/Latitude_richness_bytaxonCOI.jpeg", height =6, width = 8.5, unit = "in", quality = 100, res = 300)
+richnessCOI_bytaxon
+dev.off()
+
+#coronatae #spionidae #trachymedusae
+
+both <- ggarrange(richness18S_bytaxon, richnessCOI_bytaxon, common.legend = T, legend = "right", labels = c("a)", "b)"), ncol = 1)
+both
+
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/Latitude_richness_bytaxonCOI&18S.pdf", height =12, width = 8.5)
+both
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/Latitude_richness_bytaxonCOI&18S.jpeg", height =12, width = 8.5, unit = "in", quality = 100, res = 300)
+both
+dev.off()
+```
+
+
+
+
+

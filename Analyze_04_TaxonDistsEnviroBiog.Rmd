@@ -1,0 +1,1167 @@
+---
+title: "Analyze_04_TaxonDistributions"
+output: html_document
+date: "2024-11-04"
+---
+
+```{r setup, include=FALSE}
+library(microshades)
+library(phyloseq)
+library(vegan)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(metagMisc)
+#library(viridis)
+library(RColorBrewer)
+library(ggExtra)
+library(beepr)
+library(readxl)
+library(ggforce)
+library(ggrepel)
+library(ggpubr)
+library(cowplot)
+library(ggtext)
+library(sp)
+library(vegan)
+library(grid)
+library(ggsci)
+set.seed(00110011)
+theme_set(theme_bw())
+theme_update(plot.title = element_text(hjust = 0.5))
+depthcolors <- c("#4DAF4A", "#E41A1C", "#984EA3")
+names(depthcolors) <- c("0-200m", "200-500m", "500-1000m")
+markercolors <- c("#D81B60","#1E88E5")
+names(markercolors) <- c("18S", "COI")
+
+```
+
+```{r}
+load("~/Documents/Chapter4/BasinScale_Analysis_v2_2024/data_objects/CleanZooplanktonPhyloseqs.rdat")
+```
+
+#SECTION 1 CALC WITHIN NETS
+
+#taxa distributional ranges 
+- Do taxa in the epipelagic or taxa in the mesopelagic have larger biogeographic distributions?
+- for now, don't define "epi" or "meso" taxa, since that relies on abundances
+- might be possible with relative abundance - but first let's look at if we partition the water column vertically
+
+```{r first subset into depth zones}
+sample_data(zoopsCOI)$Region_fac <- as.factor(sample_data(zoopsCOI)$NewRegion)
+sample_data(zoops18S)$Region_fac <- as.factor(sample_data(zoops18S)$NewRegion)
+
+epiCOI <- subset_samples(zoopsCOI, depthbin == "0-200m")
+upmesoCOI <- subset_samples(zoopsCOI, depthbin == "200-500m")
+lowmesoCOI <- subset_samples(zoopsCOI, depthbin == "500-1000m")
+epiCOIDay <- subset_samples(epiCOI, Diel == "Day")
+upmesoCOIDay <- subset_samples(upmesoCOI, Diel == "Day")
+lowmesoCOIDay <- subset_samples(lowmesoCOI, Diel == "Day")
+epiCOINight <- subset_samples(epiCOI, Diel == "Night")
+upmesoCOINight <- subset_samples(upmesoCOI, Diel == "Night")
+lowmesoCOINight <- subset_samples(lowmesoCOI, Diel == "Night")
+
+epi18S <- subset_samples(zoops18S, depthbin == "0-200m")
+upmeso18S <- subset_samples(zoops18S, depthbin == "200-500m")
+lowmeso18S <- subset_samples(zoops18S, depthbin == "500-1000m")
+epi18SDay <- subset_samples(epi18S, Diel == "Day")
+upmeso18SDay <- subset_samples(upmeso18S, Diel == "Day")
+lowmeso18SDay <- subset_samples(lowmeso18S, Diel == "Day")
+epi18SNight <- subset_samples(epi18S, Diel == "Night")
+upmeso18SNight <- subset_samples(upmeso18S, Diel == "Night")
+lowmeso18SNight <- subset_samples(lowmeso18S, Diel == "Night")
+
+sample_data(epiCOI)$formerging <- paste(round(sample_data(epiCOI)$Lat.N.), sample_data(epiCOI)$LocationName)
+sample_data(upmesoCOI)$formerging <- paste(round(sample_data(upmesoCOI)$Lat.N.), sample_data(upmesoCOI)$LocationName)
+sample_data(lowmesoCOI)$formerging <- paste(round(sample_data(lowmesoCOI)$Lat.N.), sample_data(lowmesoCOI)$LocationName)
+epiCOI_locations <- merge_samples(epiCOI, group = "formerging")
+upmesoCOI_locations <- merge_samples(upmesoCOI, group = "formerging")
+lowmesoCOI_locations <- merge_samples(lowmesoCOI, group = "formerging")
+sample_data(epiCOIDay)$formerging <- paste(round(sample_data(epiCOIDay)$Lat.N.), sample_data(epiCOIDay)$LocationName)
+sample_data(upmesoCOIDay)$formerging <- paste(round(sample_data(upmesoCOIDay)$Lat.N.), sample_data(upmesoCOIDay)$LocationName)
+sample_data(lowmesoCOIDay)$formerging <- paste(round(sample_data(lowmesoCOIDay)$Lat.N.), sample_data(lowmesoCOIDay)$LocationName)
+epiCOIDay_locations <- merge_samples(epiCOIDay, group = "formerging")
+upmesoCOIDay_locations <- merge_samples(upmesoCOIDay, group = "formerging")
+lowmesoCOIDay_locations <- merge_samples(lowmesoCOIDay, group = "formerging")
+sample_data(epiCOINight)$formerging <- paste(round(sample_data(epiCOINight)$Lat.N.), sample_data(epiCOINight)$LocationName)
+sample_data(upmesoCOINight)$formerging <- paste(round(sample_data(upmesoCOINight)$Lat.N.), sample_data(upmesoCOINight)$LocationName)
+sample_data(lowmesoCOINight)$formerging <- paste(round(sample_data(lowmesoCOINight)$Lat.N.), sample_data(lowmesoCOINight)$LocationName)
+epiCOINight_locations <- merge_samples(epiCOINight, group = "formerging")
+upmesoCOINight_locations <- merge_samples(upmesoCOINight, group = "formerging")
+lowmesoCOINight_locations <- merge_samples(lowmesoCOINight, group = "formerging")
+
+sample_data(epi18S)$formerging <- paste(round(sample_data(epi18S)$Lat.N.), sample_data(epi18S)$LocationName)
+sample_data(upmeso18S)$formerging <- paste(round(sample_data(upmeso18S)$Lat.N.), sample_data(upmeso18S)$LocationName)
+sample_data(lowmeso18S)$formerging <- paste(round(sample_data(lowmeso18S)$Lat.N.), sample_data(lowmeso18S)$LocationName)
+epi18S_locations <- merge_samples(epi18S, group = "formerging")
+upmeso18S_locations <- merge_samples(upmeso18S, group = "formerging")
+lowmeso18S_locations <- merge_samples(lowmeso18S, group = "formerging")
+sample_data(epi18SDay)$formerging <- paste(round(sample_data(epi18SDay)$Lat.N.), sample_data(epi18SDay)$LocationName)
+sample_data(upmeso18SDay)$formerging <- paste(round(sample_data(upmeso18SDay)$Lat.N.), sample_data(upmeso18SDay)$LocationName)
+sample_data(lowmeso18SDay)$formerging <- paste(round(sample_data(lowmeso18SDay)$Lat.N.), sample_data(lowmeso18SDay)$LocationName)
+epi18SDay_locations <- merge_samples(epi18SDay, group = "formerging")
+upmeso18SDay_locations <- merge_samples(upmeso18SDay, group = "formerging")
+lowmeso18SDay_locations <- merge_samples(lowmeso18SDay, group = "formerging")
+sample_data(epi18SNight)$formerging <- paste(round(sample_data(epi18SNight)$Lat.N.), sample_data(epi18SNight)$LocationName)
+sample_data(upmeso18SNight)$formerging <- paste(round(sample_data(upmeso18SNight)$Lat.N.), sample_data(upmeso18SNight)$LocationName)
+sample_data(lowmeso18SNight)$formerging <- paste(round(sample_data(lowmeso18SNight)$Lat.N.), sample_data(lowmeso18SNight)$LocationName)
+epi18SNight_locations <- merge_samples(epi18SNight, group = "formerging")
+upmeso18SNight_locations <- merge_samples(upmeso18SNight, group = "formerging")
+lowmeso18SNight_locations <- merge_samples(lowmeso18SNight, group = "formerging")
+
+epiCOI_locations <- phyloseq_standardize_otu_abundance(epiCOI_locations, method = "pa")
+upmesoCOI_locations <- phyloseq_standardize_otu_abundance(upmesoCOI_locations, method = "pa")
+lowmesoCOI_locations <- phyloseq_standardize_otu_abundance(lowmesoCOI_locations, method = "pa")
+epiCOIDay_locations <- phyloseq_standardize_otu_abundance(epiCOIDay_locations, method = "pa")
+upmesoCOIDay_locations <- phyloseq_standardize_otu_abundance(upmesoCOIDay_locations, method = "pa")
+lowmesoCOIDay_locations <- phyloseq_standardize_otu_abundance(lowmesoCOIDay_locations, method = "pa")
+epiCOI_locations <- phyloseq_standardize_otu_abundance(epiCOI_locations, method = "pa")
+upmesoCOI_locations <- phyloseq_standardize_otu_abundance(upmesoCOI_locations, method = "pa")
+lowmesoCOI_locations <- phyloseq_standardize_otu_abundance(lowmesoCOI_locations, method = "pa")
+
+epi18S_locations <- phyloseq_standardize_otu_abundance(epi18S_locations, method = "pa")
+upmeso18S_locations <- phyloseq_standardize_otu_abundance(upmeso18S_locations, method = "pa")
+lowmeso18S_locations <- phyloseq_standardize_otu_abundance(lowmeso18S_locations, method = "pa")
+epi18SDay_locations <- phyloseq_standardize_otu_abundance(epi18SDay_locations, method = "pa")
+upmeso18SDay_locations <- phyloseq_standardize_otu_abundance(upmeso18SDay_locations, method = "pa")
+lowmeso18SDay_locations <- phyloseq_standardize_otu_abundance(lowmeso18SDay_locations, method = "pa")
+epi18SNight_locations <- phyloseq_standardize_otu_abundance(epi18SNight_locations, method = "pa")
+upmeso18SNight_locations <- phyloseq_standardize_otu_abundance(upmeso18SNight_locations, method = "pa")
+lowmeso18SNight_locations <- phyloseq_standardize_otu_abundance(lowmeso18SNight_locations, method = "pa")
+```
+
+##calculate n stations
+```{r}
+#sample_data(epiCOI)$RegionGroup <- as.factor(sample_data(epiCOI)$Region_fac)
+epicoisums <- data.frame(taxa_names(epiCOI_locations), taxa_sums(epiCOI_locations), taxa_sums(phyloseq_standardize_otu_abundance(merge_samples(epiCOI, group = "NewRegion"), method = "pa")))
+upmesocoisums <- data.frame(taxa_names(upmesoCOI_locations), taxa_sums(upmesoCOI_locations), taxa_sums(phyloseq_standardize_otu_abundance(merge_samples(upmesoCOI, "NewRegion"), method = "pa")))
+lowmesocoisums <- data.frame(taxa_names(lowmesoCOI_locations), taxa_sums(lowmesoCOI_locations), taxa_sums(phyloseq_standardize_otu_abundance(merge_samples(lowmesoCOI, "NewRegion"), method = "pa")))
+epicoisumsDay <- data.frame(taxa_names(epiCOIDay_locations), taxa_sums(epiCOIDay_locations), taxa_sums(phyloseq_standardize_otu_abundance(merge_samples(epiCOIDay, group = "NewRegion"), method = "pa")))
+upmesocoisumsDay <- data.frame(taxa_names(upmesoCOIDay_locations), taxa_sums(upmesoCOIDay_locations), taxa_sums(phyloseq_standardize_otu_abundance(merge_samples(upmesoCOIDay, "NewRegion"), method = "pa")))
+lowmesocoisumsDay <- data.frame(taxa_names(lowmesoCOIDay_locations), taxa_sums(lowmesoCOIDay_locations), taxa_sums(phyloseq_standardize_otu_abundance(merge_samples(lowmesoCOIDay, "NewRegion"), method = "pa")))
+epicoisumsNight <- data.frame(taxa_names(epiCOINight_locations), taxa_sums(epiCOINight_locations), taxa_sums(phyloseq_standardize_otu_abundance(merge_samples(epiCOINight, group = "NewRegion"), method = "pa")))
+upmesocoisumsNight <- data.frame(taxa_names(upmesoCOINight_locations), taxa_sums(upmesoCOINight_locations), taxa_sums(phyloseq_standardize_otu_abundance(merge_samples(upmesoCOINight, "NewRegion"), method = "pa")))
+lowmesocoisumsNight <- data.frame(taxa_names(lowmesoCOINight_locations), taxa_sums(lowmesoCOINight_locations), taxa_sums(phyloseq_standardize_otu_abundance(merge_samples(lowmesoCOINight, "NewRegion"), method = "pa")))
+
+epi18ssums <- data.frame(taxa_names(epi18S_locations), taxa_sums(epi18S_locations), taxa_sums(phyloseq_standardize_otu_abundance(merge_samples(epi18S, "NewRegion"), method = "pa")))
+upmeso18ssums <- data.frame(taxa_names(upmeso18S_locations), taxa_sums(upmeso18S_locations), taxa_sums(phyloseq_standardize_otu_abundance(merge_samples(upmeso18S, "NewRegion"), method = "pa")))
+lowmeso18ssums <- data.frame(taxa_names(lowmeso18S_locations), taxa_sums(lowmeso18S_locations), taxa_sums(phyloseq_standardize_otu_abundance(merge_samples(lowmeso18S, "NewRegion"), method = "pa")))
+epi18ssumsDay <- data.frame(taxa_names(epi18SDay_locations), taxa_sums(epi18SDay_locations), taxa_sums(phyloseq_standardize_otu_abundance(merge_samples(epi18SDay, "NewRegion"), method = "pa")))
+upmeso18ssumsDay <- data.frame(taxa_names(upmeso18SDay_locations), taxa_sums(upmeso18SDay_locations), taxa_sums(phyloseq_standardize_otu_abundance(merge_samples(upmeso18SDay, "NewRegion"), method = "pa")))
+lowmeso18ssumsDay <- data.frame(taxa_names(lowmeso18SDay_locations), taxa_sums(lowmeso18SDay_locations), taxa_sums(phyloseq_standardize_otu_abundance(merge_samples(lowmeso18SDay, "NewRegion"), method = "pa")))
+epi18ssumsNight <- data.frame(taxa_names(epi18SNight_locations), taxa_sums(epi18SNight_locations), taxa_sums(phyloseq_standardize_otu_abundance(merge_samples(epi18SNight, "NewRegion"), method = "pa")))
+upmeso18ssumsNight <- data.frame(taxa_names(upmeso18SNight_locations), taxa_sums(upmeso18SNight_locations), taxa_sums(phyloseq_standardize_otu_abundance(merge_samples(upmeso18SNight, "NewRegion"), method = "pa")))
+lowmeso18ssumsNight <- data.frame(taxa_names(lowmeso18SNight_locations), taxa_sums(lowmeso18SNight_locations), taxa_sums(phyloseq_standardize_otu_abundance(merge_samples(lowmeso18SNight, "NewRegion"), method = "pa")))
+
+colnames(epicoisums) <- c("namedotu", "epi_nstations", "epi_nregions")
+colnames(upmesocoisums) <- c("namedotu", "uppermeso_nstations", "uppermeso_nregions")
+colnames(lowmesocoisums) <- c("namedotu", "lowermeso_nstations", "lowermeso_nregions")
+colnames(epicoisumsDay) <- c("namedotu", "epi_nstations_d", "epi_nregions_d")
+colnames(upmesocoisumsDay) <- c("namedotu", "uppermeso_nstations_d", "uppermeso_nregions_d")
+colnames(lowmesocoisumsDay) <- c("namedotu", "lowermeso_nstations_d", "lowermeso_nregions_d")
+colnames(epicoisumsNight) <- c("namedotu", "epi_nstations_n", "epi_nregions_n")
+colnames(upmesocoisumsNight) <- c("namedotu", "uppermeso_nstations_n", "uppermeso_nregions_n")
+colnames(lowmesocoisumsNight) <- c("namedotu", "lowermeso_nstations_n", "lowermeso_nregions_n")
+
+
+colnames(epi18ssums) <- c("namedotu", "epi_nstations", "epi_nregions")
+colnames(upmeso18ssums) <- c("namedotu", "uppermeso_nstations", "uppermeso_nregions")
+colnames(lowmeso18ssums) <- c("namedotu", "lowermeso_nstations", "lowermeso_nregions")
+colnames(epi18ssumsDay) <- c("namedotu", "epi_nstations_d", "epi_nregions_d")
+colnames(upmeso18ssumsDay) <- c("namedotu", "uppermeso_nstations_d", "uppermeso_nregions_d")
+colnames(lowmeso18ssumsDay) <- c("namedotu", "lowermeso_nstations_d", "lowermeso_nregions_d")
+colnames(epi18ssumsNight) <- c("namedotu", "epi_nstations_n", "epi_nregions_n")
+colnames(upmeso18ssumsNight) <- c("namedotu", "uppermeso_nstations_n", "uppermeso_nregions_n")
+colnames(lowmeso18ssumsNight) <- c("namedotu", "lowermeso_nstations_n", "lowermeso_nregions_n")
+
+
+
+allnstations_coi <- merge(epicoisums, upmesocoisums, by = "namedotu") %>%
+  merge(lowmesocoisums, by = "namedotu") %>%
+  merge(epicoisumsDay, by = "namedotu") %>%
+  merge(upmesocoisumsDay, by = "namedotu") %>%
+  merge(lowmesocoisumsDay, by = "namedotu") %>%
+  merge(epicoisumsNight, by = "namedotu") %>%
+  merge(upmesocoisumsNight, by = "namedotu") %>%
+  merge(lowmesocoisumsNight, by = "namedotu") 
+
+allnstations_18S <-  merge(epi18ssums, upmeso18ssums, by = "namedotu") %>%
+  merge(lowmeso18ssums, by = "namedotu") %>%
+  merge(epi18ssumsDay, by = "namedotu") %>%
+  merge(upmeso18ssumsDay, by = "namedotu") %>%
+  merge(lowmeso18ssumsDay, by = "namedotu") %>%
+  merge(epi18ssumsNight, by = "namedotu") %>%
+  merge(upmeso18ssumsNight, by = "namedotu") %>%
+  merge(lowmeso18ssumsNight, by = "namedotu") 
+
+```
+
+##plot nstations by depth
+```{r}
+means <- allnstations_coi %>% pivot_longer(c("epi_nstations", "uppermeso_nstations", "lowermeso_nstations")) %>% aggregate(value ~  name, FUN = function(x) round(mean(x), 3)) 
+plotcoinstations <- allnstations_coi %>% pivot_longer(c("epi_nstations", "uppermeso_nstations", "lowermeso_nstations")) %>% filter(value != 0) %>%
+#  mutate(name = forcats::fct_relevel(name, "epi_nstations", "uppermeso_nstations", "lowermeso_nstations")) %>% ggplot() + 
+  mutate(name = forcats::fct_relevel(name, "lowermeso_nstations", "uppermeso_nstations", "epi_nstations")) %>% ggplot() + 
+  geom_jitter(aes(x = name, y = value), size = .3, alpha = 0.2) + 
+  geom_violin(aes(x = name, y = value), adjust = 2) +
+  geom_pwc(aes(x = name, y  = value),
+           method = "dunn_test",
+           label = "p.adj.signif", 
+           hide.ns = T, 
+           symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")),
+           tip.length = 0.01,
+           bracket.nudge.y = 0.1,
+           vjust = 0.5,
+           inherit.aes = F) +
+  stat_summary(aes(x = name, y = value),
+               fun = "mean",
+               geom = "point",
+               color = "black", 
+               size = 2,
+               alpha = 1) + 
+ # geom_text(data = means, aes(label = value, x = name, y = value -8)) + 
+#  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  ggtitle("COI") + 
+  scale_x_discrete(labels = c("epi_nstations" = "0-200m", "uppermeso_nstations" = "200-\n500m", "lowermeso_nstations" = "500-\n1000m")) + 
+#  scale_x_discrete(labels = c("epi_nstations" = "Epipelagic", "uppermeso_nstations" = "Upper\nMesopelagic", "lowermeso_nstations" = "Lower\nMesopelagic")) + 
+  scale_y_continuous(expand = expansion(mult = 0.1)) +
+  xlab("Depth zone") + 
+  ylab("Sampling locations (N)")+ 
+  stat_compare_means(aes(x = name, y = value),
+                     method = "kruskal.test", 
+                     label.x.npc = "center",
+                     label.y = 24,
+                     label = "p.signif",
+                     symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")))# + 
+ # ylim(-8, 36)
+plotcoinstations
+anovacoistations <- allnstations_coi %>% pivot_longer(c("epi_nstations", "uppermeso_nstations", "lowermeso_nstations")) %>% filter(value != 0) %>% aov(value ~ name, data =.) %>% summary()
+testres <- allnstations_coi %>% pivot_longer(c("epi_nstations", "uppermeso_nstations", "lowermeso_nstations")) %>% filter(value != 0) %>% kruskal.test(value ~ name, data = .) 
+testres
+means
+
+means <- allnstations_coi %>% pivot_longer(c("epi_nregions", "uppermeso_nregions", "lowermeso_nregions")) %>% aggregate(value ~  name, FUN = function(x) round(mean(x), 3)) 
+plotcoinregions <- allnstations_coi %>% pivot_longer(c("epi_nregions", "uppermeso_nregions", "lowermeso_nregions")) %>% filter(value != 0) %>%
+#  mutate(name = forcats::fct_relevel(name, "epi_nregions", "uppermeso_nregions", "lowermeso_nregions")) %>% ggplot() + 
+  mutate(name = forcats::fct_relevel(name, "lowermeso_nregions", "uppermeso_nregions", "epi_nregions")) %>% ggplot() + 
+  geom_jitter(aes(x = name, y = value), size = .3, alpha = 0.2) + 
+  geom_violin(aes(x = name, y = value), adjust = 2) +
+  geom_pwc(aes(x = name, y  = value),
+           method = "dunn_test",
+           label = "p.adj.signif", 
+           hide.ns = T, 
+           symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")),
+           tip.length = 0.01,
+           bracket.nudge.y = 0.2,
+           vjust = 0.5,
+           inherit.aes = F) +
+  stat_summary(aes(x = name, y = value),
+               fun = "mean",
+               geom = "point",
+               color = "black", 
+               size = 2,
+               alpha = 1) + 
+ # geom_text(data = means, aes(label = value, x = name, y = value -4)) + 
+  #theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  ggtitle("COI") + 
+  scale_x_discrete(labels = c("epi_nregions" = "0-200m", "uppermeso_nregions" = "200-\n500m", "lowermeso_nregions" = "500-\n1000m")) + 
+  scale_y_continuous(expand = expansion(mult = 0.1)) +
+  xlab("Depth zone") + 
+  ylab("Regions (N)")+ 
+  stat_compare_means(aes(x = name, y = value),
+                     method = "kruskal.test", 
+                     label.x.npc = "center",
+                     label.y = 7,
+                     label = "p.signif",
+                     symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns"))) #+ 
+#  ylim(-4, 10)
+  plotcoinregions
+anovacoiregions <- allnstations_coi %>% pivot_longer(c("epi_nregions", "uppermeso_nregions", "lowermeso_nregions")) %>% filter(value != 0) %>% aov(value ~ name, data =.) %>% summary()
+testres <- allnstations_coi %>% pivot_longer(c("epi_nregions", "uppermeso_nregions", "lowermeso_nregions")) %>% filter(value != 0) %>% kruskal.test(value ~ name, data = .) 
+testres
+means
+
+means <- allnstations_18S %>% pivot_longer(c("epi_nstations", "uppermeso_nstations", "lowermeso_nstations")) %>% aggregate(value ~  name, FUN = function(x) round(mean(x), 3)) 
+plot18snstations <- allnstations_18S %>% pivot_longer(c("epi_nstations", "uppermeso_nstations", "lowermeso_nstations")) %>% filter(value != 0) %>%
+#  mutate(name = forcats::fct_relevel(name, "epi_nstations", "uppermeso_nstations", "lowermeso_nstations")) %>% ggplot() + 
+  mutate(name = forcats::fct_relevel(name, "lowermeso_nstations", "uppermeso_nstations", "epi_nstations")) %>% ggplot() + 
+  geom_jitter(aes(x = name, y = value), size = .3, alpha = 0.2) + 
+  geom_violin(aes(x = name, y = value), adjust = 2) +
+  geom_pwc(aes(x = name, y  = value),
+           method = "dunn_test",
+           label = "p.adj.signif", 
+           hide.ns = T, 
+           symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")),
+           tip.length = 0.01,
+           bracket.nudge.y = 0.1,
+           vjust = 0.5,
+           inherit.aes = F) +
+  stat_summary(aes(x = name, y = value),
+               fun = "mean",
+               geom = "point",
+               color = "black", 
+               size = 2,
+               alpha = 1) + 
+  #geom_text(data = means, aes(label = value, x = name, y = value -8))+ 
+ # theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  ggtitle("18S")+ 
+  scale_x_discrete(labels = c("epi_nstations" = "0-200m", "uppermeso_nstations" = "200-\n500m", "lowermeso_nstations" = "500-\n1000m")) + 
+  scale_y_continuous(expand = expansion(mult = 0.1)) +
+  xlab("Depth zone") + 
+  ylab("Sampling locations (N)")+ 
+  stat_compare_means(aes(x = name, y = value),
+                     method = "kruskal.test", 
+                     label.x.npc = "center",
+                     label.y = 28,
+                     label = "p.signif",
+                     symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns"))) #+ 
+  #ylim(-8, 36)
+  plot18snstations
+anova18sstations <- allnstations_18S %>% pivot_longer(c("epi_nstations", "uppermeso_nstations", "lowermeso_nstations")) %>% filter(value != 0) %>% aov(value ~ name, data =.) %>% summary()
+testres <- allnstations_18S %>% pivot_longer(c("epi_nstations", "uppermeso_nstations", "lowermeso_nstations")) %>% filter(value != 0) %>% kruskal.test(value ~ name, data = .) 
+means
+
+means <- allnstations_18S %>% pivot_longer(c("epi_nregions", "uppermeso_nregions", "lowermeso_nregions")) %>% aggregate(value ~  name, FUN = function(x) round(mean(x), 3)) 
+plot18snregions <- allnstations_18S %>% pivot_longer(c("epi_nregions", "uppermeso_nregions", "lowermeso_nregions")) %>% filter(value != 0) %>%
+#  mutate(name = forcats::fct_relevel(name, "epi_nregions", "uppermeso_nregions", "lowermeso_nregions")) %>% ggplot() + 
+  mutate(name = forcats::fct_relevel(name, "lowermeso_nregions", "uppermeso_nregions", "epi_nregions")) %>% ggplot() + 
+  geom_jitter(aes(x = name, y = value), size = .3, alpha = 0.2) + 
+  geom_violin(aes(x = name, y = value), adjust = 2) +
+  #geom_pwc(aes(x = name, y  = value),
+  #         method = "dunn_test",
+  #         label = "p.adj.signif", 
+  #         hide.ns = T, 
+  #         symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")),
+  #         tip.length = 0.01,
+  #         bracket.nudge.y = 0.2,
+  #         vjust = 0.5,
+  #         inherit.aes = F) +
+  stat_summary(aes(x = name, y = value),
+               fun = "median",
+               geom = "point",
+               color = "black", 
+               size = 2,
+               alpha = 1) + 
+  #geom_text(data = means, aes(label = value, x = name, y = value -4))+ 
+ # theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  ggtitle("18S")+ 
+  scale_x_discrete(labels = c("epi_nregions" = "0-200m", "uppermeso_nregions" = "200-\n500m", "lowermeso_nregions" = "500-\n1000m")) + 
+  scale_y_continuous(expand = expansion(mult = 0.1)) +
+  xlab("Depth zone") + 
+  ylab("Regions (N)")+ 
+  stat_compare_means(aes(x = name, y = value),
+                     method = "kruskal.test", 
+                     label.x.npc = "center",
+                     label.y = 7,
+                     label = "p.signif",
+                     symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")))# + 
+ # ylim(-4, 10)
+plot18snregions
+anova18sregions <- allnstations_18S %>% pivot_longer(c("epi_nregions", "uppermeso_nregions", "lowermeso_nregions")) %>% filter(value != 0) %>% aov(value ~ name+namedotu, data = .) %>% summary()
+testres <- allnstations_18S %>% pivot_longer(c("epi_nregions", "uppermeso_nregions", "lowermeso_nregions")) %>% filter(value != 0) %>% kruskal.test(value ~ name, data = .) 
+means
+
+bothplots <- ggarrange(plot18snstations, plotcoinstations, ncol = 2, nrow = 1, labels = c("a)", "b)"), align = "hv") 
+bothplots 
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/nstations.pdf", height =3, width = 5)
+bothplots
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/nstations.jpeg", height =3, width = 5, unit = "in", quality = 100, res = 300)
+bothplots
+dev.off()
+
+bothplots <- ggarrange(plot18snregions+coord_flip(), plotcoinregions+coord_flip(), ncol = 2, nrow = 1, labels = c("a)", "b)"), align = "hv")  
+bothplots 
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/nregions.pdf", height =2.5, width = 6.5)
+bothplots
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/nregions.jpeg", height =2.5, width = 6.5, unit = "in", quality = 100, res = 300)
+bothplots
+dev.off()
+
+bothplots_bothmarkers <- ggarrange(plot18snstations+coord_flip(), plotcoinstations+coord_flip(), plot18snregions+coord_flip(), plotcoinregions+coord_flip(), ncol = 2, nrow = 2, labels = c("a)", "b)", "c)", "d)"), align = "hv") 
+bothplots_bothmarkers 
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/nregions_nsamples.pdf", height =3, width = 6.5)
+bothplots_bothmarkers
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/nregions_nsamples.jpeg", height =3.5, width = 6.5, unit = "in", quality = 100, res = 300)
+bothplots_bothmarkers
+dev.off()
+  
+```
+
+>> number of stations decreases with depthbut it's not significant
+>> need to clean up this plot 
+>> need to determine whether to also test number of regions/taxon, or if that's too much predefining things 
+
+##plot boxplots
+```{r}
+coinstationsdf <- allnstations_coi %>% pivot_longer(c("epi_nstations", "uppermeso_nstations", "lowermeso_nstations")) %>% filter(value != 0) %>%
+  mutate(name = forcats::fct_relevel(name, "epi_nstations", "uppermeso_nstations", "lowermeso_nstations")) #%>% 
+
+
+coinregionsdf <- allnstations_coi %>% pivot_longer(c("epi_nregions", "uppermeso_nregions", "lowermeso_nregions")) %>% filter(value != 0) %>%
+  mutate(name = forcats::fct_relevel(name, "epi_nregions", "uppermeso_nregions", "lowermeso_nregions")) #%>% ggplot() + 
+
+ 
+z18snstationsdf <- allnstations_18S %>% pivot_longer(c("epi_nstations", "uppermeso_nstations", "lowermeso_nstations")) %>% filter(value != 0) %>%
+  mutate(name = forcats::fct_relevel(name, "epi_nstations", "uppermeso_nstations", "lowermeso_nstations")) #%>% ggplot() + 
+
+
+z18snregionsdf <- allnstations_18S %>% pivot_longer(c("epi_nregions", "uppermeso_nregions", "lowermeso_nregions")) %>% filter(value != 0) %>%
+  mutate(name = forcats::fct_relevel(name, "epi_nregions", "uppermeso_nregions", "lowermeso_nregions")) #%>% ggplot() + 
+
+
+z18snregionsdf$Marker <- "18S"
+z18snregionsdf$Counts <- "Regions"
+z18snstationsdf$Marker <- "18S"
+z18snstationsdf$Counts <- "Stations"
+coinregionsdf$Marker <- "COI"
+coinregionsdf$Counts <- "Regions"
+coinstationsdf$Marker <- "COI"
+coinstationsdf$Counts <- "Stations"
+
+counts4 <- rbind(z18snregionsdf[,c("namedotu", "name", "value", "Marker", "Counts")], z18snstationsdf[,c("namedotu", "name", "value", "Marker", "Counts")]) %>%
+  rbind(coinregionsdf[,c("namedotu", "name", "value", "Marker", "Counts")]) %>% 
+  rbind(coinstationsdf[,c("namedotu", "name", "value", "Marker", "Counts")])
+counts4 <- counts4[counts4$value != 0,]
+counts4$name <-  forcats::fct_relevel(counts4$name, "lowermeso_nregions", "uppermeso_nregions", "epi_nregions", "lowermeso_nstations", "uppermeso_nstations", "epi_nstations")
+
+
+ggplot(counts4, aes(x = name, y = value, fill = Marker)) + facet_wrap(Marker~Counts, scales = "free") + 
+ # geom_jitter(alpha = 0.2, size = 0.2) + 
+  geom_boxplot(outlier.shape = NA) +  
+  coord_flip() +
+  scale_x_discrete(labels = c("epi_nregions" = "0-200m", "uppermeso_nregions" = "200-\n500m", "lowermeso_nregions" = "500-\n1000m", "epi_nstations" = "0-200m", "uppermeso_nstations" = "200-\n500m", "lowermeso_nstations" = "500-\n1000m"))   + scale_fill_manual(values = markercolors)
+
+  
+```
+
+
+
+
+#taxa environmental ranges
+- Do epipelagic or mesopelagic taxa have larger environmental ranges? 
+- Is this the same for all variables (temp/sal/oxy/food availability) (use NPP for epi food, EF for meso food)
+    
+## calculate ranges
+```{r calculate environmental ranges: coi}
+#calculate environmental range of each taxon
+zoopsCOI <- subset_taxa(zoopsCOI, taxa_sums(zoopsCOI) > 0)
+n <- ntaxa(zoopsCOI)
+taxonnamestocal <- taxa_names(zoopsCOI)
+tempwtdmean <- numeric(n)
+tempmin <- numeric(n)
+tempmax <- numeric(n)
+temprange <- numeric(n)
+fluorwtdmean<- numeric(n)
+fluormin<- numeric(n)
+fluormax<- numeric(n)
+fluorrange<- numeric(n)
+oxywtdmean<- numeric(n)
+oxymin<- numeric(n)
+oxymax<- numeric(n)
+oxyrange<- numeric(n)
+salwtdmean<- numeric(n)
+salmin<- numeric(n)
+salmax<- numeric(n)
+salrange<- numeric(n)
+chllwtdmean<- numeric(n)
+chllmin<- numeric(n)
+chllmax<- numeric(n)
+chllrange<- numeric(n)
+efwtdmean<- numeric(n)
+efmin<- numeric(n)
+efmax<- numeric(n)
+efrange<- numeric(n)
+nppwtdmean<- numeric(n)
+nppmin<- numeric(n)
+nppmax<- numeric(n)
+npprange<- numeric(n)
+nregions <- numeric(n)
+for (i in 1:n){
+  print(i)
+  nameoftaxa <- taxonnamestocal[i]
+  phyone <- subset_taxa(zoopsCOI, taxa_names(zoopsCOI) %in% nameoftaxa)
+  phyone <- subset_samples(phyone, sample_sums(phyone) > (taxa_sums(phyone)[1]*.00001) )
+  tempwtdmean[i] <- weighted.mean((sample_data(phyone)$MeanTemp), t(data.frame((otu_table(phyone)))))
+  tempmin[i] <- min((sample_data(phyone)$MeanTemp))
+  tempmax[i] <- max((sample_data(phyone)$MeanTemp))
+  temprange[i] <- tempmax[i] - tempmin[i]
+  
+ # fluorwtdmean[i] <- weighted.mean((sample_data(phyone)$MeanFluor), t(data.frame((otu_table(phyone)))))
+ # fluormin[i] <- min((sample_data(phyone)$MeanFluor))
+ # fluormax[i] <- max((sample_data(phyone)$MeanFluor))
+ # fluorrange[i] <- fluormax[i] - fluormin[i]
+  
+  oxywtdmean[i] <- weighted.mean((sample_data(phyone)$MeanOxy), t(data.frame((otu_table(phyone)))))
+  oxymin[i] <- min((sample_data(phyone)$MeanOxy))
+  oxymax[i] <- max((sample_data(phyone)$MeanOxy))
+  oxyrange[i] <- oxymax[i] - oxymin[i]
+  
+  salwtdmean[i] <- weighted.mean((sample_data(phyone)$MeanSal), t(data.frame((otu_table(phyone)))))
+  salmin[i] <- min((sample_data(phyone)$MeanSal))
+  salmax[i] <- max((sample_data(phyone)$MeanSal))
+  salrange[i] <- salmax[i] - salmin[i]
+  
+  chllwtdmean[i] <- weighted.mean((sample_data(phyone)$chl_meanyearlytotal), t(data.frame((otu_table(phyone)))))
+  chllmin[i] <- min((sample_data(phyone)$chl_meanyearlytotal))
+  chllmax[i] <- max((sample_data(phyone)$chl_meanyearlytotal))
+  chllrange[i] <- chllmax[i] - chllmin[i]
+  
+  efwtdmean[i] <- weighted.mean((sample_data(phyone)$ef_meanyearlytotal), t(data.frame((otu_table(phyone)))))
+  efmin[i] <- min((sample_data(phyone)$ef_meanyearlytotal))
+  efmax[i] <- max((sample_data(phyone)$ef_meanyearlytotal))
+  efrange[i] <- efmax[i] - efmin[i]
+  
+  nppwtdmean[i] <- weighted.mean((sample_data(phyone)$ef_meanyearlytotal), t(data.frame((otu_table(phyone)))))
+  nppmin[i] <- min((sample_data(phyone)$ef_meanyearlytotal))
+  nppmax[i] <- max((sample_data(phyone)$ef_meanyearlytotal))
+  npprange[i] <- efmax[i] - efmin[i]
+  
+  nregions[i] <- nrow(unique(sample_data(phyone)[,c("NewRegion")]))
+}
+coiranges <-  data.frame(taxonnamestocal, tempwtdmean, tempmin, tempmax, temprange, oxywtdmean, oxymin, oxymax, oxyrange, salwtdmean, salmin, salmax, salrange,   chllwtdmean, chllmin, chllmax, chllrange , efwtdmean, efmin, efmax, efrange , nppwtdmean, nppmin, nppmax, npprange, nregions)
+#epirangesnonzero <- epiranges[epiranges$temprange > 0,]
+multisamplesamples <- taxa_names(zoopsCOI)[taxa_sums(phyloseq_standardize_otu_abundance(zoopsCOI, method = "pa")) > 1]
+coirangessnonzero <- coiranges[coiranges$taxonnamestocal %in% multisamplesamples,]
+```
+    
+    
+     
+```{r calculate environmental ranges: 18s}
+zoops18S <- subset_taxa(zoops18S, taxa_sums(zoops18S) > 0)
+
+#calculate environmental range of each taxon
+n <- ntaxa(zoops18S)
+taxonnamestocal <- taxa_names(zoops18S)
+tempwtdmean <- numeric(n)
+tempmin <- numeric(n)
+tempmax <- numeric(n)
+temprange <- numeric(n)
+fluorwtdmean<- numeric(n)
+fluormin<- numeric(n)
+fluormax<- numeric(n)
+fluorrange<- numeric(n)
+oxywtdmean<- numeric(n)
+oxymin<- numeric(n)
+oxymax<- numeric(n)
+oxyrange<- numeric(n)
+salwtdmean<- numeric(n)
+salmin<- numeric(n)
+salmax<- numeric(n)
+salrange<- numeric(n)
+chllwtdmean<- numeric(n)
+chllmin<- numeric(n)
+chllmax<- numeric(n)
+chllrange<- numeric(n)
+efwtdmean<- numeric(n)
+efmin<- numeric(n)
+efmax<- numeric(n)
+efrange<- numeric(n)
+nppwtdmean<- numeric(n)
+nppmin<- numeric(n)
+nppmax<- numeric(n)
+npprange<- numeric(n)
+nregions<- numeric(n)
+for (i in 1:n){
+  print(i)
+  nameoftaxa <- taxonnamestocal[i]
+  phyone <- subset_taxa(zoops18S, taxa_names(zoops18S) %in% nameoftaxa)
+  phyone <- subset_samples(phyone, sample_sums(phyone) > (taxa_sums(phyone)[1]*.00001) )
+  
+  tempwtdmean[i] <- weighted.mean((sample_data(phyone)$MeanTemp), t(data.frame((otu_table(phyone)))))
+  tempmin[i] <- min((sample_data(phyone)$MeanTemp))
+  tempmax[i] <- max((sample_data(phyone)$MeanTemp))
+  temprange[i] <- tempmax[i] - tempmin[i]
+  
+ # fluorwtdmean[i] <- weighted.mean((sample_data(phyone)$MeanFluor), t(data.frame((otu_table(phyone)))))
+ # fluormin[i] <- min((sample_data(phyone)$MeanFluor))
+ # fluormax[i] <- max((sample_data(phyone)$MeanFluor))
+ # fluorrange[i] <- fluormax[i] - fluormin[i]
+  
+  oxywtdmean[i] <- weighted.mean((sample_data(phyone)$MeanOxy), t(data.frame((otu_table(phyone)))))
+  oxymin[i] <- min((sample_data(phyone)$MeanOxy))
+  oxymax[i] <- max((sample_data(phyone)$MeanOxy))
+  oxyrange[i] <- oxymax[i] - oxymin[i]
+  
+  salwtdmean[i] <- weighted.mean((sample_data(phyone)$MeanSal), t(data.frame((otu_table(phyone)))))
+  salmin[i] <- min((sample_data(phyone)$MeanSal))
+  salmax[i] <- max((sample_data(phyone)$MeanSal))
+  salrange[i] <- salmax[i] - salmin[i]
+  
+  chllwtdmean[i] <- weighted.mean((sample_data(phyone)$chl_meanyearlytotal), t(data.frame((otu_table(phyone)))))
+  chllmin[i] <- min((sample_data(phyone)$chl_meanyearlytotal))
+  chllmax[i] <- max((sample_data(phyone)$chl_meanyearlytotal))
+  chllrange[i] <- chllmax[i] - chllmin[i]
+  
+  efwtdmean[i] <- weighted.mean((sample_data(phyone)$ef_meanyearlytotal), t(data.frame((otu_table(phyone)))))
+  efmin[i] <- min((sample_data(phyone)$ef_meanyearlytotal))
+  efmax[i] <- max((sample_data(phyone)$ef_meanyearlytotal))
+  efrange[i] <- efmax[i] - efmin[i]
+  
+  nppwtdmean[i] <- weighted.mean((sample_data(phyone)$ef_meanyearlytotal), t(data.frame((otu_table(phyone)))))
+  nppmin[i] <- min((sample_data(phyone)$ef_meanyearlytotal))
+  nppmax[i] <- max((sample_data(phyone)$ef_meanyearlytotal))
+  npprange[i] <- efmax[i] - efmin[i]
+  
+  nregions[i] <- nrow(unique(sample_data(phyone)[,c("NewRegion")]))
+}
+zhanranges <-  data.frame(taxonnamestocal, tempwtdmean, tempmin, tempmax, temprange, oxywtdmean, oxymin, oxymax, oxyrange, salwtdmean, salmin, salmax, salrange,   chllwtdmean, chllmin, chllmax, chllrange , efwtdmean, efmin, efmax, efrange , nppwtdmean, nppmin, nppmax, npprange, nregions)
+#epirangesnonzero <- epiranges[epiranges$temprange > 0,]
+multisamplesamples <- taxa_names(zoops18S)[taxa_sums(phyloseq_standardize_otu_abundance(zoops18S, method = "pa")) > 1]
+zhanrangessnonzero <- zhanranges[zhanranges$taxonnamestocal %in% multisamplesamples,]
+
+```
+    
+subset to just taxa appearing in epi, upper meso, lower meso
+```{r}
+epi_coienv <- coirangessnonzero[coirangessnonzero$taxonnamestocal %in% taxa_names(subset_taxa(epiCOI, taxa_sums(epiCOI) > 0)),] 
+upmeso_coienv <- coirangessnonzero[coirangessnonzero$taxonnamestocal %in% taxa_names(subset_taxa(upmesoCOI, taxa_sums(upmesoCOI) > 0)),] 
+lowmeso_coienv <- coirangessnonzero[coirangessnonzero$taxonnamestocal %in% taxa_names(subset_taxa(lowmesoCOI, taxa_sums(lowmesoCOI) > 0)),] 
+
+epi_zhanenv <- zhanrangessnonzero[zhanrangessnonzero$taxonnamestocal %in% taxa_names(subset_taxa(epi18S, taxa_sums(epi18S) > 0)),] 
+upmeso_zhanenv <- zhanrangessnonzero[zhanrangessnonzero$taxonnamestocal %in% taxa_names(subset_taxa(upmeso18S, taxa_sums(upmeso18S) > 0)),] 
+lowmeso_zhanenv <- zhanrangessnonzero[zhanrangessnonzero$taxonnamestocal %in% taxa_names(subset_taxa(lowmeso18S, taxa_sums(lowmeso18S) > 0)),] 
+
+epi_coienv$marker <- "COI"
+upmeso_coienv$marker <-"COI"
+lowmeso_coienv$marker <-"COI"
+epi_zhanenv$marker <- "18S"
+upmeso_zhanenv$marker <-"18S"
+lowmeso_zhanenv$marker <-"18S"
+
+epi_coienv$depthzone <- "Epi"
+upmeso_coienv$depthzone <-"UpMeso"
+lowmeso_coienv$depthzone <-"LowMeso"
+epi_zhanenv$depthzone <- "Epi"
+upmeso_zhanenv$depthzone <-"UpMeso"
+lowmeso_zhanenv$depthzone <-"LowMeso"
+
+depthzones_environmentalranges <- bind_rows(epi_coienv, upmeso_coienv, lowmeso_coienv, epi_zhanenv, upmeso_zhanenv, lowmeso_zhanenv)
+
+
+depthzones_environmentalranges %>% pivot_longer(c("temprange", "oxyrange", "salrange", "chllrange", "efrange", "npprange")) %>%
+  ggplot() + 
+  geom_violin(aes(x=depthzone, y = value)) + 
+  geom_jitter(aes(x=depthzone, y = value), size = 1, alpha = 0.2) + 
+  facet_wrap(.~name, scales = "free_y")
+
+  #+ 
+  #geom_jitter(aes(x = name, y = value), size = 1, alpha = 0.2) + 
+ # geom_violin(aes(x = name, y = value)) +
+#  allnstations_18S %>% pivot_longer(c("epi_nstations", "uppermeso_nstations", "lowermeso_nstations")) %>%
+#  mutate(name = forcats::fct_relevel(name, "epi_nstations", "uppermeso_nstations", "lowermeso_nstations")) %>% ggplot()
+
+tempplottaxa <- ggplot(depthzones_environmentalranges, aes(x = depthzone, y = temprange, fill = marker)) + 
+  geom_boxplot()
+tempplottaxa
+
+
+
+
+#subset_taxa(zoops18S, taxa_sums(zoops18S) > 0)
+
+
+
+```
+
+
+
+#SECTION 2: CALC BY TAXA CLASSIFICATION
+```{r}
+verthab18s <- data.frame(tax_table(zoops18S))
+verthab18s$taxonnamestocal <- rownames(verthab18s)
+verthab18s <- verthab18s[c("taxonnamestocal", "weightedmeandepth", "preferrednet", "sumRelAb", "NSamples", "NStations", "NRegions", "classification")]
+zhanenvplusvert <- merge(zhanrangessnonzero, verthab18s, by = "taxonnamestocal")
+
+verthabCOI <- data.frame(tax_table(zoopsCOI))
+verthabCOI$taxonnamestocal <- rownames(verthabCOI)
+verthabCOI <- verthabCOI[c("taxonnamestocal", "weightedmeandepth", "preferrednet", "sumRelAb", "NSamples", "NStations", "NRegions", "classification")]
+coienvplusvert <- merge(coirangessnonzero, verthabCOI, by = "taxonnamestocal") 
+```
+
+```{r}
+environment_names <- as_labeller(c("temprange" = expression(Temperature~(degree*C)),
+                    "oxyrange" = expression(DO~(µmol~kg^-1)),
+                    "salrange" = "Salinity",
+                    "chllrange" = "Chlorophyll",
+                    "efrange" = expression(EF~(mgC~m^-2~yr^1)),
+                    "npprange" = expression(NPP~(mgC~m^-2~yr^1)),
+                    "NStationsnum" = "Locations (N)",
+                    "NRegions" = "Regions (N)",
+                    "Epipelagic" = "Epipelagic", 
+                    "UpperMesopelagic" = "UpperMesopelagic", 
+                    "LowerMesopelagic", "LowerMesopelagic"), label_parsed)     #as_labeller(c(a="A", b="B", c="italic(C)"), label_parsed)
+#z18long_mod$name_fac <- factor(z18long_mod$name, levels = c("Temperature", "Salinity", "Oxygen", "NPP", "EF"), ordered = TRUE, labels = c(expression(Temperature~(degree*C)), "Salinity", expression(DO~(µmol~kg^-1)), expression(NPP~(mgC~m^-2~yr^1)), expression(EF~(mgC~m^-2~yr^1))))
+
+coienvplusvert$NStationsnum <- as.numeric(coienvplusvert$NStations)
+coienvplusvert$NRegions <- as.numeric(coienvplusvert$NRegions)
+kruskal.test(temprange ~ classification, data = coienvplusvert) 
+kruskal.test(oxyrange ~ classification, data = coienvplusvert) 
+kruskal.test(salrange ~ classification, data = coienvplusvert) 
+kruskal.test(chllrange ~ classification, data = coienvplusvert) 
+kruskal.test(npprange ~ classification, data = coienvplusvert) 
+kruskal.test(efrange ~ classification, data = coienvplusvert) 
+
+plotenvcoi <- coienvplusvert %>% pivot_longer(c("temprange", "oxyrange", "salrange", "npprange", "efrange")) %>%
+  mutate(classification.x = forcats::fct_relevel(classification, "Epipelagic", "UpperMesopelagic", "LowerMesopelagic")) %>%
+  mutate(name = forcats::fct_relevel(name, "temprange", "salrange", "oxyrange", "npprange", "efrange")) %>%
+  mutate(name.x = factor(.$name, levels = c("temprange", "salrange", "oxyrange", "npprange", "efrange"), ordered = TRUE, labels = c(expression(Temperature~(degree*C)), "Salinity", expression(DO~(µmol~kg^-1)), expression(NPP~(mgC~m^-2~d^1)), expression(EF~(mgC~m^-2~d^1))))) %>%
+  ggplot() + 
+  geom_violin(aes(x=classification.x, y = value)) + 
+  geom_jitter(aes(x=classification.x, y = value), size = 1, alpha = 0.2, width = 0.2) + 
+  facet_wrap(.~name.x, scales = "free_y", labeller = environment_names, nrow = 1)+
+  stat_summary(aes(x = classification.x, y = value),
+               fun = "median",
+               geom = "point",
+               fill = "white", 
+               color = "black",
+               size = 3,
+               alpha = 0.95,
+               shape = 21) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+    stat_compare_means(aes(x=classification.x, y = value),
+                     method = "kruskal.test", 
+                 #    label.y = c(13,3000,3000,350,3,28), 
+                 vjust = -1.8,
+                     label.x.npc = "center",
+                     label = "p.signif",
+                     symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")))+
+  ggtitle("Taxon ranges, COI") +
+  geom_pwc(aes(x = classification.x, y  = value),
+           method = "dunn_test",
+           label = "p.adj.signif", 
+           hide.ns = T, 
+           symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")),
+           tip.length = 0.01,
+           bracket.nudge.y = 0.04,
+           vjust = 0.5,
+           inherit.aes = F) +
+  xlab("Preferred depth zone")+ 
+  scale_x_discrete(labels = c("Epipelagic" = "0-\n200m", "UpperMesopelagic" = "200-\n500m", "LowerMesopelagic" = "500-\n1000m"))+ 
+  scale_y_continuous(expand = expansion(mult =c(0,0.35))) + 
+  ylab("Range for each taxon")
+plotenvcoi
+
+kruskal.test(NStationsnum ~ classification, data = coienvplusvert) 
+plotnstatcoi <- coienvplusvert %>% pivot_longer(c("NStationsnum")) %>%
+  mutate(classification.x = forcats::fct_relevel(classification, "Epipelagic", "UpperMesopelagic", "LowerMesopelagic")) %>%
+  ggplot() + 
+  geom_violin(aes(x=classification.x, y = value), bw = 1.1) + 
+  geom_jitter(aes(x=classification.x, y = value), size = 1, alpha = 0.2, width = 0.2) + 
+#  facet_wrap(.~name, scales = "free_y", labeller = as_labeller(environment_names))+
+  stat_summary(aes(x = classification.x, y = value),
+               fun = "median",
+               geom = "point",
+               fill = "white", 
+               color = "black",
+               size = 3,
+               alpha = 0.95,
+               shape = 21) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+    stat_compare_means(aes(x=classification.x, y = value),
+                     method = "kruskal.test", 
+                 #    label.y = c(13,3000,3000,350,3,28), 
+                 vjust = -1.2,
+                     label.x.npc = "center",
+                     label = "p.signif",
+                     symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")))+
+  ggtitle("") +
+  geom_pwc(aes(x = classification.x, y  = value),
+           method = "dunn_test",
+           label = "p.adj.signif", 
+           hide.ns = T, 
+           symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")),
+           tip.length = 0.01,
+           bracket.nudge.y = 0.04,
+           vjust = 0.5,
+           inherit.aes = F) +
+  xlab("Preferred depth zone")+ 
+  scale_x_discrete(labels = c("Epipelagic" = "0-200m", "UpperMesopelagic" = "200-500m", "LowerMesopelagic" = "500-1000m"))+ scale_y_continuous(expand = expansion(mult = 0.15)) + 
+  scale_y_continuous(expand = expansion(mult = c(0,0.27))) + 
+  ylab("Sampling locations (#)")
+coienvplusvert %>% aggregate(NStationsnum ~  classification, FUN = function(x) round(mean(x), 3)) 
+coienvplusvert %>% aggregate(taxonnamestocal ~  classification, FUN = function(x) round(n_distinct(x), 3)) 
+
+plotnstatcoi
+kruskal.test(NRegions ~ classification, data = coienvplusvert) 
+plotnregioncoi <- coienvplusvert %>% #pivot_longer(c("NRegions")) %>%
+  mutate(classification.x = forcats::fct_relevel(classification, "Epipelagic", "UpperMesopelagic", "LowerMesopelagic")) %>%
+  ggplot() + 
+  geom_violin(aes(x=classification.x, y = NRegions), bw = 1.1) + 
+  geom_jitter(aes(x=classification.x, y = NRegions), size = 1, alpha = 0.2, width = 0.2, height = 0.2) + 
+ # facet_wrap(.~name, scales = "free_y", labeller = as_labeller(environment_names))+
+  stat_summary(aes(x = classification.x, y = NRegions),
+               fun = "median",
+               geom = "point",
+               fill = "white", 
+               color = "black",
+               size = 3,
+               alpha = 0.95,
+               shape = 21) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+    stat_compare_means(aes(x=classification.x, y = NRegions),
+                     method = "kruskal.test", 
+                 #    label.y = c(13,3000,3000,350,3,28), 
+                 vjust = -1.2,
+                     label.x.npc = "center",
+                     label = "p.signif",
+                     symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")))+
+  ggtitle("") +
+  geom_pwc(aes(x = classification.x, y  = NRegions),
+           method = "dunn_test",
+           label = "p.adj.signif", 
+           hide.ns = T, 
+           symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")),
+           tip.length = 0.01,
+           bracket.nudge.y = 0.04,
+           vjust = 0.5,
+           inherit.aes = F) +
+  xlab("Preferred depth zone")+ 
+  scale_x_discrete(labels = c("Epipelagic" = "0-200m", "UpperMesopelagic" = "200-500m", "LowerMesopelagic" = "500-1000m"))+
+  scale_y_continuous(expand = expansion(mult =c(0,0.27))) + 
+  ylab("Regions (#)")
+plotnregioncoi
+coienvplusvert %>% aggregate(NRegions ~  classification, FUN = function(x) round(mean(x), 3)) 
+coienvplusvert %>% aggregate(taxonnamestocal ~  classification, FUN = function(x) round(n_distinct(x), 3)) 
+
+
+zhanenvplusvert$NStationsnum <- as.numeric(zhanenvplusvert$NStations)
+zhanenvplusvert$NRegions <- as.numeric(zhanenvplusvert$NRegions)
+kruskal.test(temprange ~ classification, data = zhanenvplusvert) 
+kruskal.test(oxyrange ~ classification, data = zhanenvplusvert) 
+kruskal.test(salrange ~ classification, data = zhanenvplusvert) 
+kruskal.test(chllrange ~ classification, data = zhanenvplusvert) 
+kruskal.test(npprange ~ classification, data = zhanenvplusvert) 
+kruskal.test(efrange ~ classification, data = zhanenvplusvert) 
+
+plotenv18s <- zhanenvplusvert %>% pivot_longer(c("temprange", "oxyrange", "efrange", "salrange", "npprange")) %>%
+  mutate(classification.x = forcats::fct_relevel(classification, "Epipelagic", "UpperMesopelagic", "LowerMesopelagic")) %>%
+  mutate(name = forcats::fct_relevel(name, "temprange", "salrange", "oxyrange", "npprange", "efrange")) %>%
+  mutate(name.x = factor(.$name, levels = c("temprange", "salrange", "oxyrange", "npprange", "efrange"), ordered = TRUE, labels = c(expression(Temperature~(degree*C)), "Salinity", expression(DO~(µmol~kg^-1)), expression(NPP~(mgC~m^-2~d^1)), expression(EF~(mgC~m^-2~d^1))))) %>%
+  ggplot() + 
+  geom_violin(aes(x=classification.x, y = value)) + 
+  geom_jitter(aes(x=classification.x, y = value), size = 1, alpha = 0.2, width = 0.2) + 
+  facet_wrap(.~name.x, scales = "free_y", labeller = environment_names, nrow = 1)+
+  stat_summary(aes(x = classification.x, y = value),
+               fun = "median",
+               geom = "point",
+               fill = "white", 
+               color = "black",
+               size = 3,
+               alpha = 0.95,
+               shape = 21) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+    stat_compare_means(aes(x=classification.x, y = value),
+                     method = "kruskal.test", 
+                 #    label.y = c(13,3000,3000,350,3,28), 
+                 vjust = -1.8,
+                 label.y.npc = "top",
+                     label.x.npc = "center",
+                     label = "p.signif",
+                     symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")))+
+  ggtitle("Taxon ranges, 18S") +
+  geom_pwc(aes(x = classification.x, y  = value),
+           method = "dunn_test",
+           label = "p.adj.signif", 
+           hide.ns = T, 
+           symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")),
+           tip.length = 0.01,
+           bracket.nudge.y = 0.04,
+           vjust = 0.5,
+           inherit.aes = F) +
+  xlab("Preferred depth zone")+ 
+  scale_x_discrete(labels = c("Epipelagic" = "0-\n200m", "UpperMesopelagic" = "200-\n500m", "LowerMesopelagic" = "500-\n1000m"))+ 
+  scale_y_continuous(expand = expansion(mult = c(0,0.35))) + 
+  ylab("Range for each taxon")
+plotenv18s
+
+kruskal.test(NStationsnum ~ classification, data = zhanenvplusvert) 
+kruskal.test(NRegions ~ classification, data = zhanenvplusvert) 
+
+ plotnstat18s <- zhanenvplusvert %>% pivot_longer(c("NStationsnum")) %>%
+  mutate(classification.x = forcats::fct_relevel(classification, "Epipelagic", "UpperMesopelagic", "LowerMesopelagic")) %>%
+  ggplot() + 
+  geom_violin(aes(x=classification.x, y = value), bw = 1.1) + 
+  geom_jitter(aes(x=classification.x, y = value), size = 1, alpha = 0.2, width = 0.2) + 
+ # facet_wrap(.~name, scales = "free_y", labeller = as_labeller(environment_names))+
+  stat_summary(aes(x = classification.x, y = value),
+               fun = "median",
+               geom = "point",
+               fill = "white", 
+               color = "black",
+               size = 3,
+               alpha = 0.95,
+               shape = 21) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+    stat_compare_means(aes(x=classification.x, y = value),
+                     method = "kruskal.test", 
+                 #    label.y = c(13,3000,3000,350,3,28), 
+                 vjust = -1.2,
+                     label.x.npc = "center",
+                     label = "p.signif",
+                     symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")))+
+  ggtitle("") +
+  geom_pwc(aes(x = classification.x, y  = value),
+           method = "dunn_test",
+           label = "p.adj.signif", 
+           hide.ns = T, 
+           symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")),
+           tip.length = 0.01,
+           bracket.nudge.y = 0.04,
+           vjust = 0.5,
+           inherit.aes = F) +
+  xlab("Preferred depth zone")+ 
+  scale_x_discrete(labels = c("Epipelagic" = "0-200m", "UpperMesopelagic" = "200-500m", "LowerMesopelagic" = "500-1000m"))+ scale_y_continuous(expand = expansion(mult = 0.15)) + 
+  scale_y_continuous(expand = expansion(mult = c(0,0.27))) + 
+  ylab("Sampling locations (#)")
+plotnstat18s
+plotnregion18s <- zhanenvplusvert %>% pivot_longer(c("NRegions")) %>%
+  mutate(classification.x = forcats::fct_relevel(classification, "Epipelagic", "UpperMesopelagic", "LowerMesopelagic")) %>%
+  ggplot() + 
+  geom_violin(aes(x=classification.x, y = value), bw = 1.1) + 
+  geom_jitter(aes(x=classification.x, y = value), size = 1, alpha = 0.2, width = 0.2, height = 0.2) + 
+ # facet_wrap(.~name, scales = "free_y", labeller = as_labeller(environment_names))+
+  stat_summary(aes(x = classification.x, y = value),
+               fun = "median",
+               geom = "point",
+               fill = "white", 
+               color = "black",
+               size = 3,
+               alpha = 0.95,
+               shape = 21) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+    stat_compare_means(aes(x=classification.x, y = value),
+                     method = "kruskal.test", 
+                 #    label.y = c(13,3000,3000,350,3,28), 
+                 vjust = -1.2,
+                     label.x.npc = "center",
+                     label = "p.signif",
+                     symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")))+
+  ggtitle("") +
+  geom_pwc(aes(x = classification.x, y  = value),
+           method = "dunn_test",
+           label = "p.adj.signif", 
+           hide.ns = T, 
+           symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")),
+           tip.length = 0.01,
+           bracket.nudge.y = 0.04,
+           vjust = 0.5,
+           inherit.aes = F) +
+  xlab("Preferred depth zone")+ 
+  scale_x_discrete(labels = c("Epipelagic" = "0-200m", "UpperMesopelagic" = "200-500m", "LowerMesopelagic" = "500-1000m"))+ scale_y_continuous(expand = expansion(mult = 0.15)) + 
+   scale_y_continuous(expand = expansion(mult =c(0,0.27))) + 
+ ylab("Regions (#)")
+plotnregion18s
+
+
+
+bothcorrenvirobray <- ggarrange(plotenv18s, plotenvcoi, common.legend = T, legend = "right", labels = c("a)", "b)"), ncol = 1, nrow = 2)
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/EnvRanges.pdf", height =5, width = 7.5)
+bothcorrenvirobray
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/EnvRanges.jpeg", height =5, width = 7.5, unit = "in", quality = 100, res = 300)
+bothcorrenvirobray
+dev.off()
+
+
+bothcorrnstatbray <- ggarrange(plotnstat18s, plotnstatcoi, common.legend = T, legend = "right", labels = c("a)", "b)"), ncol = 2, nrow = 1)
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/StationRanges.pdf", height =3, width = 4.5)
+bothcorrnstatbray
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/StationRanges.jpeg", height =3, width = 4.5, unit = "in", quality = 100, res = 300)
+bothcorrnstatbray
+dev.off()
+
+
+bothcorrnregbray <- ggarrange(plotnregion18s, plotnregioncoi, common.legend = T, legend = "right", labels = c("a)", "b)"), ncol = 2, nrow = 1)
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/RegionRanges.pdf", height =3, width = 4.5)
+bothcorrnregbray
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/RegionRanges.jpeg", height =3, width = 4.5, unit = "in", quality = 100, res = 300)
+bothcorrnregbray
+dev.off()
+
+bothregstat <- ggarrange(plotnregion18s+xlab(NULL) + ggtitle("18S") + theme(axis.text.x = element_blank()), plotnregioncoi+xlab(NULL) + ggtitle("COI") + theme(axis.text.x = element_blank()), plotnstat18s+xlab(NULL), plotnstatcoi+xlab(NULL), common.legend = T, legend = "right", labels = c("a)", "b)", "c)", "d)"), ncol = 2, nrow = 2, heights = c(1,1.2))
+bothregstat <- annotate_figure(bothregstat, bottom = text_grob("Preferred depth zone"))
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/StationRegionRanges.pdf", height =5., width = 4)
+bothregstat
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/StationRegionRanges.jpeg", height =5., width = 4, unit = "in", quality = 100, res = 300)
+bothregstat
+dev.off()
+```
+
+
+#3: RICHNESS BY ENV
+
+```{r}
+sample_data(zoopsCOI)$richness <- estimate_richness(zoopsCOI, measures = "Chao1")$Chao1
+sample_data(zoops18S)$richness <- estimate_richness(zoops18S, measures = "Chao1")$Chao1
+
+metadata_COI <- data.frame(sample_data(zoopsCOI))
+metadata_18S <- data.frame(sample_data(zoops18S)) 
+
+ggplot(metadata_COI) + 
+  geom_point(aes(x = meanModelTemp, y = richness, group = depth_bin)) + 
+  geom_smooth(aes(x = meanModelTemp, y = richness, group = depth_bin))
+
+ggplot(metadata_18S) + 
+  geom_point(aes(x = meanModelTemp, y = richness, group = depth_bin)) + 
+  geom_smooth(aes(x = meanModelTemp, y = richness, group = depth_bin)) 
+  
+  
+temp_coi <- ggplot(data=metadata_COI, aes(x = meanModelTemp, y = richness)) + #, group = depth_bin, color = depth_bin
+  geom_point(alpha = 0.8, size = .6) + 
+  xlab("Mean Temperature") + 
+  ylab("Estimated richness (Chao)") + 
+  ggtitle("COI")+ 
+    geom_smooth(method = "loess", span = 10, show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) ) + 
+  theme(axis.text.x = element_text(angle=45)) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n=3))
+temp_18s <- ggplot(data=metadata_18S, aes(x = meanModelTemp, y = richness)) + 
+  geom_point(alpha = 0.8, size = .6) + 
+  xlab("Mean Temperature") + 
+  ylab("Estimated richness (Chao)") + 
+  ggtitle("18S")+ 
+    geom_smooth(method = "loess", span = 5, show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) ) + 
+  theme(axis.text.x = element_text(angle=45)) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n=3))
+
+salinity_coi <- ggplot(data=metadata_COI, aes(x = meanModelSal, y = richness)) + 
+  geom_point(alpha = 0.8, size = .6) + 
+  xlab("Mean Salinity") + 
+  ylab("Estimated richness (Chao)") + 
+  ggtitle("COI")+ 
+    geom_smooth(method = "loess", span = 10, show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) ) + 
+  theme(axis.text.x = element_text(angle=45)) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n=3))
+salinity_18s <- ggplot(data=metadata_18S, aes(x = meanModelSal, y = richness)) + 
+  geom_point(alpha = 0.8, size = .6) + 
+  xlab("Mean Salinity") + 
+  ylab("Estimated richness (Chao)") + 
+  ggtitle("18S")+ 
+    geom_smooth(method = "loess", span = 5, show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) ) + 
+  theme(axis.text.x = element_text(angle=45)) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n=3))
+
+oxy_coi <- ggplot(data=metadata_COI, aes(x = MeanOxy, y = richness)) + 
+  geom_point(alpha = 0.8, size = .6) + 
+  xlab("Mean Oxygen") + 
+  ylab("Estimated richness (Chao)") + 
+  ggtitle("COI")+ 
+    geom_smooth(method = "loess", span = 10, show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) ) + 
+  theme(axis.text.x = element_text(angle=45)) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n=3))
+oxy_18s <- ggplot(data=metadata_18S, aes(x = MeanOxy, y = richness)) + 
+  geom_point(alpha = 0.8, size = .6) + 
+  xlab("Mean Oxygen") + 
+  ylab("Estimated richness (Chao)") + 
+  ggtitle("18S")+ 
+    geom_smooth(method = "loess", span = 5, show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) ) + 
+  theme(axis.text.x = element_text(angle=45)) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n=3))
+
+ef_coi <- ggplot(data=metadata_COI, aes(x = ef_meanmean, y = richness)) + 
+  geom_point(alpha = 0.8, size = .6) + 
+  xlab("Mean Export Flux") + 
+  ylab("Estimated richness (Chao)") + 
+  ggtitle("COI")+ 
+    geom_smooth(method = "loess", span = 10, show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) ) + 
+  theme(axis.text.x = element_text(angle=45)) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n=3))
+ef_18s <- ggplot(data=metadata_18S, aes(x = ef_meanmean, y = richness)) + 
+  geom_point(alpha = 0.8, size = .6) + 
+  xlab("Mean Export Flux") + 
+  ylab("Estimated richness (Chao)") + 
+  ggtitle("18S")+ 
+    geom_smooth(method = "loess", span = 5, show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) ) + 
+  theme(axis.text.x = element_text(angle=45)) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n=3))
+
+npp_coi <- ggplot(data=metadata_COI, aes(x = npp_meanmean, y = richness)) + 
+  geom_point(alpha = 0.8, size = .6) + 
+  xlab("Mean NPP") + 
+  ylab("Estimated richness (Chao)") + 
+  ggtitle("COI")+ 
+    geom_smooth(method = "loess", span = 10, show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) ) + 
+  theme(axis.text.x = element_text(angle=45)) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n=3))
+npp_18s <- ggplot(data=metadata_18S, aes(x = npp_meanmean, y = richness)) + 
+  geom_point(alpha = 0.8, size = .6) + 
+  xlab("Mean NPP") + 
+  ylab("Estimated richness (Chao)") + 
+  ggtitle("18S")+ 
+    geom_smooth(method = "loess", span = 5, show.legend = F) + 
+  scale_color_manual(values = depthcolors, name = "Depth range")+
+     guides(color = guide_legend(override.aes = list(shape = c(16, 16, 16), alpha = 1, size = 2) ) ) + 
+  theme(axis.text.x = element_text(angle=45)) + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n=3))
+
+ggarrange(temp_coi + facet_wrap(.~depth_bin, scales = "free"), temp_18s + facet_wrap(.~depth_bin, scales = "free"),
+          salinity_coi + facet_wrap(.~depth_bin, scales = "free"), salinity_18s + facet_wrap(.~depth_bin, scales = "free"), 
+          oxy_coi + facet_wrap(.~depth_bin, scales = "free"), oxy_18s + facet_wrap(.~depth_bin, scales = "free"),
+          ef_coi + facet_wrap(.~depth_bin, scales = "free"), ef_18s + facet_wrap(.~depth_bin, scales = "free"),
+          npp_coi + facet_wrap(.~depth_bin, scales = "free"), npp_18s + facet_wrap(.~depth_bin, scales = "free"),
+          ncol = 2, nrow = 5)
+
+
+ggarrange(temp_coi , temp_18s,
+          salinity_coi, salinity_18s, 
+          oxy_coi, oxy_18s ,
+          ef_coi, ef_18s ,
+          npp_coi , npp_18s ,
+          ncol = 2, nrow = 5)
+
+
+
+metadata_both <- merge.data.frame(metadata_18S, metadata_COI, by = "formerging")
+
+ggplot(metadata_both, aes(x = richness.x, y = richness.y, color = depth_bin.x)) + 
+  geom_point() + 
+  xlab("18S") + 
+  ylab("COI") + 
+  ggtitle("chao") + 
+  geom_abline(intercept = 0, slope = 1)# + 
+  #geom_smooth()
+
+ggplot(metadata_both, aes(x = meanModelTemp.x, y = meanModelTemp.y)) + 
+  geom_point() + 
+  xlab("18S") + 
+  ylab("COI") + 
+  ggtitle("chao")
+
+tibble(calculate_richness)
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+

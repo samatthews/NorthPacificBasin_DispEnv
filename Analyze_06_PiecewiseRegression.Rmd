@@ -1,0 +1,299 @@
+---
+title: "Analyze_06_PiecewiseRegression"
+output: html_document
+date: "2024-11-16"
+---
+```{r}
+library(segmented)
+library(microshades)
+library(phyloseq)
+library(vegan)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(metagMisc)
+#library(viridis)
+library(RColorBrewer)
+library(ggExtra)
+library(beepr)
+library(readxl)
+library(ggforce)
+library(ggrepel)
+library(ggpubr)
+library(cowplot)
+library(ggtext)
+library(sp)
+library(vegan)
+library(grid)
+library(ggsci)
+set.seed(00110011)
+theme_set(theme_bw())
+theme_update(plot.title = element_text(hjust = 0.5))
+depthcolors <- c("#4DAF4A", "#E41A1C", "#984EA3")
+names(depthcolors) <- c("0-200m", "200-500m", "500-1000m")
+markercolors <- c("#D81B60","#1E88E5")
+names(markercolors) <- c("18S", "COI")
+
+```
+
+```{r}
+load("~/Documents/Chapter4/BasinScale_Analysis_v2_2024/data_objects/CleanZooplanktonPhyloseqs.rdat")
+```
+
+
+# environment similarity:community similarity
+- Does epipelagic/mesopelagic community similarity covary with environmental similarity? 
+- Can I calculate distance among samples and test for correlation with environmental differences? 
+- Is environmental similarity the same as biogeochemical provinces? Consider whether to include biogeochemical provinces
+
+-> we'll use bray-curtis similarity, since there's variability in sampling type and depth bins etc 
+##get bray curtis distances
+```{r community distance}
+dist_bray <- phyloseq::distance(zoops18S, method = "bray")
+dist_bray_mtx18 <- as.matrix(dist_bray) # convert 'dist' to 'matrix'
+
+# retrieve the beta-diversity value between samples:
+dist_bray_mtx18["1 200-500m ", "1 500-1000m "] # 0.05152207
+dist_bray_mtx18["1 200-500m ", "1 200-500m "] # 0
+
+dist_bray_mtx_long18 <- reshape::melt(dist_bray_mtx18, as.is = TRUE)[reshape::melt(upper.tri(dist_bray_mtx18), as.is = TRUE)$value,]
+
+dist_bray_mtx_long18$DepthA <- stringr::str_split_i((dist_bray_mtx_long18$X1), " ", i = 2)
+dist_bray_mtx_long18$StationA <- stringr::str_split_i((dist_bray_mtx_long18$X1), " ", i = 1)
+dist_bray_mtx_long18$DepthB <- stringr::str_split_i((dist_bray_mtx_long18$X2), " ", i = 2)
+dist_bray_mtx_long18$StationB <- stringr::str_split_i((dist_bray_mtx_long18$X2), " ", i = 1)
+
+
+
+dist_bray <- phyloseq::distance(zoopsCOI, method = "bray")
+dist_bray_mtx <- as.matrix(dist_bray) # convert 'dist' to 'matrix'
+
+# retrieve the beta-diversity value between samples:
+dist_bray_mtx["1 200-500m ", "1 500-1000m "] # 0.05152207
+dist_bray_mtx["1 200-500m ", "1 200-500m "] # 0
+
+dist_bray_mtx_longCOI <- reshape::melt(dist_bray_mtx, as.is = TRUE)[reshape::melt(upper.tri(dist_bray_mtx), as.is = TRUE)$value,]
+
+dist_bray_mtx_longCOI$DepthA <- stringr::str_split_i((dist_bray_mtx_longCOI$X1), " ", i = 2)
+dist_bray_mtx_longCOI$StationA <- stringr::str_split_i((dist_bray_mtx_longCOI$X1), " ", i = 1)
+dist_bray_mtx_longCOI$DepthB <- stringr::str_split_i((dist_bray_mtx_longCOI$X2), " ", i = 2)
+dist_bray_mtx_longCOI$StationB <- stringr::str_split_i((dist_bray_mtx_longCOI$X2), " ", i = 1)
+```
+
+##get insitu env differences 
+```{r temp sal and oxy difference}
+temp <- data.frame(sample_data(zoopsCOI)[,c("MeanTemp")])
+sal <- data.frame(sample_data(zoopsCOI)[,c("MeanSal")])
+oxy <- data.frame(sample_data(zoopsCOI)[,c("MeanOxy")])
+
+dist_temp <- outer(temp$MeanTemp, temp$MeanTemp, '-')
+rownames(dist_temp) <- rownames(dist_bray_mtx)
+colnames(dist_temp) <- colnames(dist_bray_mtx)
+dist_sal <- outer(sal$MeanSal, sal$MeanSal, '-')
+rownames(dist_sal) <- rownames(dist_bray_mtx)
+colnames(dist_sal) <- colnames(dist_bray_mtx)
+dist_oxy <- outer(oxy$MeanOxy, oxy$MeanOxy, '-')
+rownames(dist_oxy) <- rownames(dist_bray_mtx)
+colnames(dist_oxy) <- colnames(dist_bray_mtx)
+
+dist_temp_coi <- reshape::melt(dist_temp, as.is = TRUE)[reshape::melt(upper.tri(dist_temp), as.is = TRUE)$value,]
+dist_sal_coi <- reshape::melt(dist_sal, as.is = TRUE)[reshape::melt(upper.tri(dist_sal), as.is = TRUE)$value,]
+dist_oxy_coi <- reshape::melt(dist_oxy, as.is = TRUE)[reshape::melt(upper.tri(dist_oxy), as.is = TRUE)$value,]
+
+
+temp <- data.frame(sample_data(zoops18S)[,c("MeanTemp")])
+sal <- data.frame(sample_data(zoops18S)[,c("MeanSal")])
+oxy <- data.frame(sample_data(zoops18S)[,c("MeanOxy")])
+
+dist_temp <- outer(temp$MeanTemp, temp$MeanTemp, '-')
+rownames(dist_temp) <- rownames(dist_bray_mtx18)
+colnames(dist_temp) <- colnames(dist_bray_mtx18)
+dist_sal <- outer(sal$MeanSal, sal$MeanSal, '-')
+rownames(dist_sal) <- rownames(dist_bray_mtx18)
+colnames(dist_sal) <- colnames(dist_bray_mtx18)
+dist_oxy <- outer(oxy$MeanOxy, oxy$MeanOxy, '-')
+rownames(dist_oxy) <- rownames(dist_bray_mtx18)
+colnames(dist_oxy) <- colnames(dist_bray_mtx18)
+
+dist_temp_18s <- reshape::melt(dist_temp, as.is = TRUE)[reshape::melt(upper.tri(dist_temp), as.is = TRUE)$value,]
+dist_sal_18s <- reshape::melt(dist_sal, as.is = TRUE)[reshape::melt(upper.tri(dist_sal), as.is = TRUE)$value,]
+dist_oxy_18s <- reshape::melt(dist_oxy, as.is = TRUE)[reshape::melt(upper.tri(dist_oxy), as.is = TRUE)$value,]
+```
+
+##get model env differences 
+```{r temp sal and oxy difference}
+temp <- data.frame(sample_data(zoopsCOI)[,c("meanModelTemp")])
+sal <- data.frame(sample_data(zoopsCOI)[,c("meanModelSal")])
+
+dist_temp <- outer(temp$meanModelTemp, temp$meanModelTemp, '-')
+rownames(dist_temp) <- rownames(dist_bray_mtx)
+colnames(dist_temp) <- colnames(dist_bray_mtx)
+dist_sal <- outer(sal$meanModelSal, sal$meanModelSal, '-')
+rownames(dist_sal) <- rownames(dist_bray_mtx)
+colnames(dist_sal) <- colnames(dist_bray_mtx)
+
+dist_modtemp_coi <- reshape::melt(dist_temp, as.is = TRUE)[reshape::melt(upper.tri(dist_temp), as.is = TRUE)$value,]
+dist_modsal_coi <- reshape::melt(dist_sal, as.is = TRUE)[reshape::melt(upper.tri(dist_sal), as.is = TRUE)$value,]
+
+
+temp <- data.frame(sample_data(zoops18S)[,c("meanModelTemp")])
+sal <- data.frame(sample_data(zoops18S)[,c("meanModelSal")])
+
+dist_temp <- outer(temp$meanModelTemp, temp$meanModelTemp, '-')
+rownames(dist_temp) <- rownames(dist_bray_mtx18)
+colnames(dist_temp) <- colnames(dist_bray_mtx18)
+dist_sal <- outer(sal$meanModelSal, sal$meanModelSal, '-')
+rownames(dist_sal) <- rownames(dist_bray_mtx18)
+colnames(dist_sal) <- colnames(dist_bray_mtx18)
+
+dist_modtemp_18s <- reshape::melt(dist_temp, as.is = TRUE)[reshape::melt(upper.tri(dist_temp), as.is = TRUE)$value,]
+dist_modsal_18s <- reshape::melt(dist_sal, as.is = TRUE)[reshape::melt(upper.tri(dist_sal), as.is = TRUE)$value,]
+```
+ 
+
+##get food env differences 
+```{r temp sal and oxy difference}
+npp <- data.frame(sample_data(zoopsCOI)[,c("npp_meanyearlytotal")])
+ef <- data.frame(sample_data(zoopsCOI)[,c("ef_meanyearlytotal")])
+
+dist_npp <- outer(npp$npp_meanyearlytotal, npp$npp_meanyearlytotal, '-')
+rownames(dist_npp) <- rownames(dist_bray_mtx)
+colnames(dist_npp) <- colnames(dist_bray_mtx)
+dist_ef <- outer(ef$ef_meanyearlytotal, ef$ef_meanyearlytotal, '-')
+rownames(dist_ef) <- rownames(dist_bray_mtx)
+colnames(dist_ef) <- colnames(dist_bray_mtx)
+
+dist_npp_coi <- reshape::melt(dist_npp, as.is = TRUE)[reshape::melt(upper.tri(dist_npp), as.is = TRUE)$value,]
+dist_ef_coi <- reshape::melt(dist_ef, as.is = TRUE)[reshape::melt(upper.tri(dist_ef), as.is = TRUE)$value,]
+
+
+npp <- data.frame(sample_data(zoops18S)[,c("npp_meanyearlytotal")])
+ef <- data.frame(sample_data(zoops18S)[,c("ef_meanyearlytotal")])
+
+dist_temp <- outer(npp$npp_meanyearlytotal, npp$npp_meanyearlytotal, '-')
+rownames(dist_temp) <- rownames(dist_bray_mtx18)
+colnames(dist_temp) <- colnames(dist_bray_mtx18)
+dist_ef <- outer(ef$ef_meanyearlytotal, ef$ef_meanyearlytotal, '-')
+rownames(dist_ef) <- rownames(dist_bray_mtx18)
+colnames(dist_ef) <- colnames(dist_bray_mtx18)
+
+dist_npp_18s <- reshape::melt(dist_npp, as.is = TRUE)[reshape::melt(upper.tri(dist_npp), as.is = TRUE)$value,]
+dist_ef_18s <- reshape::melt(dist_ef, as.is = TRUE)[reshape::melt(upper.tri(dist_ef), as.is = TRUE)$value,]
+```
+ 
+ 
+
+##reformat 18S for regression
+```{r}
+dist_modtemp_18s$variable <- "Temperature"
+dist_modsal_18s$variable <- "Salinity"
+dist_oxy_18s$variable <- "Oxygen"
+dist_ef_18s$variable <- "EF"
+dist_npp_18s$variable <- "NPP"
+colnames(dist_modtemp_18s)[3] <- "Temperature"
+colnames(dist_modsal_18s)[3] <- "Salinity"
+colnames(dist_oxy_18s)[3] <- "Oxygen"
+colnames(dist_ef_18s)[3] <- "EF"
+colnames(dist_npp_18s)[3] <- "NPP"
+dist_ef_18s$EF <- dist_ef_18s$EF * 365
+dist_npp_18s$NPP <- dist_npp_18s$NPP * 365
+dist_modtemp_18s$formerging <- paste(dist_modtemp_18s$X1, dist_modtemp_18s$X2)
+dist_modsal_18s$formerging <- paste(dist_modsal_18s$X1, dist_modsal_18s$X2)
+dist_oxy_18s$formerging <- paste(dist_oxy_18s$X1, dist_oxy_18s$X2)
+dist_ef_18s$formerging <- paste(dist_ef_18s$X1, dist_ef_18s$X2)
+dist_npp_18s$formerging <- paste(dist_npp_18s$X1, dist_npp_18s$X2)
+
+
+colnames(dist_bray_mtx_long18)[3] <- "BCD"
+dist_bray_mtx_long18$formerging <- paste(dist_bray_mtx_long18$X1, dist_bray_mtx_long18$X2)
+dist_bray_mtx_long18 <- dist_bray_mtx_long18[dist_bray_mtx_long18$DepthA == dist_bray_mtx_long18$DepthB,]
+dist_bray_mtx_long18 <- merge(dist_bray_mtx_long18, dist_modtemp_18s, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_modsal_18s, by = "formerging", all.x = T, all.y = F)%>% 
+  merge(dist_oxy_18s, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_ef_18s, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_npp_18s, by = "formerging", all.x = T, all.y = F)
+forregression_18smod <- dist_bray_mtx_long18 %>% dplyr::select(DepthA, StationA, DepthB, StationB, BCD, Temperature, Salinity, Oxygen, EF, NPP) %>% pivot_longer(-c(DepthA, StationA, DepthB, StationB, BCD), values_to = "EnvDiff")
+forregression_18smod$EnvDiff <- abs(forregression_18smod$EnvDiff)
+forregression_18smod$name <- forcats::fct_relevel(forregression_18smod$name, "Temperature", "Salinity", "Oxygen", "NPP", "EF")
+forregression_18smod$name_fac <- factor(forregression_18smod$name, levels = c("Temperature", "Salinity", "Oxygen", "NPP", "EF"), ordered = TRUE, labels = c(expression(Temperature~(degree*C)), "Salinity", expression(DO~(µmol~kg^-1)), expression(NPP~(mgC~m^-2~yr^1)), expression(EF~(mgC~m^-2~yr^1))))
+
+```
+
+
+
+##reformat COI for regression
+```{r}
+
+dist_modtemp_coi$variable <- "Temperature"
+dist_modsal_coi$variable <- "Salinity"
+dist_oxy_coi$variable <- "Oxygen"
+dist_ef_coi$variable <- "EF"
+dist_npp_coi$variable <- "NPP"
+colnames(dist_modtemp_coi)[3] <- "Temperature"
+colnames(dist_modsal_coi)[3] <- "Salinity"
+colnames(dist_oxy_coi)[3] <- "Oxygen"
+colnames(dist_ef_coi)[3] <- "EF"
+colnames(dist_npp_coi)[3] <- "NPP"
+dist_ef_coi$EF <- dist_ef_coi$EF * 365
+dist_npp_coi$NPP <- dist_npp_coi$NPP * 365
+dist_modtemp_coi$formerging <- paste(dist_modtemp_coi$X1, dist_modtemp_coi$X2)
+dist_modsal_coi$formerging <- paste(dist_modsal_coi$X1, dist_modsal_coi$X2)
+dist_oxy_coi$formerging <- paste(dist_oxy_coi$X1, dist_oxy_coi$X2)
+dist_ef_coi$formerging <- paste(dist_ef_coi$X1, dist_ef_coi$X2)
+dist_npp_coi$formerging <- paste(dist_npp_coi$X1, dist_npp_coi$X2)
+
+colnames(dist_bray_mtx_longCOI)[3] <- "BCD"
+dist_bray_mtx_longCOI$formerging <- paste(dist_bray_mtx_longCOI$X1, dist_bray_mtx_longCOI$X2)
+dist_bray_mtx_longCOI <- dist_bray_mtx_longCOI[dist_bray_mtx_longCOI$DepthA == dist_bray_mtx_longCOI$DepthB,]
+dist_bray_mtx_longCOI <- merge(dist_bray_mtx_longCOI, dist_modtemp_coi, by = "formerging", all.x = T, all.y = F) %>% 
+  merge(dist_modsal_coi, by = "formerging", all.x = T, all.y = F)%>% 
+  merge(dist_oxy_coi, by = "formerging", all.x = T, all.y = F)%>% 
+  merge(dist_ef_coi, by = "formerging", all.x = T, all.y = F)%>% 
+  merge(dist_npp_coi, by = "formerging", all.x = T, all.y = F)
+forregression_COImod <- dist_bray_mtx_longCOI %>% dplyr::select(DepthA, StationA, DepthB, StationB, BCD, Temperature, Salinity, Oxygen, EF, NPP) %>% pivot_longer(-c(DepthA, StationA, DepthB, StationB, BCD), values_to = "EnvDiff")
+forregression_COImod$EnvDiff <- abs(forregression_COImod$EnvDiff)
+forregression_COImod$name <- forcats::fct_relevel(forregression_COImod$name, "Temperature", "Salinity", "Oxygen", "NPP", "EF")
+forregression_COImod$name_fac <- factor(forregression_COImod$name, levels = c("Temperature", "Salinity", "Oxygen", "NPP", "EF"), ordered = TRUE, labels = c(expression(Temperature~(degree*C)), "Salinity", expression(DO~(µmol~kg^-1)), expression(NPP~(mgC~m^-2~yr^1)), expression(EF~(mgC~m^-2~yr^1))))
+```
+
+
+##piecewise 18S
+```{r}
+forregression_18smodwide <- forregression_18smod %>% pivot_wider(
+  names_from = name, 
+  values_from = EnvDiff, 
+  id_cols = contains(c("Depth", "Station", "BCD")), 
+  values_fn = ~ mean(.x, na.rm = TRUE))
+#fit simple linear regression model
+fit <- lm(BCD ~ Temperature, data=forregression_18smodwide) #Salinity + NPP + Oxygen
+
+#fit piecewise regression model to original model, estimating a breakpoint at x=9
+segmented.fit <- segmented(fit, seg.Z = ~Temperature, psi = c(Temperature = 6))
+# + Salinity + NPP + Oxygen
+#, Salinity = 3, NPP = 3, Oxygen = 3
+
+#view summary of segmented model
+summary(segmented.fit)
+
+plot(forregression_18smodwide$Temperature, forregression_18smodwide$BCD, pch=16, col='steelblue')
+
+#add segmented regression model
+plot(segmented.fit, add=T)
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+

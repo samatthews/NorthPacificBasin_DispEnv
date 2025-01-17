@@ -1,0 +1,113 @@
+---
+title: "Import_07_MapOfSamples"
+output: html_document
+date: "2024-11-04"
+---
+
+
+##plot map
+```{r}
+library(mapdata)
+mp1 <- fortify(map(fill=TRUE, plot=FALSE))
+mp2 <- mp1
+mp2$long <- mp2$long + 360
+mp2$group <- mp2$group + max(mp2$group) + 1
+mp <- rbind(mp1, mp2)
+province_points <- readxl::read_excel("~/Documents/Chapter4/Organization_Pacific_Basin_Comprehensive_v2.xlsx", sheet = "Table_ForPub")
+province_points$Region <- NA
+province_points$Region[province_points$`Location` %in% c(25,26)] <- "Coastal CA"
+province_points$Region[province_points$`Location` %in% c(13,16,10,18)] <- "N. NPSG"
+province_points$Region[province_points$`Location` %in% c(11,12,17,19,23,24,32)] <- "WWD & Subpolar"
+province_points$Region[province_points$`Location` %in% c(7,8,20,31,6)] <- "Tropical"
+province_points$Region[province_points$`Location` %in% c(14,15,21,22)] <- "Kuroshio Curr."
+province_points$Region[province_points$`Location` %in% c(2,3,1,4,5,9)] <- "Core NPSG"
+
+p <- ggplot(aes(x = long, y = lat, group = group), data = mp) + 
+  geom_path(size = 0.15)  + 
+  scale_x_continuous(limits = c(110, 290)) + 
+  scale_y_continuous(limits = c(-30, 70)) +
+  geom_point(data = province_points, aes(x=`Lon. (E)`, y=`Lat. (N)`, color = `Region`, shape = `Region`), size = 2, inherit.aes = F)+ scale_color_manual(values = c("#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#a65628", "#f781bf")) + 
+  #geom_text_repel(data = province_points, aes(x=`Lon. (E)`, y=`Lat. (N)`, label = `Location`), size = 2, inherit.aes = F)  +
+  theme_bw() +
+  xlab('Longitude') + 
+  ylab('Latitude') +
+  theme(legend.position = c(.2, .25)) +
+        guides(shape = guide_legend(override.aes = list(size = 1)),
+               color = guide_legend(override.aes = list(size = 1))) +
+        theme(legend.title = element_text(size = 9), 
+              legend.text  = element_text(size = 8),
+              legend.key.size = unit(0.01, "lines"), 
+        legend.box.background = element_rect(color="darkgrey")) +
+   ggtitle("Geographic location")
+
+zoopsBOTH <- merge_phyloseq(zoopsCOI, zoops18S)
+sampleenvirodata <- data.frame(sample_data(zoopsBOTH))
+sampleenvirodata$NewRegion <- NA
+sampleenvirodata$NewRegion[sampleenvirodata$Location.ID %in% c(25,26)] <- "Coastal CA"
+sampleenvirodata$NewRegion[sampleenvirodata$Location.ID %in% c(13,16,10,18)] <- "N. NPSG"
+sampleenvirodata$NewRegion[sampleenvirodata$Location.ID %in% c(11,12,17,19,23,24,32)] <- "WWD & Subpolar"
+sampleenvirodata$NewRegion[sampleenvirodata$Location.ID %in% c(7,8,20,31,6)] <- "Tropical"
+sampleenvirodata$NewRegion[sampleenvirodata$Location.ID %in% c(14,15,21,22)] <- "Kuroshio Curr."
+sampleenvirodata$NewRegion[sampleenvirodata$Location.ID %in% c(2,3,1,4,5,9)] <- "Core NPSG"
+sampleenvirodata_forcluster <- sampleenvirodata[,c("MeanTemp", "MeanSal", "npp_meanyearlytotal", "MeanOxy")]
+scaled_forcluster <- data.frame(scale(sampleenvirodata_forcluster))
+library(plotly)
+library(ggfortify)
+
+pca_res <- prcomp(scaled_forcluster, scale. = TRUE, center = TRUE)
+
+r <- ggplot(pca_res, aes(x = PC1, PC2,
+                          colour = sampleenvirodata$NewRegion, shape = sampleenvirodata$NewRegion, label = sampleenvirodata$StationID)) +
+  geom_point(size = 1.5) + 
+  geom_text(vjust = 2,  size = 2)
+
+r <- r + 
+  ggtitle("Environment PCA")+ labs(color = "Region", shape = "Region") +
+    facet_wrap(.~sampleenvirodata$depth_bin) + scale_color_manual(values = c("#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#a65628", "#f781bf")) + theme(legend.position = "none")
+
+r
+
+qt <- ggplot(sampleenvirodata, aes(y = MeanTemp, x = MeanSal, color = NewRegion, shape = NewRegion)) + #geom_point() + 
+  facet_wrap(.~depth_bin, scales = "free") + #geom_text(aes(label = StationID)) +
+  scale_color_manual(values = c("#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#a65628", "#f781bf"))
+
+watermasses <- read.csv("/Users/stephaniematthews/Documents/Chapter4/BasinScale_AllSamples_v1/PacificWaterMassesEmery2019_simplified.csv", header = T)
+watermassessurf <- watermasses[watermasses$abb %in% c("PSUW", "NPCW", "ENPTW", "PEW"),]
+watermassesdeep <- watermasses[watermasses$abb %in% c("PSIW", "CIW", "ESPIW", "AAIW"),]
+watermasses <- watermasses[watermasses$abb %in% c("PSUW", "NPCW", "ENPTW", "PEW", "AAIW"),]
+
+q <- PlotSvalbard::ts_plot(dt = sampleenvirodata, temp_col = "MeanTemp", sal_col = "MeanSal", color = "NewRegion", symbol_alpha = 1, symbol_shape = 16, WM = watermasses, zoom = TRUE, symbol_size = 1) + facet_wrap(.~depth_bin, scales = "free") + 
+  scale_color_manual(values = c("#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#a65628", "#f781bf")) 
+
+qu <- PlotSvalbard::ts_plot(dt = sampleenvirodata[sampleenvirodata$depth_bin == "0-200m",], temp_col = "MeanTemp", sal_col = "MeanSal", color = "NewRegion", symbol_alpha = 1, symbol_shape = 16, WM = watermassessurf, zoom = TRUE, symbol_size = 1) +
+  scale_color_manual(values = c("#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#a65628", "#f781bf")) + theme(legend.position = "none") + scale_x_continuous(breaks=c(33,34,35)) + xlab("PSU") + ggtitle("0 - 200 m")
+
+ql <- PlotSvalbard::ts_plot(dt = sampleenvirodata[sampleenvirodata$depth_bin == "200-500m",], temp_col = "MeanTemp", sal_col = "MeanSal", color = "NewRegion", symbol_alpha = 1, symbol_shape = 16, WM = watermassesdeep, zoom = TRUE, symbol_size = 1, xlim=c(33, 35.5), ylim=c(0,25)) +
+  scale_color_manual(values = c("#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#a65628", "#f781bf"))+ theme(legend.position = "none") + scale_x_continuous(breaks=c(33,34,35)) + xlab("PSU") + ggtitle("200 - 500 m")
+
+qll <- PlotSvalbard::ts_plot(dt = sampleenvirodata[sampleenvirodata$depth_bin == "500-1000m",], temp_col = "MeanTemp", sal_col = "MeanSal", color = "NewRegion", symbol_alpha = 1, symbol_shape = 16, WM = watermassesdeep, zoom = TRUE, symbol_size = 1, xlim=c(33, 35.5), ylim=c(0,25)) +
+  scale_color_manual(values = c("#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#a65628", "#f781bf"))+ theme(legend.position = "none")+ scale_x_continuous(breaks=c(33,34,35)) + xlab("PSU") + ggtitle("500 - 1000 m")
+
+ggarrange(qt, qu, ql,qll, ncol = 2, nrow =2 , align = "hv")
+
+ggarrange(p, qt, ncol = 2, widths = c(2,1))
+
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/SamplingLocations_WEnvClust.pdf", height = 3, width = 8.5)
+ggarrange(p, r, ncol = 2, widths = c(1, 1), labels = c("a)", "b)"))
+dev.off()
+
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/SamplingLocationsSMALL.pdf", height = 3, width = 4.2)
+p + theme(legend.position = "none")
+dev.off()
+
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/map_of_samples_WEnvClust.jpg", height = 3, width = 8.5, res = 300, units = "in")
+ggarrange(p, r, ncol = 2, widths = c(1, 1), labels = c("a)", "b)"))
+dev.off()
+
+
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/map_of_samples_W_TS.jpg", height = 3, width = 8.5, res = 300, units = "in")
+ggarrange(p + xlim(125,275), qu, ql,qll, ncol = 4, widths = c(1, .45,.45,.45), labels = c("a)", "b)"))
+dev.off()
+
+
+```

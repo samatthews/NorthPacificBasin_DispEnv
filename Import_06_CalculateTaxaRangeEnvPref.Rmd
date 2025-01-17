@@ -1,0 +1,201 @@
+---
+title: "Import_06_CalculateTaxaRangeEnvPref"
+output: html_document
+date: "2024-10-31"
+---
+
+Calculate the vertical habitat, the environmental ranges, the distributional range
+
+
+
+#1) vertical habitat
+Classify as primarily surface or primarily deep dwelling based on vertical habitat
+Weighted vert habitat: by proportion of relative abundance within each net, classify based on which range (0-200, 200-500, 500-1000) the weighted mean falls within; no need to restrict this to batch-cleaned-up taxa, since each vertical sampling location has the same net mesh bias 
+Unweighted: by number of times it's observed (presence/absence) in each vertical strata, classify based on the most common depth zone - might fall into multiple depth zones; no need to restrict this to batch-cleaned-up taxa, since each vertical sampling location has the same net mesh bias
+```{r weighted}
+load("~/Documents/Chapter4/BasinScale_Analysis_v2_2024/data_objects/BasinScale_AllSamples_v1/CleanZooplanktonPhyloseqs.rdat")
+ zoopsCOI <- subset_samples(zoopsCOI, Location.ID %in% c(1:26,31,32))
+ zoops18S <- subset_samples(zoops18S, Location.ID %in% c(1:26,32))
+
+
+otutable_coi <- data.frame(phyloseq::otu_table(zoopsCOI))
+sampledata_coi <- data.frame(phyloseq::sample_data(zoopsCOI))
+taxtable_coi <- data.frame(phyloseq::tax_table(zoopsCOI))
+
+otutable_18s <- data.frame(phyloseq::otu_table(zoops18S))
+sampledata_18s <- data.frame(phyloseq::sample_data(zoops18S))
+taxtable_18s <- data.frame(phyloseq::tax_table(zoops18S))
+
+
+
+```
+
+```{r COI}
+
+calc_wmd <- function(n){
+  wmd <- numeric(n)
+  namedotu <- character(n)
+  for (i in 1:n) {
+    wmd[i] <- ((subsampled_netsums[i,1]*net_depths[[1]]+subsampled_netsums[i,2]*net_depths[[2]]+subsampled_netsums[i,3]*net_depths[[3]])/(sum(subsampled_netsums[i,])))
+    namedotu[i] <- row.names(subsampled_netsums)[[i]]
+  }
+  data.frame(wmd, namedotu, stringsAsFactors = FALSE)
+}
+
+scratchCOI_rarefied <- transform_sample_counts(zoopsCOI, function(x) x / sum(x) )
+
+scratchCOI_rarefied_depths <- merge_samples(scratchCOI_rarefied, group = "depth_bin")
+
+#daydepths <- c(900,700,500,300,150,75,38,13)
+#nightdepths <- c(900,700,500,300,150,75,38,13)
+daydepths <- c(100,350,750)
+
+subsampled_netsums <- t(data.frame(otu_table(scratchCOI_rarefied_depths)))
+net_depths <- daydepths
+weightedvertmean <- calc_wmd(ntaxa(scratchCOI_rarefied_depths)) #input to calc_wmd should be the total number of OTUs - will calculate for 1:input 
+weightedvertmean$namedotu <- taxa_names(scratchCOI_rarefied_depths)
+weightedvertmean$sum <- taxa_sums(scratchCOI_rarefied_depths)
+weightedvertmean$nsamples <- taxa_sums(phyloseq_standardize_otu_abundance(zoopsCOI, method = "pa"))
+weightedvertmean$nstations <- taxa_sums(phyloseq_standardize_otu_abundance(merge_samples(zoopsCOI, group = "StationID"), method = "pa"))
+
+
+calc_fav_net <- function(n){
+  md <- numeric(n)
+  namedotu <- character(n)
+  for (i in 1:n) { if (sum(subsampled_netsums[i,] > 0)) {
+  md[i] <- mean(which(subsampled_netsums[i,] == max(subsampled_netsums[i,]))) #which.max(subsampled_netsums[i,])
+  ## mean(which()) will take the mean of the depths of the mode if there are multiple depths with the same # of reads
+  } else {
+    md[i] <- NA
+  }
+    namedotu[i] <- row.names(subsampled_netsums)[[i]]
+  }
+  data.frame(namedotu, md, stringsAsFactors = FALSE)
+}
+
+subsampled_netsums <- t(data.frame(otu_table(scratchCOI_rarefied_depths)))
+unweightedvertmean <- calc_fav_net(ntaxa(scratchCOI_rarefied_depths)) #input to calc_wmd should be the total number of OTUs - will calculate for 1:input 
+unweightedvertmean$namedotu <- taxa_names(scratchCOI_rarefied_depths)
+unweightedvertmean$sum <- taxa_sums(scratchCOI_rarefied_depths)
+unweightedvertmean$nsamples <- taxa_sums(phyloseq_standardize_otu_abundance(zoopsCOI, method = "pa"))
+unweightedvertmean$nregions <- taxa_sums(phyloseq_standardize_otu_abundance(merge_samples(zoopsCOI, "NewRegion"), method = "pa"))
+
+
+vert_habitatsCOI <- merge(weightedvertmean, unweightedvertmean, by = "namedotu") 
+vert_habitatsCOI <- vert_habitatsCOI[,c(1,2,6,7,8,5,9)]
+colnames(vert_habitatsCOI) <- c("namedotu", "weightedmeandepth", "preferrednet", "sumRelAb", "NSamples", "NStations", "NRegions")
+
+#### to classify taxa as epipelagic or mesopelagic
+
+vert_habitatsCOI$classification <- NA
+vert_habitatsCOI$classification[vert_habitatsCOI$preferrednet == 1] <- "Epipelagic"
+vert_habitatsCOI$classification[vert_habitatsCOI$preferrednet == 2] <- "UpperMesopelagic"
+vert_habitatsCOI$classification[vert_habitatsCOI$preferrednet == 3] <- "LowerMesopelagic"
+
+rownames(vert_habitatsCOI) <- vert_habitatsCOI$namedotu
+```
+
+
+
+```{r 18S}
+
+calc_wmd <- function(n){
+  wmd <- numeric(n)
+  namedotu <- character(n)
+  for (i in 1:n) {
+    wmd[i] <- ((subsampled_netsums[i,1]*net_depths[[1]]+subsampled_netsums[i,2]*net_depths[[2]]+subsampled_netsums[i,3]*net_depths[[3]])/(sum(subsampled_netsums[i,])))
+    namedotu[i] <- row.names(subsampled_netsums)[[i]]
+  }
+  data.frame(wmd, namedotu, stringsAsFactors = FALSE)
+}
+
+scratch18S_rarefied <- transform_sample_counts(zoops18S, function(x) x / sum(x) )
+
+scratch18S_rarefied_depths <- merge_samples(scratch18S_rarefied, group = "depth_bin")
+
+#daydepths <- c(900,700,500,300,150,75,38,13)
+#nightdepths <- c(900,700,500,300,150,75,38,13)
+daydepths <- c(100,350,750)
+
+subsampled_netsums <- t(data.frame(otu_table(scratch18S_rarefied_depths)))
+net_depths <- daydepths
+weightedvertmean <- calc_wmd(ntaxa(scratch18S_rarefied_depths)) #input to calc_wmd should be the total number of OTUs - will calculate for 1:input 
+weightedvertmean$namedotu <- taxa_names(scratch18S_rarefied_depths)
+weightedvertmean$sum <- taxa_sums(scratch18S_rarefied_depths)
+weightedvertmean$nsamples <- taxa_sums(phyloseq_standardize_otu_abundance(zoops18S, method = "pa"))
+weightedvertmean$nstations <- taxa_sums(phyloseq_standardize_otu_abundance(merge_samples(zoops18S, group = "Location.ID"), method = "pa"))
+
+
+calc_fav_net <- function(n){
+  md <- numeric(n)
+  namedotu <- character(n)
+  for (i in 1:n) { if (sum(subsampled_netsums[i,] > 0)) {
+  md[i] <- mean(which(subsampled_netsums[i,] == max(subsampled_netsums[i,]))) #which.max(subsampled_netsums[i,])
+  ## mean(which()) will take the mean of the depths of the mode if there are multiple depths with the same # of reads
+  } else {
+    md[i] <- NA
+  }
+    namedotu[i] <- row.names(subsampled_netsums)[[i]]
+  }
+  data.frame(namedotu, md, stringsAsFactors = FALSE)
+}
+
+subsampled_netsums <- t(data.frame(otu_table(scratch18S_rarefied_depths)))
+unweightedvertmean <- calc_fav_net(ntaxa(scratch18S_rarefied_depths)) #input to calc_wmd should be the total number of OTUs - will calculate for 1:input 
+unweightedvertmean$namedotu <- taxa_names(scratch18S_rarefied_depths)
+unweightedvertmean$sum <- taxa_sums(scratch18S_rarefied_depths)
+unweightedvertmean$nsamples <- taxa_sums(phyloseq_standardize_otu_abundance(zoops18S, method = "pa"))
+unweightedvertmean$nregions <- taxa_sums(phyloseq_standardize_otu_abundance(merge_samples(zoops18S, "NewRegion"), method = "pa"))
+
+
+vert_habitats18S <- merge(weightedvertmean, unweightedvertmean, by = "namedotu") 
+vert_habitats18S <- vert_habitats18S[,c(1,2,6,7,8,5,9)]
+colnames(vert_habitats18S) <- c("namedotu", "weightedmeandepth", "preferrednet", "sumRelAb", "NSamples", "NStations", "NRegions")
+
+#### to classify taxa as epipelagic or mesopelagic
+
+vert_habitats18S$classification <- NA
+vert_habitats18S$classification[vert_habitats18S$preferrednet == 1] <- "Epipelagic"
+vert_habitats18S$classification[vert_habitats18S$preferrednet == 2] <- "UpperMesopelagic"
+vert_habitats18S$classification[vert_habitats18S$preferrednet == 3] <- "LowerMesopelagic"
+
+rownames(vert_habitats18S) <- vert_habitats18S$namedotu
+
+```
+
+
+
+
+
+```{r}
+
+otutable_coi <- data.frame(phyloseq::otu_table(zoopsCOI))
+sampledata_coi <- data.frame(phyloseq::sample_data(zoopsCOI))
+taxtable_coi <- data.frame(phyloseq::tax_table(zoopsCOI))
+taxtable_coi$namedotu <- rownames(taxtable_coi)
+
+otutable_18s <- data.frame(phyloseq::otu_table(zoops18S))
+sampledata_18s <- data.frame(phyloseq::sample_data(zoops18S))
+taxtable_18s <- data.frame(phyloseq::tax_table(zoops18S))
+taxtable_18s$namedotu <- rownames(taxtable_18s)
+
+
+otutable_coivert <- merge(taxtable_coi[,c("Kingdom", "Phylum", "Subphylum", "Class", "Order", "Family", "Genus", "Species", "namedotu")], vert_habitatsCOI, by = "namedotu")
+rownames(otutable_coivert) <- otutable_coivert$namedotu
+otutable_coivert <- otutable_coivert[,c("Kingdom", "Phylum", "Subphylum", "Class", "Order", "Family", "Genus", "Species", "weightedmeandepth", "preferrednet", "sumRelAb", "NSamples", "NStations", "NRegions", "classification")]
+otutable_18Svert <- merge(taxtable_18s[,c("Kingdom", "Phylum", "Subphylum", "Class", "Order", "Family", "Genus", "Species", "namedotu")], vert_habitats18S, by = "namedotu")
+rownames(otutable_18Svert) <- otutable_18Svert$namedotu
+otutable_18Svert <- otutable_18Svert[,c("Kingdom", "Phylum", "Subphylum", "Class", "Order", "Family", "Genus", "Species", "weightedmeandepth", "preferrednet", "sumRelAb", "NSamples", "NStations", "NRegions", "classification")]
+
+
+tax_table(zoopsCOI) <- tax_table(as.matrix(otutable_coivert))
+tax_table(zoops18S) <- tax_table(as.matrix(otutable_18Svert))
+
+```
+
+```{r}
+
+#save(zoops18S, zoopsCOI, file =  "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/data_objects/CleanZooplanktonPhyloseqs.rdat")
+
+
+```

@@ -1,0 +1,387 @@
+---
+title: "Import_02_SummarizeCTDData"
+output: html_document
+date: "2024-10-31"
+---
+
+
+```{r load libraries}
+
+
+
+```
+
+1  :: KH-14-3	st6
+2  :: KH-14-3	st5
+3  :: KH-14-3	st4
+4  :: KH-11-10	st3
+5  :: KH-11-10	st4A
+6  :: KH-13-7	st1
+7  :: KH-12-01	st7
+8  :: KH-12-01	st3
+9  :: KH-17-4	st8
+10 :: KH-17-4	st7
+11 :: NH1208	7
+12 :: NH1208	15
+13 :: NH1208	34
+14 :: SY-11-05	K01
+15 :: SY-11-05	C3100
+16 :: KH-14-3	st9
+17 :: KH-14-3	st10
+18 :: KH-14-3	st8
+19 :: KH-14-3	st11
+20 :: KH-12-01	st5
+21 :: SY-15-01	C3345
+22 :: SY-15-01	C3300
+23 :: KH-14-3	st12
+24 :: P2107	C3
+25 :: P2107	C1
+26 :: CCE-2007	SCB
+27 :: P1604	C4
+28 :: P1604	C3
+29 :: P1604	C2
+30 :: P1604	C1
+31 :: DG5B_PRZ	
+32 :: SKQ2019-16S	GAK-19
+
+
+##load data
+```{r}
+ctd.1  <- read.csv("~/Documents/Chapter4/rawdata/HiraiCTDdata/KH14-3-ST06.asc", sep = "", header = T)#KH-14-3	st6
+ctd.2  <- read.csv("~/Documents/Chapter4/rawdata/HiraiCTDdata/KH14-3-St05.asc", sep = "", header = T)#KH-14-3	st5
+ctd.3  <- read.csv("~/Documents/Chapter4/rawdata/HiraiCTDdata/KH14-3-ST04.asc", sep = "", header = T)#KH-14-3	st4
+ctd.4  <- read.csv("~/Documents/Chapter4/rawdata/HiraiCTDdata/KH11-10-ST03.asc", sep = "", header = T) #KH-11-10	st3
+ctd.5  <- read.csv("~/Documents/Chapter4/rawdata/HiraiCTDdata/KH11-10-ST04.asc", sep = "", header = T)#KH-11-10	st4A
+ctd.6  <- read.csv("~/Documents/Chapter4/rawdata/HiraiCTDdata/KH13-7-St01.asc", sep = "", header = T)#KH-13-7	st1
+ctd.7  <- read.csv("~/Documents/Chapter4/rawdata/HiraiCTDdata/KH12-1-ST07.asc", sep = "", header = T)#KH-12-01	st7
+ctd.8  <- read.csv("~/Documents/Chapter4/rawdata/HiraiCTDdata/KH12-1-ST03.asc", sep = "", header = T)#KH-12-01	st3
+ctd.9  <- read.csv("~/Documents/Chapter4/rawdata/HiraiCTDdata/KH17-4-St8.asc", sep = "", header = T)#KH-17-4	st8
+ctd.10 <- read.csv("~/Documents/Chapter4/rawdata/HiraiCTDdata/KH17-4-St7.asc", sep = "", header = T)#KH-17-4	st7
+# "PrDM"       "T090C"      "C0S.m"      "Sbeox0V"    "FlSP"       "Upoly0" "Upoly1"     "Upoly2"     "Sal00"      "Sigma.t00"  "Potemp090C" "SvDM"  "Sbeox0ML.L"
+ctd11.12.13 <- readxl::read_excel("~/Documents/Chapter4/rawdata/NH1208_CTDdata.xlsx")
+ctd.11 <- ctd11.12.13[ctd11.12.13$Station == 7,]#NH1208	7
+ctd.11 <- ctd.11[,c("Pressure, Digiquartz [db]", "Temperature [ITS-90, deg C]", "Salinity, Practical [PSU]", "Oxygen, SBE 43 [umol/l]")]
+colnames(ctd.11) <- c("PrDM", "T090C", "Sal00", "Sbeox0umol.l")
+ctd.12 <- ctd11.12.13[ctd11.12.13$Station == 15,]#NH1208	15
+ctd.12 <- ctd.12[,c("Pressure, Digiquartz [db]", "Temperature [ITS-90, deg C]", "Salinity, Practical [PSU]", "Oxygen, SBE 43 [umol/l]")]
+colnames(ctd.12) <- c("PrDM", "T090C", "Sal00", "Sbeox0umol.l")
+ctd.13 <- ctd11.12.13[ctd11.12.13$Station == 34,]#NH1208	34
+ctd.13 <- ctd.13[,c("Pressure, Digiquartz [db]", "Temperature [ITS-90, deg C]", "Salinity, Practical [PSU]", "Oxygen, SBE 43 [umol/l]")]
+colnames(ctd.13) <- c("PrDM", "T090C", "Sal00", "Sbeox0umol.l")
+ctd.14 <- read.csv("~/Documents/Chapter4/rawdata/HiraiCTDdata/SY11-05-K01.asc", sep = "", header = T)#SY-11-05	K01
+ctd.15 <- read.csv("~/Documents/Chapter4/rawdata/HiraiCTDdata/SY-11-05-C3100.csv", sep = ",", header = F, skip = 22)#SY-11-05	C3100
+colnames(ctd.15) <- c("CTDPRS",	"CTDPRS_FLAG_W",	"CTDTMP",	"CTDTMP_FLAG_W",	"CTDSAL",	"CTDSAL_FLAG_W",	"CTDOXY",	"CTDOXY_FLAG_W")
+colnames(ctd.15) <- c("PrDM",	"CTDPRS_FLAG_W",	"T090C",	"CTDTMP_FLAG_W",	"Sal00",	"CTDSAL_FLAG_W",	"Sbeox_umol.kg",	"CTDOXY_FLAG_W")
+ctd.15$Sbeox0umol.l <- respR::convert_DO(ctd.15$Sbeox_umol.kg, from = "umol.kg", to = "umol.l", S = ctd.15$Sal00, t = ctd.15$T090C)
+ctd.16 <- read.csv("~/Documents/Chapter4/rawdata/HiraiCTDdata/KH14-3-St09.asc", sep = "", header = T)#KH-14-3	st9
+ctd.17 <- read.csv("~/Documents/Chapter4/rawdata/HiraiCTDdata/KH14-3-ST10.asc", sep = "", header = T)#KH-14-3	st10
+ctd.18 <- read.csv("~/Documents/Chapter4/rawdata/HiraiCTDdata/KH14-3-ST08.asc", sep = "", header = T)#KH-14-3	st8
+ctd.19 <- read.csv("~/Documents/Chapter4/rawdata/HiraiCTDdata/KH14-3-St11.asc", sep = "", header = T)#KH-14-3	st11
+ctd.20 <- read.csv("~/Documents/Chapter4/rawdata/HiraiCTDdata/KH12-1-ST05.asc", sep = "", header = T)#KH-12-01	st5
+ctd.21 <- read.csv("~/Documents/Chapter4/rawdata/HiraiCTDdata/SY15-01-C3345.csv", sep = ",", header = F, skip = 24)#SY-15-01	C3345
+colnames(ctd.21) <- c("CTDPRS",	"CTDPRS_FLAG_W",	"CTDTMP",	"CTDTMP_FLAG_W",	"CTDSAL",	"CTDSAL_FLAG_W",	"CTDOXY",	"CTDOXY_FLAG_W",	"RINKOOXY",	"RINKOOXY_FLAG_W")
+colnames(ctd.21) <- c("PrDM",	"CTDPRS_FLAG_W",	"T090C",	"CTDTMP_FLAG_W",	"Sal00",	"CTDSAL_FLAG_W",	"Sbeox",	"CTDOXY_FLAG_W",	"RINKOOXY",	"RINKOOXY_FLAG_W")
+ctd.21$Sbeox0umol.l <- respR::convert_DO(ctd.21$Sbeox, from = "umol.kg", to = "umol.l", S = ctd.21$Sal00, t = ctd.21$T090C)
+ctd.22 <- read.csv("~/Documents/Chapter4/rawdata/HiraiCTDdata/SY15-01-C3300.csv", sep = ",", header = F, skip = 24)#SY-15-01	C3300
+colnames(ctd.22) <- c("CTDPRS",	"CTDPRS_FLAG_W",	"CTDTMP",	"CTDTMP_FLAG_W",	"CTDSAL",	"CTDSAL_FLAG_W",	"CTDOXY",	"CTDOXY_FLAG_W",	"RINKOOXY",	"RINKOOXY_FLAG_W")
+colnames(ctd.22) <- c("PrDM",	"CTDPRS_FLAG_W",	"T090C",	"CTDTMP_FLAG_W",	"Sal00",	"CTDSAL_FLAG_W",	"Sbeox",	"CTDOXY_FLAG_W",	"RINKOOXY",	"RINKOOXY_FLAG_W")
+ctd.22$Sbeox0umol.l <- respR::convert_DO(ctd.22$Sbeox, from = "umol.kg", to = "umol.l", S = ctd.22$Sal00, t = ctd.22$T090C)
+ctd.23 <- read.csv("~/Documents/Chapter4/rawdata/HiraiCTDdata/KH14-3-ST12.asc", sep = "", header = T)#KH-14-3	st12
+ctd24.25 <- read.csv("~/Documents/Chapter4/rawdata/P2107_CycAv_CTD_data.csv", sep = ",", header = T)
+ctd.24 <- ctd24.25[ctd24.25$Cycle == 3,] #P2107	C3
+ctd.24 <- ctd.24[,c("Depth_m", "Temp", "Sal", "O2_mlL")]
+colnames(ctd.24) <- c("PrDM", "T090C", "Sal00", "Sbeox0ML.L")
+ctd.25 <- ctd24.25[ctd24.25$Cycle == 1,] #P2107	C1
+ctd.25 <- ctd.25[,c("Depth_m", "Temp", "Sal", "O2_mlL")]
+colnames(ctd.25) <- c("PrDM", "T090C", "Sal00", "Sbeox0ML.L")
+ctd.26 <- read.csv("~/Documents/Chapter4/rawdata/CCE2007_MOC_CTD_data_RRTDAY.csv", sep = ",", header = T)#CCE-2007	SCB
+ctd.26 <- ctd.26[,c("Pressure..dB.", "Pot.Temp...C.", "Salinity..psu.", "Oxygen.umol.Kg.")] 
+colnames(ctd.26) <- c("PrDM", "T090C", "Sal00", "Sbeox")
+ctd.26$Sbeox0umol.l <- respR::convert_DO(ctd.26$Sbeox, from = "umol.kg", to = "umol.l", S = ctd.26$Sal00, t = ctd.26$T090C)
+ctd27.30 <- read.csv("~/Documents/Chapter1/metadata/P1604_CTD_averages_data_table.csv")
+ctd27.30$Oxygen <- as.numeric(ctd27.30$Oxygen)
+ctd27.30$Pressure <- as.numeric(ctd27.30$Pressure)
+ctd27.30$Temp <- as.numeric(ctd27.30$Temp)
+ctd.27 <- ctd27.30[ctd27.30$Cycle == 4,]#P1604	C4
+ctd.27 <- ctd.27[!is.na(ctd.27$Pressure),c("Pressure", "Temp", "Salinity", "Oxygen")]
+colnames(ctd.27) <- c("PrDM", "T090C", "Sal00", "Oxygen.umol.kg")
+ctd.27$Sbeox0umol.l <- respR::convert_DO(ctd.27$Oxygen.umol.kg, from = "umol.kg", to = "umol.l", S = ctd.27$Sal00, t = ctd.27$T090C)
+ctd.28 <- ctd27.30[ctd27.30$Cycle == 3,]#P1604	C3
+ctd.28 <- ctd.28[!is.na(ctd.28$Pressure),c("Pressure", "Temp", "Salinity", "Oxygen")]
+colnames(ctd.28) <- c("PrDM", "T090C", "Sal00", "Oxygen.umol.kg")
+ctd.28$Sbeox0umol.l <- respR::convert_DO(ctd.28$Oxygen.umol.kg, from = "umol.kg", to = "umol.l", S = ctd.28$Sal00, t = ctd.28$T090C)
+ctd.29 <- ctd27.30[ctd27.30$Cycle == 2,]#P1604	C2
+ctd.29 <- ctd.29[!is.na(ctd.29$Pressure),c("Pressure", "Temp", "Salinity", "Oxygen")]
+colnames(ctd.29) <- c("PrDM", "T090C", "Sal00", "Oxygen.umol.kg")
+ctd.29$Sbeox0umol.l <- respR::convert_DO(ctd.29$Oxygen.umol.kg, from = "umol.kg", to = "umol.l", S = ctd.29$Sal00, t = ctd.29$T090C)
+ctd.30 <- ctd27.30[ctd27.30$Cycle == 1,]#P1604	C1
+ctd.30 <- ctd.30[!is.na(ctd.30$Pressure),c("Pressure", "Temp", "Salinity", "Oxygen")]
+colnames(ctd.30) <- c("PrDM", "T090C", "Sal00", "Oxygen.umol.kg")
+ctd.30$Sbeox0umol.l <- respR::convert_DO(ctd.30$Oxygen.umol.kg, from = "umol.kg", to = "umol.l", S = ctd.30$Sal00, t = ctd.30$T090C)
+ctd.31 <- read.csv("~/Documents/Chapter4/rawdata/ENP/CTD_DATA_MOC2MOC4/DG5B_PRZ_1MOC2/Processed_files/DG5B_PRZ_1MOC2_02_filter_derive_bin.asc", sep = "", header = F)#DG5B_PRZ	
+colnames(ctd.31) <- c("Pres_db", "Temp_C", "Cond_s-m", "Sal_PSU", "Fl_sp", "BeamA", "BeamT", "Oxy_SBEumol-l", "Oxy_SBEml-l", "Oxy_perc", "Depth_m", "Sal_PSU", "Density_sigthet", "OxySat_ml-l", "flag")
+colnames(ctd.31) <- c("PrDM", "T090C", "Cond_s-m", "Sal00", "Fl_sp", "BeamA", "BeamT", "Oxy_SBEumol-l", "Sbeox0ML.L", "Oxy_perc", "Depth_m", "Sal_PSU", "Density_sigthet", "OxySat_ml-l", "flag")
+ctd.32 <- read.csv("~/Documents/Chapter4/rawdata/GAK19/GAK19_PhysicalData/skq201916s_ctd003avg.cnv", sep = "", header = F, skip = 338)#SKQ2019-16S	GAK-19
+colnames(ctd.32) <- c("Depth_m", "Lat", "Lon", "Pres_db", "Temp_C", "Temp_C2", "Temp_potC", "Sal_PSU", "Sal_PSU2", "Density_kgm3", "Density_sigthet", "Oxy_SBEumol-l", "OxySat_umol-kg", "Oxy_perc", "volt0", "Fl_wl", "Par-Ir", "BeamA", "scan", "nbin", "flag")
+colnames(ctd.32) <- c("PrDM", "Lat", "Lon", "Pres_db", "T090C", "Temp_C2", "Temp_potC", "Sal00", "Sal_PSU2", "Density_kgm3", "Density_sigthet", "Sbeox0umol.l", "OxySat_umol-kg", "Oxy_perc", "volt0", "Fl_wl", "Par-Ir", "BeamA", "scan", "nbin", "flag")
+rm(ctd11.12.13, ctd24.25, ctd27.30)
+```
+For Oxygen conversions:
+https://repository.oceanbestpractices.org/bitstream/handle/11329/417/56281.pdf?sequence=1&isAllowed=y
+Pressure: "PrDM"
+Temperature: "T090C"
+Salinity: "Sal00"
+Oxygen: "Sbeox0umol.l" (11, 12, 13, 15, 21, 22, 26, 27-30 32), "Sbeox0ML.L" (1-10, 14, 16-20, 23, 24-25, 31), 
+fixed now: ##"Sbeox" (15, 21, 22, 26, 27-30)
+
+convert ML.L to umol.L 
+
+```{r}
+ctd.1$Sbeox0umol.l <- ctd.1$Sbeox0ML.L*44.6596
+ctd.2$Sbeox0umol.l <- ctd.2$Sbeox0ML.L*44.6596
+ctd.3$Sbeox0umol.l <- ctd.3$Sbeox0ML.L*44.6596
+ctd.4$Sbeox0umol.l <- ctd.4$Sbeox0ML.L*44.6596
+ctd.5$Sbeox0umol.l <- ctd.5$Sbeox0ML.L*44.6596
+ctd.6$Sbeox0umol.l <- ctd.6$Sbeox0ML.L*44.6596
+ctd.7$Sbeox0umol.l <- ctd.7$Sbeox0ML.L*44.6596
+ctd.8$Sbeox0umol.l <- ctd.8$Sbeox0ML.L*44.6596
+ctd.9$Sbeox0umol.l <- ctd.9$Sbeox0ML.L*44.6596
+ctd.10$Sbeox0umol.l <- ctd.10$Sbeox0ML.L*44.6596
+ctd.14$Sbeox0umol.l <- ctd.14$Sbeox0ML.L*44.6596
+ctd.16$Sbeox0umol.l <- ctd.16$Sbeox0ML.L*44.6596
+ctd.17$Sbeox0umol.l <- ctd.17$Sbeox0ML.L*44.6596
+ctd.18$Sbeox0umol.l <- ctd.18$Sbeox0ML.L*44.6596
+ctd.19$Sbeox0umol.l <- ctd.19$Sbeox0ML.L*44.6596
+ctd.20$Sbeox0umol.l <- ctd.20$Sbeox0ML.L*44.6596
+ctd.23$Sbeox0umol.l <- ctd.23$Sbeox0ML.L*44.6596
+ctd.24$Sbeox0umol.l <- ctd.24$Sbeox0ML.L*44.6596
+ctd.25$Sbeox0umol.l <- ctd.25$Sbeox0ML.L*44.6596
+ctd.31$Sbeox0umol.l <- ctd.31$Sbeox0ML.L*44.6596
+```
+
+Add depth bins
+```{r}
+ctd.1 $depthbin[ctd.1 $PrDM < 200] <- "0-200m"
+ctd.2 $depthbin[ctd.2 $PrDM < 200] <- "0-200m"
+ctd.3 $depthbin[ctd.3 $PrDM < 200] <- "0-200m"
+ctd.4 $depthbin[ctd.4 $PrDM < 200] <- "0-200m"
+ctd.5 $depthbin[ctd.5 $PrDM < 200] <- "0-200m"
+ctd.6 $depthbin[ctd.6 $PrDM < 200] <- "0-200m"
+ctd.7 $depthbin[ctd.7 $PrDM < 200] <- "0-200m"
+ctd.8 $depthbin[ctd.8 $PrDM < 200] <- "0-200m"
+ctd.9 $depthbin[ctd.9 $PrDM < 200] <- "0-200m"
+ctd.10$depthbin[ctd.10$PrDM < 200] <- "0-200m"
+ctd.11$depthbin[ctd.11$PrDM < 200] <- "0-200m"
+ctd.12$depthbin[ctd.12$PrDM < 200] <- "0-200m"
+ctd.13$depthbin[ctd.13$PrDM < 200] <- "0-200m"
+ctd.14$depthbin[ctd.14$PrDM < 200] <- "0-200m"
+ctd.15$depthbin[ctd.15$PrDM < 200] <- "0-200m"
+ctd.16$depthbin[ctd.16$PrDM < 200] <- "0-200m"
+ctd.17$depthbin[ctd.17$PrDM < 200] <- "0-200m"
+ctd.18$depthbin[ctd.18$PrDM < 200] <- "0-200m"
+ctd.19$depthbin[ctd.19$PrDM < 200] <- "0-200m"
+ctd.20$depthbin[ctd.20$PrDM < 200] <- "0-200m"
+ctd.21$depthbin[ctd.21$PrDM < 200] <- "0-200m"
+ctd.22$depthbin[ctd.22$PrDM < 200] <- "0-200m"
+ctd.23$depthbin[ctd.23$PrDM < 200] <- "0-200m"
+ctd.24$depthbin[ctd.24$PrDM < 200] <- "0-200m"
+ctd.25$depthbin[ctd.25$PrDM < 200] <- "0-200m"
+ctd.26$depthbin[ctd.26$PrDM < 200] <- "0-200m"
+ctd.27$depthbin[ctd.27$PrDM < 200] <- "0-200m"
+ctd.28$depthbin[ctd.28$PrDM < 200] <- "0-200m"
+ctd.29$depthbin[ctd.29$PrDM < 200] <- "0-200m"
+ctd.30$depthbin[ctd.30$PrDM < 200] <- "0-200m"
+ctd.31$depthbin[ctd.31$PrDM < 200] <- "0-200m"
+ctd.32$depthbin[ctd.32$PrDM < 200] <- "0-200m"
+
+ctd.1 $depthbin[ctd.1 $PrDM >200 & ctd.1 $PrDM <500] <- "200-500m"
+ctd.2 $depthbin[ctd.2 $PrDM >200 & ctd.2 $PrDM <500] <- "200-500m"
+ctd.3 $depthbin[ctd.3 $PrDM >200 & ctd.3 $PrDM <500] <- "200-500m"
+ctd.4 $depthbin[ctd.4 $PrDM >200 & ctd.4 $PrDM <500] <- "200-500m"
+ctd.5 $depthbin[ctd.5 $PrDM >200 & ctd.5 $PrDM <500] <- "200-500m"
+ctd.6 $depthbin[ctd.6 $PrDM >200 & ctd.6 $PrDM <500] <- "200-500m"
+ctd.7 $depthbin[ctd.7 $PrDM >200 & ctd.7 $PrDM <500] <- "200-500m"
+ctd.8 $depthbin[ctd.8 $PrDM >200 & ctd.8 $PrDM <500] <- "200-500m"
+ctd.9 $depthbin[ctd.9 $PrDM >200 & ctd.9 $PrDM <500] <- "200-500m"
+ctd.10$depthbin[ctd.10$PrDM >200 & ctd.10$PrDM <500] <- "200-500m"
+ctd.11$depthbin[ctd.11$PrDM >200 & ctd.11$PrDM <500] <- "200-500m"
+ctd.12$depthbin[ctd.12$PrDM >200 & ctd.12$PrDM <500] <- "200-500m"
+ctd.13$depthbin[ctd.13$PrDM >200 & ctd.13$PrDM <500] <- "200-500m"
+ctd.14$depthbin[ctd.14$PrDM >200 & ctd.14$PrDM <500] <- "200-500m"
+ctd.15$depthbin[ctd.15$PrDM >200 & ctd.15$PrDM <500] <- "200-500m"
+ctd.16$depthbin[ctd.16$PrDM >200 & ctd.16$PrDM <500] <- "200-500m"
+ctd.17$depthbin[ctd.17$PrDM >200 & ctd.17$PrDM <500] <- "200-500m"
+ctd.18$depthbin[ctd.18$PrDM >200 & ctd.18$PrDM <500] <- "200-500m"
+ctd.19$depthbin[ctd.19$PrDM >200 & ctd.19$PrDM <500] <- "200-500m"
+ctd.20$depthbin[ctd.20$PrDM >200 & ctd.20$PrDM <500] <- "200-500m"
+ctd.21$depthbin[ctd.21$PrDM >200 & ctd.21$PrDM <500] <- "200-500m"
+ctd.22$depthbin[ctd.22$PrDM >200 & ctd.22$PrDM <500] <- "200-500m"
+ctd.23$depthbin[ctd.23$PrDM >200 & ctd.23$PrDM <500] <- "200-500m"
+ctd.24$depthbin[ctd.24$PrDM >200 & ctd.24$PrDM <500] <- "200-500m"
+ctd.25$depthbin[ctd.25$PrDM >200 & ctd.25$PrDM <500] <- "200-500m"
+ctd.26$depthbin[ctd.26$PrDM >200 & ctd.26$PrDM <500] <- "200-500m"
+ctd.27$depthbin[ctd.27$PrDM >200 & ctd.27$PrDM <500] <- "200-500m"
+ctd.28$depthbin[ctd.28$PrDM >200 & ctd.28$PrDM <500] <- "200-500m"
+ctd.29$depthbin[ctd.29$PrDM >200 & ctd.29$PrDM <500] <- "200-500m"
+ctd.30$depthbin[ctd.30$PrDM >200 & ctd.30$PrDM <500] <- "200-500m"
+ctd.31$depthbin[ctd.31$PrDM >200 & ctd.31$PrDM <500] <- "200-500m"
+ctd.32$depthbin[ctd.32$PrDM >200 & ctd.32$PrDM <500] <- "200-500m"
+
+ctd.1 $depthbin[ctd.1 $PrDM >500 & ctd.1 $PrDM <1000] <- "500-1000m"
+ctd.2 $depthbin[ctd.2 $PrDM >500 & ctd.2 $PrDM <1000] <- "500-1000m"
+ctd.3 $depthbin[ctd.3 $PrDM >500 & ctd.3 $PrDM <1000] <- "500-1000m"
+ctd.4 $depthbin[ctd.4 $PrDM >500 & ctd.4 $PrDM <1000] <- "500-1000m"
+ctd.5 $depthbin[ctd.5 $PrDM >500 & ctd.5 $PrDM <1000] <- "500-1000m"
+ctd.6 $depthbin[ctd.6 $PrDM >500 & ctd.6 $PrDM <1000] <- "500-1000m"
+ctd.7 $depthbin[ctd.7 $PrDM >500 & ctd.7 $PrDM <1000] <- "500-1000m"
+ctd.8 $depthbin[ctd.8 $PrDM >500 & ctd.8 $PrDM <1000] <- "500-1000m"
+ctd.9 $depthbin[ctd.9 $PrDM >500 & ctd.9 $PrDM <1000] <- "500-1000m"
+ctd.10$depthbin[ctd.10$PrDM >500 & ctd.10$PrDM <1000] <- "500-1000m"
+ctd.11$depthbin[ctd.11$PrDM >500 & ctd.11$PrDM <1000] <- "500-1000m"
+ctd.12$depthbin[ctd.12$PrDM >500 & ctd.12$PrDM <1000] <- "500-1000m"
+ctd.13$depthbin[ctd.13$PrDM >500 & ctd.13$PrDM <1000] <- "500-1000m"
+ctd.14$depthbin[ctd.14$PrDM >500 & ctd.14$PrDM <1000] <- "500-1000m"
+ctd.15$depthbin[ctd.15$PrDM >500 & ctd.15$PrDM <1000] <- "500-1000m"
+ctd.16$depthbin[ctd.16$PrDM >500 & ctd.16$PrDM <1000] <- "500-1000m"
+ctd.17$depthbin[ctd.17$PrDM >500 & ctd.17$PrDM <1000] <- "500-1000m"
+ctd.18$depthbin[ctd.18$PrDM >500 & ctd.18$PrDM <1000] <- "500-1000m"
+ctd.19$depthbin[ctd.19$PrDM >500 & ctd.19$PrDM <1000] <- "500-1000m"
+ctd.20$depthbin[ctd.20$PrDM >500 & ctd.20$PrDM <1000] <- "500-1000m"
+ctd.21$depthbin[ctd.21$PrDM >500 & ctd.21$PrDM <1000] <- "500-1000m"
+ctd.22$depthbin[ctd.22$PrDM >500 & ctd.22$PrDM <1000] <- "500-1000m"
+ctd.23$depthbin[ctd.23$PrDM >500 & ctd.23$PrDM <1000] <- "500-1000m"
+ctd.24$depthbin[ctd.24$PrDM >500 & ctd.24$PrDM <1000] <- "500-1000m"
+ctd.25$depthbin[ctd.25$PrDM >500 & ctd.25$PrDM <1000] <- "500-1000m"
+ctd.26$depthbin[ctd.26$PrDM >500 & ctd.26$PrDM <1000] <- "500-1000m"
+ctd.27$depthbin[ctd.27$PrDM >500 & ctd.27$PrDM <1000] <- "500-1000m"
+ctd.28$depthbin[ctd.28$PrDM >500 & ctd.28$PrDM <1000] <- "500-1000m"
+ctd.29$depthbin[ctd.29$PrDM >500 & ctd.29$PrDM <1000] <- "500-1000m"
+ctd.30$depthbin[ctd.30$PrDM >500 & ctd.30$PrDM <1000] <- "500-1000m"
+ctd.31$depthbin[ctd.31$PrDM >500 & ctd.31$PrDM <1000] <- "500-1000m"
+ctd.32$depthbin[ctd.32$PrDM >500 & ctd.32$PrDM <1000] <- "500-1000m"
+
+
+```
+
+##calculate mean/max/min
+
+```{r}
+
+ctd_data <- list(ctd.1, ctd.2, ctd.3, ctd.4, ctd.5, ctd.6, ctd.7, ctd.8, ctd.9, ctd.10, ctd.11, ctd.12, ctd.13, ctd.14, ctd.15, ctd.16, ctd.17, ctd.18, ctd.19, ctd.20, ctd.21, ctd.22, ctd.23, ctd.24, ctd.25, ctd.26, ctd.27, ctd.28, ctd.29, ctd.30, ctd.31, ctd.32)
+
+calculate_ctd_bins <- function(ctds){
+data.frame(  ctds %>% 
+    dplyr::group_by(depthbin) %>%
+    dplyr::summarize(MeanTemp = mean(T090C, na.rm=TRUE),
+                     MaxTemp = mean(T090C, na.rm=TRUE),
+                     MinTemp = mean(T090C, na.rm=TRUE),
+                     MeanSal = mean(Sal00, na.rm=TRUE),
+                     MaxSal = mean(Sal00, na.rm=TRUE),
+                     MinSal = mean(Sal00, na.rm=TRUE),
+                     MeanOxy = mean(Sbeox0umol.l, na.rm=TRUE),
+                     MaxOxy = mean(Sbeox0umol.l, na.rm=TRUE),
+                     MinOxy = mean(Sbeox0umol.l, na.rm=TRUE)) %>%
+    tidyr::gather(key, value, -depthbin) %>%
+    dplyr::filter(!is.na(depthbin))
+)
+ }
+
+out_ts <- lapply(ctd_data, calculate_ctd_bins) %>% dplyr::bind_rows(.id = "StationID")
+
+```
+
+##oxygen values per station
+3) calculate depth of oxygen minimum start
+4) calculate range of OMZ (i.e. how many vertical meters of the water column are < XX oxygen concentration)
+5) calculate oxygen at 15m
+
+```{r}
+ctd_data <- list(ctd.1, ctd.2, ctd.3, ctd.4, ctd.5, ctd.6, ctd.7, ctd.8, ctd.9, ctd.10, ctd.11, ctd.12, ctd.13, ctd.14, ctd.15, ctd.16, ctd.17, ctd.18, ctd.19, ctd.20, ctd.21, ctd.22, ctd.23, ctd.24, ctd.25, ctd.26, ctd.27, ctd.28, ctd.29, ctd.30, ctd.31, ctd.32)
+
+ggplot() + 
+  geom_point(data=ctd.1, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.2, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.3, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.4, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.5, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.6, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.7, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.8, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.9, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.10, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.11, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.12, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.13, aes(x = Sbeox0umol.l, y = PrDM)) +
+ # geom_point(data=ctd.14, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.15, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.16, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.17, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.18, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.19, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.20, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.21, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.22, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.23, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.24, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.25, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.26, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.27, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.28, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.29, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.30, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.31, aes(x = Sbeox0umol.l, y = PrDM)) + 
+ # geom_point(data=ctd.32, aes(x = Sbeox0umol.l, y = PrDM)) + 
+  geom_vline(xintercept = 122, color = "black") + 
+  geom_vline(xintercept = 61, color = "red") +
+scale_y_reverse(limits = c(1000,0))
+
+
+calculate_ctd_oxy <- function(ctds){
+  ctds <- data.frame(ctds[ctds[,c("PrDM")] < 1000 & ctds[,c("PrDM")] > 10,])
+  oxyat20m <- round(mean(ctds[ctds[,c("PrDM")] > 13 & ctds[,c("PrDM")] < 17,c("Sbeox0umol.l")], na.rm = T))
+  depth_mod_hypox <- min(ctds[ctds[,c("Sbeox0umol.l")] < 122 ,c("PrDM") ], na.rm = T)#shallowest depth where oxygen < 122
+  depth_sev_hypox <- min(ctds[ctds[,c("Sbeox0umol.l")] < 61 ,c("PrDM") ], na.rm = T)#shallowest depth where oxygen < 61
+  range_mod_hypox <- max(ctds[ctds[,c("Sbeox0umol.l")] < 122 ,c("PrDM") ], na.rm = T) - min(ctds[ctds[,c("Sbeox0umol.l")] < 122 ,c("PrDM") ], na.rm = T)#total meters between 0-1000 where oxygen < 122
+  range_sev_hypox <- max(ctds[ctds[,c("Sbeox0umol.l")] < 61 ,c("PrDM") ], na.rm = T) - min(ctds[ctds[,c("Sbeox0umol.l")] < 61 ,c("PrDM") ], na.rm = T)#total meters between 0-1000 where oxygen < 61
+ # oxycline_magnitude <- #maximum delta within 50m depthrange
+ # oxycline_depth <-  #midpoint of 50m depthrange with maximum delta  
+t(data.frame(oxyat20m, depth_mod_hypox, depth_sev_hypox, range_mod_hypox, range_sev_hypox))
+ }
+calculate_ctd_oxy(ctd.1)
+
+
+out_oxy <- lapply(ctd_data, calculate_ctd_oxy) %>% dplyr::bind_cols()
+colnames(out_oxy) <- seq(1:32)
+rownames(out_oxy) <- c("oxyat20m", "depth_mod_hypox", "depth_sev_hypox", "range_mod_hypox", "range_sev_hypox")
+
+##manually might be the easiest way to do this
+#out_oxy <- data.frame(as.list(1 <- c(560, 680, ),
+#                              2 <- c(),
+#                              num <- c("mod_hypox", "sev_hypox", "rangemod", "rangesev", "oxyclinemag", "oxyclinedepth")
+#                                ))
+
+#calculate_ctd_bins <- function(ctds){
+#  depth_mod_hypox <- #shallowest depth where oxygen < 122
+#  depth_sev_hypox <- #shallowest depth where oxygen < 61
+#  range_mod_hypox <- #total meters between 0-1000 where oxygen < 122
+#  range_sev_hypox <- #total meters between 0-1000 where oxygen < 61
+#  oxycline_magnitude <- #maximum delta within 50m depthrange
+#  oxycline_depth <-  #midpoint of 50m depthrange with maximum delta  
+#t(data.frame(depth_mod_hypox, depth_sev_hypox, range_mod_hypox, range_sev_hypox, oxycline_magnitude, oxycline_depth))
+# }
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+

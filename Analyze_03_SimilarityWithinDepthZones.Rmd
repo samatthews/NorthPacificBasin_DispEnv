@@ -1,0 +1,990 @@
+---
+title: "Analyze_03_SimilarityWithinDepthZones"
+output: html_document
+date: "2024-11-04"
+---
+
+```{r setup, include=FALSE}
+library(microshades)
+library(phyloseq)
+library(vegan)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(metagMisc)
+#library(viridis)
+library(RColorBrewer)
+library(ggExtra)
+library(beepr)
+library(readxl)
+library(ggforce)
+library(ggrepel)
+library(ggpubr)
+library(cowplot)
+library(ggtext)
+library(sp)
+library(vegan)
+library(grid)
+library(ggsci)
+set.seed(00110011)
+theme_set(theme_bw())
+theme_update(plot.title = element_text(hjust = 0.5))
+depthcolors <- c("#4DAF4A", "#E41A1C", "#984EA3")
+names(depthcolors) <- c("0-200m", "200-500m", "500-1000m")
+markercolors <- c("#D81B60","#1E88E5")
+names(markercolors) <- c("18S", "COI")
+
+```
+
+```{r}
+load("~/Documents/Chapter4/BasinScale_Analysis_v2_2024/data_objects/CleanZooplanktonPhyloseqs.rdat")
+```
+
+define taxa as abundant, common, or rare
+abundant 
+```{r}
+
+zoopsCOI_abundant <- subset_taxa(zoopsCOI, taxa_sums(zoopsCOI) >= 1820)
+zoopsCOI_common <- subset_taxa(zoopsCOI, taxa_sums(zoopsCOI) < 1820 & taxa_sums(zoopsCOI) >= 100)
+zoopsCOI_rare <- subset_taxa(zoopsCOI, taxa_sums(zoopsCOI) < 100)
+
+sum(sample_sums(zoopsCOI_abundant))/sum(sample_sums(zoopsCOI))*100
+sum(sample_sums(zoopsCOI_common))/sum(sample_sums(zoopsCOI))*100
+sum(sample_sums(zoopsCOI_rare))/sum(sample_sums(zoopsCOI))*100
+
+zoops18S_abundant <- subset_taxa(zoops18S, taxa_sums(zoops18S) >= 1500)
+zoops18S_common <- subset_taxa(zoops18S, taxa_sums(zoops18S) < 1500 & taxa_sums(zoops18S) >= 80)
+zoops18S_rare <- subset_taxa(zoops18S, taxa_sums(zoops18S) < 80)
+
+sum(sample_sums(zoops18S_abundant))/sum(sample_sums(zoops18S_common))
+sum(sample_sums(zoops18S_common))/sum(sample_sums(zoops18S_rare))
+
+sum(sample_sums(zoops18S_abundant))/sum(sample_sums(zoops18S))*100
+sum(sample_sums(zoops18S_common))/sum(sample_sums(zoops18S))*100
+sum(sample_sums(zoops18S_rare))/sum(sample_sums(zoops18S))*100
+
+
+zoopsCOI_abundant <- phyloseq_standardize_otu_abundance(zoopsCOI, method = "total")
+zoopsCOI_common <- phyloseq_standardize_otu_abundance(zoopsCOI, method = "total")
+zoopsCOI_rare <- phyloseq_standardize_otu_abundance(zoopsCOI, method = "total")
+
+zoops18S_abundant <- phyloseq_standardize_otu_abundance(zoops18S_abundant, method = "total")
+zoops18S_common <- phyloseq_standardize_otu_abundance(zoops18S_common, method = "total")
+zoops18S_rare <- phyloseq_standardize_otu_abundance(zoops18S_rare, method = "total")
+
+zoopsCOI <- phyloseq_standardize_otu_abundance(zoopsCOI, method = "total")
+zoops18S <- phyloseq_standardize_otu_abundance(zoops18S, method = "total")
+```
+
+
+#beta diversity (scatter around centroid)
+##plot nMDS 
+```{r}
+
+z.ord1 <- ordinate(zoops18S, "NMDS", "bray", trymax=10000, try=1000)
+p2 <- plot_ordination(zoops18S, z.ord1, type="samples", color = "depth_bin", shape = "depth_bin") + 
+  stat_ellipse(type = "t", linetype = 2, aes(group = depth_bin)) +
+  ggtitle("18S Bray-Curtis distance") +
+  labs(color = "Depth zone", shape = "Depth zone") + 
+  scale_color_manual(values = depthcolors) 
+p2
+
+lc.ord1 <- ordinate(zoopsCOI, "NMDS", "bray", trymax=10000, try=1000)
+p4 <- plot_ordination(zoopsCOI, lc.ord1, type="samples", color = "depth_bin", shape = "depth_bin") + 
+  stat_ellipse(type = "t", linetype = 2, aes(group = depth_bin)) +
+  ggtitle("COI Bray-Curtis distance") +
+  labs(color = "Depth zone", shape = "Depth zone")+ 
+  scale_color_manual(values = depthcolors) 
+p4
+
+```
+
+
+##test nMDS dispersion
+```{r overall}
+#betadisp statistical test for each
+leray.dist.matrix.bray <-
+   vegdist((otu_table(zoopsCOI)), "bray")
+groups <- as.matrix(sample_data(zoopsCOI)$depth_bin) # define the variable that separates groups
+basincoi.disp <- betadisper(leray.dist.matrix.bray, groups)# calculates the beta-dispersion for each group, when comparing 2 or more
+basincoi.disp.anova <- anova(basincoi.disp)  # tests if distances to centroids  are significantly different from each other
+basincoi.disp.anova
+chaotogetheranova <- basincoi.disp.anova$`Pr(>F)`
+
+ano.coi <- with(data.frame(groups), anosim(leray.dist.matrix.bray, groups))
+summary(ano.coi)
+plot(ano.coi)
+
+barcoi <- data.frame(group = basincoi.disp$group, distances = basincoi.disp$distances, depth_bin = sample_data(zoopsCOI)$depth_bin, Region = sample_data(zoopsCOI)$NewRegion)
+barcoiplot <- ggplot(data = barcoi, aes(x = depth_bin, y  = distances)) + 
+         geom_boxplot(aes(fill = depth_bin)) +
+  geom_pwc(aes(x = depth_bin, y  = distances),
+           method = "dunn.test",
+           label = "p.adj.signif", 
+           hide.ns = T, 
+           symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")),
+           tip.length = 0.01,
+           bracket.nudge.y = 0.04,
+           vjust = 0.5)  + 
+ # ylim(0,0.22)+ 
+ # theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  theme(legend.position = "none")+ 
+  scale_fill_manual(values = depthcolors) + 
+  ggtitle("COI: Beta diversity") + 
+  xlab("Depth zone") + 
+  ylab("Beta diversity")+ 
+  scale_x_discrete(labels=c("0-200m" = "0 -\n200m", "200-500m" = "200 -\n500m",
+                              "500-1000m" = "500 - \n1000m")) 
+# 
+ #betadisp statistical test 
+zhan.dist.matrix.bray <-
+   vegdist((otu_table(zoops18S)), "bray")
+groups <- as.matrix(sample_data(zoops18S)$depth_bin) # define the variable that separates groups
+basin18s.disp <- betadisper(zhan.dist.matrix.bray, groups, type = "centroid")# calculates the beta-dispersion for each group, when comparing 2 or more
+TukeyHSD(basin18s.disp)
+basin18s.disp.anova <- anova(basin18s.disp)  # tests if distances to centroid are significantly different from each other
+basin18s.disp.anova
+braytogetheranova <- basin18s.disp.anova$`Pr(>F)`
+
+ano.18s <- with(data.frame(groups), anosim(zhan.dist.matrix.bray, groups))
+summary(ano.18s)
+plot(ano.18s)
+
+
+bar18s <- data.frame(group = basin18s.disp$group, distances = basin18s.disp$distances, depth_bin = sample_data(zoops18S)$depth_bin, Region = sample_data(zoops18S)$NewRegion)
+bar18splot <- ggplot(data = bar18s, aes(x = depth_bin, y  = distances)) + 
+         geom_boxplot(aes(fill = depth_bin)) +
+  geom_pwc(aes(x = depth_bin, y  = distances),
+           method = "dunn.test",
+           label = "p.adj.signif", 
+           hide.ns = T, 
+           symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")),
+           tip.length = 0.01,
+           bracket.nudge.y = 0.04,
+           vjust = 0.5)  + 
+ # stat_compare_means(method = "kruskal.test", label.y = .11, 
+ #                    label.x.npc = "center",
+ #                    label = "p.signif",
+ #                    symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns"))) + 
+ # ylim(0,0.11)+ 
+ # theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  theme(legend.position = "none")+ 
+  scale_fill_manual(values = depthcolors) + 
+  ggtitle("18S: Beta diversity") + 
+  xlab("Depth zone") + 
+  ylab("Beta diversity") + 
+  scale_x_discrete(labels=c("0-200m" = "0 -\n200m", "200-500m" = "200 -\n500m",
+                              "500-1000m" = "500 - \n1000m")) 
+
+
+
+```
+
+
+```{r plot overal nmds and beta dispersal}
+
+bothcomparison <- ggpubr::ggarrange(p2 + ggtitle("18S"), bar18splot + ggtitle("18S"), p4 + ggtitle("COI"), barcoiplot + ggtitle("COI"), ncol = 2, nrow = 2, widths = c(3.5,2), labels = c("a)", "b)", "c)", "d)"), common.legend = T, legend = "none", align = "hv")
+
+bothcomparison <- ggarrange(bothcomparison, get_legend(p2), widths = c(5.5,1), ncol = 2)
+bothcomparison
+
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/BetaDiversityNMDS_4panel.pdf", height =5, width = 6.5)
+bothcomparison
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/BetaDiversityNMDS_4panel.jpeg", height =5, width = 6.5, unit = "in", quality = 100, res = 300)
+bothcomparison
+dev.off()
+
+
+```
+
+```{r}
+```
+
+
+##test just x-axis
+```{r}
+MDS1COI <- data.frame(lc.ord1$points)
+MDS1COI$depth <- stringr::str_split_i(rownames(MDS1COI), pattern= " ", i = 2)
+summary(aov(MDS1 ~ depth, data = MDS1COI))
+
+
+MDS118S <- data.frame(z.ord1$points)
+MDS118S$depth <- stringr::str_split_i(rownames(MDS118S), pattern= " ", i = 2)
+summary(aov(MDS1 ~ depth, data = MDS118S))
+
+
+nmds.envfit <- envfit(lc.ord1$points, env = as.data.frame(sample_data(zoopsCOI)[,c("Mesh", "Lat.N.", "Lon.W.", "chl_meanyearlytotal", "ef_meanyearlytotal", "npp_meanyearlytotal", "MeanOxy", "meanModelTemp", "meanModelSal")]))
+vec.sp.df<-as.data.frame(cbind((nmds.envfit$vectors$arrows*sqrt(nmds.envfit$vectors$r)),pvals=nmds.envfit$vectors$pvals)) #this is necessary, see Gavin Simpson http://stackoverflow.com/questions/14711470/plotting-envfit-vectors-vegan-package-in-ggplot2/25425258#25425258
+fac.sp.df<-as.data.frame(cbind((nmds.envfit$factors$centroids*sqrt(nmds.envfit$factors$r)),pvals=nmds.envfit$factors$pvals)) #this is necessary, see Gavin Simpson http://stackoverflow.com/questions/14711470/plotting-envfit-vectors-vegan-package-in-ggplot2/25425258#25425258
+vec.sp.df <- rbind(vec.sp.df, fac.sp.df)
+env.scores.nmds <- as.data.frame(vec.sp.df[vec.sp.df$pvals<0.05,]) #extracts relevant scores from envifit
+#extracts relevant scores from envifit
+env.scores.nmds <- cbind(env.scores.nmds, env.variables = c("Not Human", "Human")) #and then gives them their names
+env.scores.nmds
+```
+
+
+#beta diversity - Presence/Absence
+##plot nMDS 
+```{r}
+zoops18S_pa <- phyloseq_standardize_otu_abundance(zoops18S, method = "pa")
+zoopsCOI_pa <- phyloseq_standardize_otu_abundance(zoopsCOI, method = "pa")
+
+z.ord1 <- ordinate(zoops18S_pa, "NMDS", "bray", trymax=10000, try=1000)
+p2 <- plot_ordination(zoops18S_pa, z.ord1, type="samples", color = "depth_bin", shape = "depth_bin") + 
+  stat_ellipse(type = "t", linetype = 2, aes(group = depth_bin)) +
+  ggtitle("18S Bray-Curtis distance, PA") +
+  labs(color = "Depth zone", shape = "Depth zone") + 
+  scale_color_manual(values = depthcolors) 
+p2
+
+lc.ord1 <- ordinate(zoopsCOI_pa, "NMDS", "bray", trymax=10000, try=1000)
+p4 <- plot_ordination(zoopsCOI_pa, lc.ord1, type="samples", color = "depth_bin", shape = "depth_bin") + 
+  stat_ellipse(type = "t", linetype = 2, aes(group = depth_bin)) +
+  ggtitle("COI Bray-Curtis distance, PA") +
+  labs(color = "Depth zone", shape = "Depth zone")+ 
+  scale_color_manual(values = depthcolors) 
+p4
+
+```
+
+
+##test nMDS dispersion
+```{r overall}
+#betadisp statistical test for each
+leray.dist.matrix.bray <-
+   vegdist((otu_table(zoopsCOI_pa)), "bray")
+groups <- as.matrix(sample_data(zoopsCOI_pa)$depth_bin) # define the variable that separates groups
+basincoi.disp <- betadisper(leray.dist.matrix.bray, groups)# calculates the beta-dispersion for each group, when comparing 2 or more
+basincoi.disp.anova <- anova(basincoi.disp)  # tests if distances to centroids  are significantly different from each other
+basincoi.disp.anova
+chaotogetheranova <- basincoi.disp.anova$`Pr(>F)`
+
+ano.coi <- with(data.frame(groups), anosim(leray.dist.matrix.bray, groups))
+summary(ano.coi)
+plot(ano.coi)
+
+barcoi <- data.frame(group = basincoi.disp$group, distances = basincoi.disp$distances, depth_bin = sample_data(zoopsCOI_pa)$depth_bin, Region = sample_data(zoopsCOI_pa)$NewRegion)
+barcoiplot <- ggplot(data = barcoi, aes(x = depth_bin, y  = distances)) + 
+         geom_boxplot(aes(fill = depth_bin)) +
+  geom_pwc(aes(x = depth_bin, y  = distances),
+           method = "dunn.test",
+           label = "p.adj.signif", 
+           hide.ns = T, 
+           symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")),
+           tip.length = 0.01,
+           bracket.nudge.y = 0.04,
+           vjust = 0.5)  + 
+ # ylim(0,0.22)+ 
+ # theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  theme(legend.position = "none")+ 
+  scale_fill_manual(values = depthcolors) + 
+  ggtitle("COI: Beta diversity; PA") + 
+  xlab("Depth zone") + 
+  ylab("Beta diversity")+ 
+  scale_x_discrete(labels=c("0-200m" = "0 -\n200m", "200-500m" = "200 -\n500m",
+                              "500-1000m" = "500 - \n1000m")) 
+# 
+ #betadisp statistical test 
+zhan.dist.matrix.bray <-
+   vegdist((otu_table(zoops18S_pa)), "bray")
+groups <- as.matrix(sample_data(zoops18S_pa)$depth_bin) # define the variable that separates groups
+basin18s.disp <- betadisper(zhan.dist.matrix.bray, groups, type = "centroid")# calculates the beta-dispersion for each group, when comparing 2 or more
+TukeyHSD(basin18s.disp)
+basin18s.disp.anova <- anova(basin18s.disp)  # tests if distances to centroid are significantly different from each other
+basin18s.disp.anova
+braytogetheranova <- basin18s.disp.anova$`Pr(>F)`
+
+ano.18s <- with(data.frame(groups), anosim(zhan.dist.matrix.bray, groups))
+summary(ano.18s)
+plot(ano.18s)
+
+bar18s <- data.frame(group = basin18s.disp$group, distances = basin18s.disp$distances, depth_bin = sample_data(zoops18S_pa)$depth_bin, Region = sample_data(zoops18S_pa)$NewRegion)
+bar18splot <- ggplot(data = bar18s, aes(x = depth_bin, y  = distances)) + 
+         geom_boxplot(aes(fill = depth_bin)) +
+  geom_pwc(aes(x = depth_bin, y  = distances),
+           method = "dunn.test",
+           label = "p.adj.signif", 
+           hide.ns = T, 
+           symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")),
+           tip.length = 0.01,
+           bracket.nudge.y = 0.04,
+           vjust = 0.5)  + 
+ # stat_compare_means(method = "kruskal.test", label.y = .11, 
+ #                    label.x.npc = "center",
+ #                    label = "p.signif",
+ #                    symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns"))) + 
+ # ylim(0,0.11)+ 
+ # theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  theme(legend.position = "none")+ 
+  scale_fill_manual(values = depthcolors) + 
+  ggtitle("18S: Beta diversity; PA") + 
+  xlab("Depth zone") + 
+  ylab("Beta diversity") + 
+  scale_x_discrete(labels=c("0-200m" = "0 -\n200m", "200-500m" = "200 -\n500m",
+                              "500-1000m" = "500 - \n1000m")) 
+
+
+
+```
+
+
+```{r plot overal nmds and beta dispersal}
+
+bothcomparison <- ggpubr::ggarrange(p2 + ggtitle("18S, PA"), bar18splot + ggtitle("18S, PA"), p4 + ggtitle("COI, PA"), barcoiplot + ggtitle("COI, PA"), ncol = 2, nrow = 2, widths = c(3.5,2), labels = c("a)", "b)", "c)", "d)"), common.legend = T, legend = "none", align = "hv")
+
+bothcomparison <- ggarrange(bothcomparison, get_legend(p2), widths = c(5.5,1), ncol = 2)
+bothcomparison
+
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/BetaDiversityNMDS_4panel_pa.pdf", height =5, width = 6.5)
+bothcomparison
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/BetaDiversityNMDS_4panel_pa.jpeg", height =5, width = 6.5, unit = "in", quality = 100, res = 300)
+bothcomparison
+dev.off()
+
+
+```
+
+
+
+
+#within regions
+```{r within regions}
+
+region_names <- c("Coastal CA" = "Coastal CA",
+                    "N. NPSG" = "N. NPSG",
+                    "WWD & Subpolar" = "WWD &\nSubpolar",
+                    "Kuroshio Curr." = "Kuroshio\nCurr.",
+                    "Tropical" = "Tropical",
+                    "Core NPSG" = "Core NPSG",
+                  "0-200m" ="0 -\n200 m",
+                  "200-500m" = "200 -\n500 m",
+                  "500-1000m" = "500 -\n1000 m",
+                  "18S" = "18S",
+                  "COI" = "COI")
+
+#betadisp statistical test for each
+leray.dist.matrix.bray <-
+   vegdist((otu_table(zoopsCOI)), "bray")
+groups <- as.matrix(paste(sample_data(zoopsCOI)$depth_bin, sample_data(zoopsCOI)$NewRegion)) # define the variable that separates groups
+leray.disp <- betadisper(leray.dist.matrix.bray, groups)# calculates the beta-dispersion for each group, when comparing 2 or more
+leray.disp.anova <- anova(leray.disp)  # tests if distances to centroid are significantly different from each other
+leray.disp.anova
+leray.disp.anova$`Pr(>F)`
+
+plotdatacoi <- data.frame(group = leray.disp$group, distances = leray.disp$distances, depth_bin = sample_data(zoopsCOI)$depth_bin, Region = sample_data(zoopsCOI)$NewRegion)
+ggplot(data = plotdatacoi, aes(x = depth_bin, y  = distances)) + 
+         geom_boxplot() + 
+  facet_wrap(.~Region, labeller = as_labeller(region_names)) + 
+  geom_pwc(aes(x = depth_bin, y  = distances),
+           method = "dunn.test",
+           label = "p.adj.signif", 
+           hide.ns = T, 
+           symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")),
+           tip.length = 0.01,
+           bracket.nudge.y = 0.04,
+           vjust = 0.5)# + 
+ # ylim(0,0.2)
+
+
+# 
+ #betadisp statistical test 
+zhan.dist.matrix.bray <-
+   vegdist((otu_table(zoops18S)), "bray")
+groups <- as.matrix(paste(sample_data(zoops18S)$depth_bin, sample_data(zoops18S)$NewRegion)) # define the variable that separates groups
+zhan.disp <- betadisper(zhan.dist.matrix.bray, groups)# calculates the beta-dispersion for each group, when comparing 2 or more
+zhan.disp.anova <- anova(zhan.disp)  #  tests if distances to centroid are significantly different from each other
+zhan.disp.anova
+zhan.disp.anova$`Pr(>F)`
+
+plotdata18s <- data.frame(group = zhan.disp$group, distances = zhan.disp$distances, depth_bin = sample_data(zoops18S)$depth_bin, Region = sample_data(zoops18S)$NewRegion)
+ggplot(data = plotdata18s, aes(x = depth_bin, y  = distances)) + 
+         geom_boxplot() + 
+  facet_wrap(.~Region, labeller = as_labeller(region_names)) + 
+  geom_pwc(aes(x = depth_bin, y  = distances),
+           method = "dunn.test",
+           label = "p.adj.signif", 
+           hide.ns = T, 
+           symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")),
+           tip.length = 0.01,
+           bracket.nudge.y = 0.04,
+           vjust = 0.5) #+ 
+ # ylim(0,0.2)
+
+plotdata18s$Marker <- "18S"
+plotdatacoi$Marker <- "COI"
+
+plotdataboth <- rbind(plotdata18s, plotdatacoi)
+
+p <- ggplot(data = plotdataboth, aes(x = depth_bin, y  = distances)) + 
+         geom_boxplot(aes(fill = Marker)) + 
+  facet_grid(Marker~Region, labeller = as_labeller(region_names), scales = "free") + 
+  stat_compare_means(method = "kruskal.test", 
+                     #label.y = .18, 
+                     label.x.npc = "center",
+                     label = "p.signif",
+                     vjust = -0.9,
+                     symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns"))) + 
+ # ylim(0,0.2) + 
+ # ggtitle("Beta diversity within regions") + 
+  xlab("Depth zone") + 
+  ylab("Beta diversity")  +
+  geom_pwc(aes(x = depth_bin, y  = distances),
+           method = "dunn.test",
+           label = "p.adj.signif", 
+           hide.ns = T, 
+           symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")),
+           tip.length = 0.01,
+           bracket.nudge.y = -.1,
+           vjust = 0.5,
+           group.by = "legend.var",
+           inherit.aes = F) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  scale_fill_manual(values = markercolors) + 
+  scale_y_continuous(expand = expansion(mult = 0.3))
+  
+p
+
+
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/betadisperal_withinregions.pdf", height =4, width = 6.5)
+p
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/betadispersal_withinregions.jpeg", height =4, width = 6.5, unit = "in", quality = 100, res = 300)
+p
+dev.off()
+
+ 
+```
+
+
+
+#test by taxon
+## calanoids
+```{r}
+calanoidsCOI <- subset_taxa(zoopsCOI, Order == "Calanoida")
+calanoids18S <- subset_taxa(zoops18S, Order == "Calanoida")
+
+z.ord1 <- ordinate(calanoids18S, "NMDS", "bray", trymax=100, try=100)
+p2 <- plot_ordination(calanoids18S, z.ord1, type="samples", color = "depth_bin", shape = "depth_bin") + 
+  stat_ellipse(type = "t", linetype = 2, aes(group = depth_bin)) +
+#  ggtitle("18S Bray-Curtis distance") +
+  labs(color = "Depth zone", shape = "Depth zone") + 
+  scale_color_manual(values = depthcolors) 
+
+
+lc.ord1 <- ordinate(calanoidsCOI, "NMDS", "bray", trymax=100, try=100)
+p4 <- plot_ordination(calanoidsCOI, lc.ord1, type="samples", color = "depth_bin", shape = "depth_bin") + 
+  stat_ellipse(type = "t", linetype = 2, aes(group = depth_bin)) +
+ # ggtitle("COI Bray-Curtis distance") +
+  labs(color = "Depth zone", shape = "Depth zone")+ 
+  scale_color_manual(values = depthcolors) 
+
+
+#betadisp statistical test for each
+leray.dist.matrix.bray <-
+   vegdist((otu_table(calanoidsCOI)), "bray")
+groups <- as.matrix(sample_data(calanoidsCOI)$depth_bin) # define the variable that separates groups
+basincoi.disp <- betadisper(leray.dist.matrix.bray, groups)# calculates the beta-dispersion for each group, when comparing 2 or more
+basincoi.disp.anova <- anova(basincoi.disp)  # tests if centroid distances are significantly different from each other
+basincoi.disp.anova
+chaotogetheranova <- basincoi.disp.anova$`Pr(>F)`
+barcoi <- data.frame(group = basincoi.disp$group, distances = basincoi.disp$distances, depth_bin = sample_data(zoopsCOI)$depth_bin, Region = sample_data(zoopsCOI)$NewRegion)
+barcoiplot <- ggplot(data = barcoi, aes(x = depth_bin, y  = distances)) + 
+         geom_boxplot(aes(fill = depth_bin)) +
+  geom_pwc(aes(x = depth_bin, y  = distances),
+           method = "dunn.test",
+           label = "p.adj.signif", 
+           hide.ns = T, 
+           symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")),
+           tip.length = 0.01,
+           bracket.nudge.y = 0.04,
+           vjust = 0.5)  + 
+ # ylim(0,0.22)+ 
+ # theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  theme(legend.position = "none")+ 
+  scale_fill_manual(values = depthcolors) + 
+ # ggtitle("COI: Beta diversity") + 
+  xlab("Depth zone") + 
+  ylab("Beta diversity")+ 
+  scale_x_discrete(labels=c("0-200m" = "0 -\n200m", "200-500m" = "200 -\n500m",
+                              "500-1000m" = "500 - \n1000m")) 
+# 
+ #betadisp statistical test 
+zhan.dist.matrix.bray <-
+   vegdist((otu_table(calanoids18S)), "bray")
+groups <- as.matrix(sample_data(calanoids18S)$depth_bin) # define the variable that separates groups
+basin18s.disp <- betadisper(zhan.dist.matrix.bray, groups)# calculates the beta-dispersion for each group, when comparing 2 or more
+basin18s.disp.anova <- anova(basin18s.disp)  # tests if centroid distances are significantly different from each other
+basin18s.disp.anova
+braytogetheranova <- basin18s.disp.anova$`Pr(>F)`
+
+bar18s <- data.frame(group = basin18s.disp$group, distances = basin18s.disp$distances, depth_bin = sample_data(zoops18S)$depth_bin, Region = sample_data(zoops18S)$NewRegion)
+bar18splot <- ggplot(data = bar18s, aes(x = depth_bin, y  = distances)) + 
+         geom_boxplot(aes(fill = depth_bin)) +
+  geom_pwc(aes(x = depth_bin, y  = distances),
+           method = "dunn.test",
+           label = "p.adj.signif", 
+           hide.ns = T, 
+           symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")),
+           tip.length = 0.01,
+           bracket.nudge.y = 0.04,
+           vjust = 0.5)  + 
+ # stat_compare_means(method = "kruskal.test", label.y = .11, 
+ #                    label.x.npc = "center",
+ #                    label = "p.signif",
+ #                    symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns"))) + 
+ # ylim(0,0.11)+ 
+ # theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  theme(legend.position = "none")+ 
+  scale_fill_manual(values = depthcolors) + 
+#  ggtitle("18S: Beta diversity") + 
+  xlab("Depth zone") + 
+  ylab("Beta diversity") + 
+  scale_x_discrete(labels=c("0-200m" = "0 -\n200m", "200-500m" = "200 -\n500m",
+                              "500-1000m" = "500 - \n1000m")) 
+
+bothcomparison <- ggpubr::ggarrange(p2 + ggtitle("18S Calanoida"), bar18splot + ggtitle("18S Calanoida"), p4 + ggtitle("COI Calanoida"), barcoiplot + ggtitle("COI Calanoida"), ncol = 2, nrow = 2, widths = c(3.5,2), labels = c("a)", "b)", "c)", "d)"), common.legend = T, legend = "none", align = "hv")
+
+bothcomparison <- ggarrange(bothcomparison, get_legend(p2), widths = c(5.5,1), ncol = 2)
+bothcomparison
+
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/betadisperal_calanoids.pdf", height =5, width = 6.5)
+bothcomparison
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/betadisperal_calanoids.jpeg", height =5, width = 6.5, unit = "in", quality = 100, res = 300)
+bothcomparison
+dev.off()
+
+```
+
+
+## Cyclopoids
+```{r}
+cyclopoids18s <- subset_taxa(zoops18S, Order == "Cyclopoida")
+cyclopoids18s <- subset_samples(cyclopoids18s, sample_sums(cyclopoids18s) > 0)
+cyclopoids18s <- subset_samples(cyclopoids18s, StationID != 26)
+cyclopoids18s <- phyloseq_standardize_otu_abundance(cyclopoids18s, method = "total")
+
+z.ord1 <- ordinate((cyclopoids18s), "NMDS", "bray", trymax=100, try=100)
+p2 <- plot_ordination((cyclopoids18s), z.ord1, type="samples", color = "depth_bin", shape = "depth_bin") + 
+  stat_ellipse(type = "t", linetype = 2, aes(group = depth_bin)) +
+#  ggtitle("18S Bray-Curtis distance") +
+  labs(color = "Depth zone", shape = "Depth zone") + 
+  scale_color_manual(values = depthcolors) 
+p2
+
+
+ #betadisp statistical test 
+zhan.dist.matrix.bray <-
+   vegdist((otu_table(cyclopoids18s)), "bray")
+groups <- as.matrix(sample_data(cyclopoids18s)$depth_bin) # define the variable that separates groups
+basin18s.disp <- betadisper(zhan.dist.matrix.bray, groups)# calculates the beta-dispersion for each group, when comparing 2 or more
+basin18s.disp.anova <- anova(basin18s.disp)  # tests if centroid distances are significantly different from each other
+basin18s.disp.anova
+braytogetheranova <- basin18s.disp.anova$`Pr(>F)`
+
+bar18s <- data.frame(group = basin18s.disp$group, distances = basin18s.disp$distances, depth_bin = sample_data(cyclopoids18s)$depth_bin, Region = sample_data(cyclopoids18s)$NewRegion)
+bar18splot <- ggplot(data = bar18s, aes(x = depth_bin, y  = distances)) + 
+         geom_boxplot(aes(fill = depth_bin)) +
+  geom_pwc(aes(x = depth_bin, y  = distances),
+           method = "dunn.test",
+           label = "p.adj.signif", 
+           hide.ns = T, 
+           symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")),
+           tip.length = 0.01,
+           bracket.nudge.y = 0.04,
+           vjust = 0.5)  + 
+ # stat_compare_means(method = "kruskal.test", label.y = .11, 
+ #                    label.x.npc = "center",
+ #                    label = "p.signif",
+ #                    symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns"))) + 
+ # ylim(0,0.11)+ 
+ # theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  theme(legend.position = "none")+ 
+  scale_fill_manual(values = depthcolors) + 
+#  ggtitle("18S: Beta diversity") + 
+  xlab("Depth zone") + 
+  ylab("Beta diversity") + 
+  scale_x_discrete(labels=c("0-200m" = "0 -\n200m", "200-500m" = "200 -\n500m",
+                              "500-1000m" = "500 - \n1000m")) 
+
+bothcomparison <- ggpubr::ggarrange(p2 + ggtitle("18S Cyclopoida"), bar18splot + ggtitle("18S Cyclopoida"), ncol = 2, nrow = 1, widths = c(3.5,2), labels = c("a)", "b)", "c)", "d)"), common.legend = T, legend = "none", align = "hv")
+
+bothcomparison <- ggarrange(bothcomparison, get_legend(p2), widths = c(5.5,1), ncol = 2)
+bothcomparison
+
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/betadisperal_cyclopoids.pdf", height =2.5, width = 6.5)
+bothcomparison
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/betadisperal_cyclopoids.jpeg", height =2.5, width = 6.5, unit = "in", quality = 100, res = 300)
+bothcomparison
+dev.off()
+
+```
+
+
+## ostracods
+```{r}
+HalocypridaCOI <- subset_taxa(zoopsCOI, Order == "Halocyprida")
+HalocypridaCOI <- subset_samples(HalocypridaCOI, sample_sums(HalocypridaCOI) > 0)
+HalocypridaCOI <- phyloseq_standardize_otu_abundance(HalocypridaCOI, method = "total")
+
+
+lc.ord1 <- ordinate(HalocypridaCOI, "NMDS", "bray", trymax=1000, try=100)
+p4 <- plot_ordination(HalocypridaCOI, lc.ord1, type="samples", color = "depth_bin", shape = "depth_bin") + 
+  stat_ellipse(type = "t", linetype = 2, aes(group = depth_bin)) +
+ # ggtitle("COI Bray-Curtis distance") +
+  labs(color = "Depth zone", shape = "Depth zone")+ 
+  scale_color_manual(values = depthcolors) 
+
+
+#betadisp statistical test for each
+leray.dist.matrix.bray <-
+   vegdist((otu_table(HalocypridaCOI)), "bray")
+groups <- as.matrix(sample_data(HalocypridaCOI)$depth_bin) # define the variable that separates groups
+basincoi.disp <- betadisper(leray.dist.matrix.bray, groups)# calculates the beta-dispersion for each group, when comparing 2 or more
+basincoi.disp.anova <- anova(basincoi.disp)  # tests if centroid distances are significantly different from each other
+basincoi.disp.anova
+chaotogetheranova <- basincoi.disp.anova$`Pr(>F)`
+barcoi <- data.frame(group = basincoi.disp$group, distances = basincoi.disp$distances, depth_bin = sample_data(HalocypridaCOI)$depth_bin, Region = sample_data(HalocypridaCOI)$NewRegion)
+barcoiplot <- ggplot(data = barcoi, aes(x = depth_bin, y  = distances)) + 
+         geom_boxplot(aes(fill = depth_bin)) +
+  geom_pwc(aes(x = depth_bin, y  = distances),
+           method = "dunn.test",
+           label = "p.adj.signif", 
+           hide.ns = T, 
+           symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")),
+           tip.length = 0.01,
+           bracket.nudge.y = 0.04,
+           vjust = 0.5)  + 
+ # ylim(0,0.22)+ 
+ # theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  theme(legend.position = "none")+ 
+  scale_fill_manual(values = depthcolors) + 
+ # ggtitle("COI: Beta diversity") + 
+  xlab("Depth zone") + 
+  ylab("Beta diversity")+ 
+  scale_x_discrete(labels=c("0-200m" = "0 -\n200m", "200-500m" = "200 -\n500m",
+                              "500-1000m" = "500 - \n1000m")) 
+
+
+bothcomparison <- ggpubr::ggarrange(p4 + ggtitle("COI Halocyprida"), barcoiplot + ggtitle("COI Halocyprida"), ncol = 2, nrow = 1, widths = c(3.5,2), labels = c("a)", "b)", "c)", "d)"), common.legend = T, legend = "none", align = "hv")
+
+bothcomparison <- ggarrange(bothcomparison, get_legend(p2), widths = c(5.5,1), ncol = 2)
+bothcomparison
+
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/betadisperal_ostracods.pdf", height =2.5, width = 6.5)
+bothcomparison
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/betadisperal_ostracods.jpeg", height =2.5, width = 6.5, unit = "in", quality = 100, res = 300)
+bothcomparison
+dev.off()
+
+```
+
+
+## cnidarians
+```{r}
+cnidariaCOI <- subset_taxa(zoopsCOI, Phylum == "Cnidaria")
+cnidaria18S <- subset_taxa(zoops18S, Phylum == "Cnidaria")
+cnidariaCOI <- subset_samples(cnidariaCOI, sample_sums(cnidariaCOI) > 0)
+cnidaria18S <- subset_samples(cnidaria18S, sample_sums(cnidaria18S) > 0)
+cnidariaCOI <- phyloseq_standardize_otu_abundance(cnidariaCOI, method = "total")
+cnidaria18S <- phyloseq_standardize_otu_abundance(cnidaria18S, method = "total")
+
+
+z.ord1 <- ordinate(cnidaria18S, "NMDS", "bray", trymax=100, try=100)
+p2 <- plot_ordination(cnidaria18S, z.ord1, type="samples", color = "depth_bin", shape = "depth_bin") + 
+  stat_ellipse(type = "t", linetype = 2, aes(group = depth_bin)) +
+#  ggtitle("18S Bray-Curtis distance") +
+  labs(color = "Depth zone", shape = "Depth zone") + 
+  scale_color_manual(values = depthcolors) 
+
+
+lc.ord1 <- ordinate(cnidariaCOI, "NMDS", "bray", trymax=100, try=100)
+p4 <- plot_ordination(cnidariaCOI, lc.ord1, type="samples", color = "depth_bin", shape = "depth_bin") + 
+  stat_ellipse(type = "t", linetype = 2, aes(group = depth_bin)) +
+ # ggtitle("COI Bray-Curtis distance") +
+  labs(color = "Depth zone", shape = "Depth zone")+ 
+  scale_color_manual(values = depthcolors) 
+
+
+#betadisp statistical test for each
+leray.dist.matrix.bray <-
+   vegdist((otu_table(cnidariaCOI)), "bray")
+groups <- as.matrix(sample_data(cnidariaCOI)$depth_bin) # define the variable that separates groups
+basincoi.disp <- betadisper(leray.dist.matrix.bray, groups)# calculates the beta-dispersion for each group, when comparing 2 or more
+basincoi.disp.anova <- anova(basincoi.disp)  # tests if centroid distances are significantly different from each other
+basincoi.disp.anova
+chaotogetheranova <- basincoi.disp.anova$`Pr(>F)`
+barcoi <- data.frame(group = basincoi.disp$group, distances = basincoi.disp$distances, depth_bin = sample_data(cnidariaCOI)$depth_bin, Region = sample_data(cnidariaCOI)$NewRegion)
+barcoiplot <- ggplot(data = barcoi, aes(x = depth_bin, y  = distances)) + 
+         geom_boxplot(aes(fill = depth_bin)) +
+  geom_pwc(aes(x = depth_bin, y  = distances),
+           method = "dunn.test",
+           label = "p.adj.signif", 
+           hide.ns = T, 
+           symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")),
+           tip.length = 0.01,
+           bracket.nudge.y = 0.04,
+           vjust = 0.5)  + 
+ # ylim(0,0.22)+ 
+ # theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  theme(legend.position = "none")+ 
+  scale_fill_manual(values = depthcolors) + 
+ # ggtitle("COI: Beta diversity") + 
+  xlab("Depth zone") + 
+  ylab("Beta diversity")+ 
+  scale_x_discrete(labels=c("0-200m" = "0 -\n200m", "200-500m" = "200 -\n500m",
+                              "500-1000m" = "500 - \n1000m")) 
+# 
+ #betadisp statistical test 
+zhan.dist.matrix.bray <-
+   vegdist((otu_table(cnidaria18S)), "bray")
+groups <- as.matrix(sample_data(cnidaria18S)$depth_bin) # define the variable that separates groups
+basin18s.disp <- betadisper(zhan.dist.matrix.bray, groups)# calculates the beta-dispersion for each group, when comparing 2 or more
+basin18s.disp.anova <- anova(basin18s.disp)  # tests if centroid distances are significantly different from each other
+basin18s.disp.anova
+braytogetheranova <- basin18s.disp.anova$`Pr(>F)`
+
+bar18s <- data.frame(group = basin18s.disp$group, distances = basin18s.disp$distances, depth_bin = sample_data(cnidaria18S)$depth_bin, Region = sample_data(cnidaria18S)$NewRegion)
+bar18splot <- ggplot(data = bar18s, aes(x = depth_bin, y  = distances)) + 
+         geom_boxplot(aes(fill = depth_bin)) +
+  geom_pwc(aes(x = depth_bin, y  = distances),
+           method = "dunn.test",
+           label = "p.adj.signif", 
+           hide.ns = T, 
+           symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")),
+           tip.length = 0.01,
+           bracket.nudge.y = 0.04,
+           vjust = 0.5)  + 
+ # stat_compare_means(method = "kruskal.test", label.y = .11, 
+ #                    label.x.npc = "center",
+ #                    label = "p.signif",
+ #                    symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns"))) + 
+ # ylim(0,0.11)+ 
+ # theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  theme(legend.position = "none")+ 
+  scale_fill_manual(values = depthcolors) + 
+#  ggtitle("18S: Beta diversity") + 
+  xlab("Depth zone") + 
+  ylab("Beta diversity") + 
+  scale_x_discrete(labels=c("0-200m" = "0 -\n200m", "200-500m" = "200 -\n500m",
+                              "500-1000m" = "500 - \n1000m")) 
+
+bothcomparison <- ggpubr::ggarrange(p2 + ggtitle("18S Cnidaria"), bar18splot + ggtitle("18S Cnidaria"), p4 + ggtitle("COI Cnidaria"), barcoiplot + ggtitle("COI Cnidaria"), ncol = 2, nrow = 2, widths = c(3.5,2), labels = c("a)", "b)", "c)", "d)"), common.legend = T, legend = "none", align = "hv")
+
+bothcomparison <- ggarrange(bothcomparison, get_legend(p2), widths = c(5.5,1), ncol = 2)
+bothcomparison
+
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/betadisperal_cnidarians.pdf", height =5, width = 6.5)
+bothcomparison
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/betadisperal_cnidarians.jpeg", height =5, width = 6.5, unit = "in", quality = 100, res = 300)
+bothcomparison
+dev.off()
+
+```
+
+
+## mollusca
+```{r}
+molluscsCOI <- subset_taxa(zoopsCOI, Phylum == "Mollusca")
+molluscsCOI <- subset_samples(molluscsCOI, sample_sums(molluscsCOI) > 0.03)
+molluscsCOI <- phyloseq_standardize_otu_abundance(molluscsCOI, method = "total")
+
+
+
+lc.ord1 <- ordinate(molluscsCOI, "NMDS", "bray", trymax=100, try=100)
+p4 <- plot_ordination(molluscsCOI, lc.ord1, type="samples", color = "depth_bin", shape = "depth_bin") + 
+  stat_ellipse(type = "t", linetype = 2, aes(group = depth_bin)) +
+ # ggtitle("COI Bray-Curtis distance") +
+  labs(color = "Depth zone", shape = "Depth zone")+ 
+  scale_color_manual(values = depthcolors) 
+
+
+#betadisp statistical test for each
+leray.dist.matrix.bray <-
+   vegdist((otu_table(molluscsCOI)), "bray")
+groups <- as.matrix(sample_data(molluscsCOI)$depth_bin) # define the variable that separates groups
+basincoi.disp <- betadisper(leray.dist.matrix.bray, groups)# calculates the beta-dispersion for each group, when comparing 2 or more
+basincoi.disp.anova <- anova(basincoi.disp)  # tests if centroid distances are significantly different from each other
+basincoi.disp.anova
+chaotogetheranova <- basincoi.disp.anova$`Pr(>F)`
+barcoi <- data.frame(group = basincoi.disp$group, distances = basincoi.disp$distances, depth_bin = sample_data(molluscsCOI)$depth_bin, Region = sample_data(molluscsCOI)$NewRegion)
+barcoiplot <- ggplot(data = barcoi, aes(x = depth_bin, y  = distances)) + 
+         geom_boxplot(aes(fill = depth_bin)) +
+  geom_pwc(aes(x = depth_bin, y  = distances),
+           method = "dunn.test",
+           label = "p.adj.signif", 
+           hide.ns = T, 
+           symnum.args = list(cutpoints = c(0, 0.001, 0.01, 0.05, 1), symbols = c("***", "**", "*", "ns")),
+           tip.length = 0.01,
+           bracket.nudge.y = 0.04,
+           vjust = 0.5)  + 
+ # ylim(0,0.22)+ 
+ # theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  theme(legend.position = "none")+ 
+  scale_fill_manual(values = depthcolors) + 
+ # ggtitle("COI: Beta diversity") + 
+  xlab("Depth zone") + 
+  ylab("Beta diversity")+ 
+  scale_x_discrete(labels=c("0-200m" = "0 -\n200m", "200-500m" = "200 -\n500m",
+                              "500-1000m" = "500 - \n1000m")) 
+# 
+
+bothcomparison <- ggpubr::ggarrange(p4 + ggtitle("COI Mollusca"), barcoiplot + ggtitle("COI Mollusca"), ncol = 2, nrow = 1, widths = c(3.5,2), labels = c("a)", "b)", "c)", "d)"), common.legend = T, legend = "none", align = "hv")
+
+bothcomparison <- ggarrange(bothcomparison, get_legend(p2), widths = c(5.5,1), ncol = 2)
+bothcomparison
+
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/betadisperal_mollusca.pdf", height =5, width = 6.5)
+bothcomparison
+dev.off()
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/betadisperal_mollusca.jpeg", height =5, width = 6.5, unit = "in", quality = 100, res = 300)
+bothcomparison
+dev.off()
+
+```
+
+
+#Day and night separately 
+##plot nMDS 
+```{r}
+zoops18S_day <- subset_samples(zoops18S, Diel = "Day")
+zoopsCOI_day <- subset_samples(zoopsCOI, Diel = "Day")
+
+zoops18S_night <- subset_samples(zoops18S, Diel = "Night")
+zoopsCOI_night <- subset_samples(zoopsCOI, Diel = "Night")
+
+
+z.ord1.d <- ordinate(zoops18S_day, "NMDS", "bray", trymax=10000, try=1000)
+p2 <- plot_ordination(zoops18S_day, z.ord1.d, type="samples", color = "depth_bin", shape = "depth_bin") + 
+  stat_ellipse(type = "t", linetype = 2, aes(group = depth_bin)) +
+  ggtitle("18S Bray-Curtis distance, PA") +
+  labs(color = "Depth zone", shape = "Depth zone") + 
+  scale_color_manual(values = depthcolors) 
+p2
+
+lc.ord1.d <- ordinate(zoopsCOI_day, "NMDS", "bray", trymax=10000, try=1000)
+p4 <- plot_ordination(zoopsCOI_day, lc.ord1.d, type="samples", color = "depth_bin", shape = "depth_bin") + 
+  stat_ellipse(type = "t", linetype = 2, aes(group = depth_bin)) +
+  ggtitle("COI Bray-Curtis distance, PA") +
+  labs(color = "Depth zone", shape = "Depth zone")+ 
+  scale_color_manual(values = depthcolors) 
+p4
+
+
+z.ord1.n <- ordinate(zoops18S_night, "NMDS", "bray", trymax=10000, try=1000)
+p6 <- plot_ordination(zoops18S_night, z.ord1.n, type="samples", color = "depth_bin", shape = "depth_bin") + 
+  stat_ellipse(type = "t", linetype = 2, aes(group = depth_bin)) +
+  ggtitle("18S Bray-Curtis distance, PA") +
+  labs(color = "Depth zone", shape = "Depth zone") + 
+  scale_color_manual(values = depthcolors) 
+p6
+
+lc.ord1.n <- ordinate(zoopsCOI_night, "NMDS", "bray", trymax=10000, try=1000)
+p8 <- plot_ordination(zoopsCOI_night, lc.ord1.n, type="samples", color = "depth_bin", shape = "depth_bin") + 
+  stat_ellipse(type = "t", linetype = 2, aes(group = depth_bin)) +
+  ggtitle("COI Bray-Curtis distance, PA") +
+  labs(color = "Depth zone", shape = "Depth zone")+ 
+  scale_color_manual(values = depthcolors) 
+p8
+
+```
+
+
+##test nMDS dispersion
+```{r overall}
+#betadisp statistical test for each
+leray.dist.matrix.bray <-
+   vegdist((otu_table(zoopsCOI_day)), "bray")
+groups <- as.matrix(sample_data(zoopsCOI_day)$depth_bin) # define the variable that separates groups
+basincoi.disp <- betadisper(leray.dist.matrix.bray, groups)# calculates the beta-dispersion for each group, when comparing 2 or more
+basincoi.disp.anova <- anova(basincoi.disp)  # tests if distances to centroids  are significantly different from each other
+basincoi.disp.anova
+chaotogetheranova <- basincoi.disp.anova$`Pr(>F)`
+
+#test for differences between groups (i.e. overlap between colors)
+ano.coi <- with(data.frame(groups), anosim(leray.dist.matrix.bray, groups))
+summary(ano.coi)
+plot(ano.coi)
+
+leray.dist.matrix.bray <-
+   vegdist((otu_table(zoopsCOI_night)), "bray")
+groups <- as.matrix(sample_data(zoopsCOI_night)$depth_bin) # define the variable that separates groups
+basincoi.disp <- betadisper(leray.dist.matrix.bray, groups)# calculates the beta-dispersion for each group, when comparing 2 or more
+basincoi.disp.anova <- anova(basincoi.disp)  # tests if distances to centroids  are significantly different from each other
+basincoi.disp.anova
+chaotogetheranova <- basincoi.disp.anova$`Pr(>F)`
+
+#test for differences between groups (i.e. overlap between colors)
+ano.coi <- with(data.frame(groups), anosim(leray.dist.matrix.bray, groups))
+summary(ano.coi)
+plot(ano.coi)
+
+
+
+zhan.dist.matrix.bray <-
+   vegdist((otu_table(zoops18S_day)), "bray")
+groups <- as.matrix(sample_data(zoops18S_day)$depth_bin) # define the variable that separates groups
+basin18s.disp <- betadisper(zhan.dist.matrix.bray, groups, type = "centroid")# calculates the beta-dispersion for each group, when comparing 2 or more
+TukeyHSD(basin18s.disp)
+basin18s.disp.anova <- anova(basin18s.disp)  # tests if distances to centroid are significantly different from each other
+basin18s.disp.anova
+braytogetheranova <- basin18s.disp.anova$`Pr(>F)`
+
+#test for differences between groups (i.e. overlap between colors)
+ano.18s <- with(data.frame(groups), anosim(zhan.dist.matrix.bray, groups))
+summary(ano.18s)
+plot(ano.18s)
+
+
+zhan.dist.matrix.bray <-
+   vegdist((otu_table(zoops18S_night)), "bray")
+groups <- as.matrix(sample_data(zoops18S_night)$depth_bin) # define the variable that separates groups
+basin18s.disp <- betadisper(zhan.dist.matrix.bray, groups, type = "centroid")# calculates the beta-dispersion for each group, when comparing 2 or more
+TukeyHSD(basin18s.disp)
+basin18s.disp.anova <- anova(basin18s.disp)  # tests if distances to centroid are significantly different from each other
+basin18s.disp.anova
+braytogetheranova <- basin18s.disp.anova$`Pr(>F)`
+
+#test for differences between groups (i.e. overlap between colors)
+ano.18s <- with(data.frame(groups), anosim(zhan.dist.matrix.bray, groups))
+summary(ano.18s)
+plot(ano.18s)
+
+```
+
+
+
+
+```{r}
+
+z.ord1 <- ordinate(zoops18S, "NMDS", "bray", trymax=10000, try=1000)
+z18smetada <- data.frame(sample_data(zoops18S))
+z.s <- ordisurf(z.ord1 ~ MeanTemp, data = z18smetada, method = "REML", select = TRUE)
+z.metadata <- z18smetada[,c("meanModelTemp", "meanModelSal", "MeanOxy", "npp_meanyearlytotal", "ef_meanyearlytotal")]
+
+en.z = envfit(z.ord1, z.metadata, permutations = 999, na.rm = TRUE)
+en.z
+plot(z.ord1)
+plot(en.z)
+
+
+lc.ord1 <- ordinate(zoopsCOI, "NMDS", "bray", trymax=10000, try=1000)
+coimetada <- data.frame(sample_data(zoopsCOI))
+c.metadata <- coimetada[,c("meanModelTemp", "meanModelSal", "MeanOxy", "npp_meanyearlytotal", "ef_meanyearlytotal")]
+
+en.c = envfit(lc.ord1, c.metadata, permutations = 999, na.rm = TRUE)
+en.c
+plot(lc.ord1)
+plot(en.c)
+
+
+
+```
+
+

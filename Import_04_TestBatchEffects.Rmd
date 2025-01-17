@@ -1,0 +1,1366 @@
+---
+title: "Import_04_TestBatchEffects"
+output: html_document
+date: "2024-10-31"
+---
+
+#ConQuR::
+#set up workspace
+```{r load libraries}
+library(microshades)
+library(phyloseq)
+library(vegan)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(DESeq2)
+library(metagMisc)
+library(viridis)
+library(RColorBrewer)
+library(DESeq2)
+library(ggExtra)
+library(beepr)
+library(readxl)
+library(ggforce)
+library(ggrepel)
+library(ggpubr)
+library(FSA)
+library(cowplot)
+library(ggtext)
+library(ggpubr)
+library(ConQuR)
+library(doParallel)
+set.seed(00110011)
+theme_set(theme_bw())
+theme_update(plot.title = element_text(hjust = 0.5))
+
+```
+
+```{r}
+Scatter_Density_Steph <- function (object, batch = NULL, trt = NULL, xlim = NULL, ylim = NULL, 
+          color.set = NULL, batch.legend.title = "Batch", trt.legend.title = "Treatment", 
+          density.lwd = 0.2, title = NULL, title.cex = 1.5, legend.cex = 0.7, 
+          legend.title.cex = 0.75) 
+{
+  data = as.data.frame(object[["variates"]][["X"]])
+  expl.var = object[["prop_expl_var"]][["X"]]
+  if (is.null(batch)) {
+    batch <- batch
+  }
+  else {
+    batch <- as.factor(batch)
+  }
+  if (is.null(trt)) {
+    trt <- trt
+  }
+  else {
+    trt <- as.factor(trt)
+  }
+  if (is.null(color.set)) {
+    color.set = color.mixo(seq_len(10))
+  }
+  else {
+    color.set = color.set
+  }
+  pMain <- ggplot(data = data, aes(x = data[, 1], y = data[, 
+                                                           2], colour = batch, shape = trt)) + geom_point() + xlab(paste0("PC1: ", 
+                                                                                                                          round(as.numeric(expl.var[1]) * 100), "% expl.var")) + 
+    ylab(paste0("PC2: ", round(as.numeric(expl.var[2]) * 
+                                 100), "% expl.var")) + scale_shape_manual(values = c(1, 
+                                                                                      19, 2, 17, 4, 7)) + scale_color_manual(values = color.set) + 
+    theme_bw() + labs(colour = batch.legend.title, shape = trt.legend.title) + 
+    scale_x_continuous(limits = xlim) + scale_y_continuous(limits = ylim) + 
+    theme(legend.position = "right", legend.box = "horizontal", 
+          legend.direction = "vertical", legend.key.height = unit(0.2, 
+                                                                  "cm"), legend.key.width = unit(0.1, "cm"), legend.title = element_text(size = rel(legend.title.cex)), 
+          legend.spacing.x = unit(0.1, "cm"), legend.spacing.y = unit(0.1, 
+                                                                      "cm"), legend.text = element_text(size = rel(legend.cex)))
+  xlim.update <- layer_scales(pMain)$x$get_limits()
+  ylim.update <- layer_scales(pMain)$y$get_limits()
+  pTop <- ggplot(data = data, aes(x = data[, 1], fill = batch, 
+                                  linetype = trt)) + geom_density(size = density.lwd, 
+                                                                  alpha = 0.5) + ylab("Density") + theme(axis.title.x = element_blank(), 
+                                                                                                         axis.title.y = element_text(size = rel(0.8)), plot.title = element_text(hjust = 0.5, 
+                                                                                                                                                                                 size = rel(title.cex)), axis.line = element_blank(), 
+                                                                                                         axis.text = element_blank(), axis.ticks = element_blank(), 
+                                                                                                         panel.background = element_blank(), legend.position = "none") + 
+    scale_fill_manual(values = color.set) + scale_x_continuous(limits = xlim.update) + 
+    labs(title = title)
+  pRight <- ggplot(data = data, aes(x = data[, 2], fill = batch, 
+                                    linetype = trt)) + geom_density(size = density.lwd, 
+                                                                    alpha = 0.5) + coord_flip() + ylab("Density") + theme(axis.title.x = element_text(size = rel(0.8)), 
+                                                                                                                          axis.title.y = element_blank(), axis.line = element_blank(), 
+                                                                                                                          axis.text = element_blank(), axis.ticks = element_blank(), 
+                                                                                                                          panel.background = element_blank(), legend.position = "none") + 
+    scale_fill_manual(values = color.set) + scale_x_continuous(limits = ylim.update)
+  if (is.null(batch) && is.null(trt)) {
+    legend <- grid.rect(gp = gpar(col = "white"))
+  }
+  else {
+    legend <- ggpubr::get_legend(pMain)
+  }
+  grid.arrange(pTop, legend, pMain + theme(legend.position = "none"), 
+               pRight, ncol = 2, nrow = 2, widths = c(3, 1), heights = c(1, 
+                                                                         3))
+}
+
+
+```
+
+#load data
+```{r load data}
+
+load("~/Documents/Chapter4/BasinScale_Analysis_v2_2024/data_objects/CleanZooplanktonPhyloseqs.rdat")
+
+otutable_coi <- data.frame(phyloseq::otu_table(zoopsCOI))
+sampledata_coi <- data.frame(phyloseq::sample_data(zoopsCOI))
+taxtable_coi <- data.frame(phyloseq::tax_table(zoopsCOI))
+
+otutable_18s <- data.frame(phyloseq::otu_table(zoops18S))
+sampledata_18s <- data.frame(phyloseq::sample_data(zoops18S))
+taxtable_18s <- data.frame(phyloseq::tax_table(zoops18S))
+
+
+save(otutable_coi, sampledata_coi, taxtable_coi, otutable_18s, sampledata_18s, taxtable_18s, file = "data_objects/exporteddataforbatcheffects.rdat")
+
+```
+
+#18S first:
+##get data
+```{r}
+taxa <- otutable_18s
+batchid <- factor(sampledata_18s$Mesh)
+summary(batchid)
+
+covar <- sampledata_18s[, c('depth_bin', 'Region', 'Diel', 'StationID', 'Lat.N.', 'Lon.W.', 'MeanTemp', 'MeanOxy')]
+covar[, c('depth_bin', 'Region', 'Diel', 'StationID')] <- data.frame(lapply(covar[, c('depth_bin', 'Region', 'Diel', 'StationID')],factor))
+summary(covar)
+```
+
+##ConQuR
+```{r}
+options(warn=-1)
+taxa_corrected1 <- ConQuR(tax_tab=taxa, batchid=batchid, covariates=covar, batch_ref="100um")
+taxa_corrected2 = ConQuR(tax_tab=taxa, batchid=batchid, covariates=covar, batch_ref="100um",
+                         logistic_lasso=T, quantile_type="lasso", interplt=T)
+```
+
+##visualize
+```{r}
+par(mfrow=c(2, 3))
+Plot_PCoA(TAX=taxa, factor=batchid, main="Before Correction, Bray-Curtis")
+Plot_PCoA(TAX=taxa_corrected1, factor=batchid, main="ConQuR (Default), Bray-Curtis")
+Plot_PCoA(TAX=taxa_corrected2, factor=batchid, main="ConQuR (Penalized), Bray-Curtis")
+Plot_PCoA(TAX=taxa, factor=batchid, dissimilarity="Aitch", main="Before Correction, Aitchison")
+Plot_PCoA(TAX=taxa_corrected1, factor=batchid, dissimilarity="Aitch", main="ConQuR (Default), Aitchison")
+Plot_PCoA(TAX=taxa_corrected2, factor=batchid, dissimilarity="Aitch", main="ConQuR (Penalized), Aitchison")
+
+par(mfrow=c(2, 3))
+Plot_PCoA(TAX=taxa, factor=covar$depth_bin, main="Before Correction, Bray-Curtis")
+Plot_PCoA(TAX=taxa_corrected1, factor=covar$depth_bin, main="ConQuR (Default), Bray-Curtis")
+Plot_PCoA(TAX=taxa_corrected2, factor=covar$depth_bin, main="ConQuR (Penalized), Bray-Curtis")
+Plot_PCoA(TAX=taxa, factor=covar$depth_bin, dissimilarity="Aitch", main="Before Correction, Aitchison")
+Plot_PCoA(TAX=taxa_corrected1, factor=covar$depth_bin, dissimilarity="Aitch", main="ConQuR (Default), Aitchison")
+Plot_PCoA(TAX=taxa_corrected2, factor=covar$depth_bin, dissimilarity="Aitch", main="ConQuR (Penalized), Aitchison")
+
+par(mfrow=c(2, 3))
+Plot_PCoA(TAX=taxa, factor=covar$Region, main="Before Correction, Bray-Curtis")
+Plot_PCoA(TAX=taxa_corrected1, factor=covar$Region, main="ConQuR (Default), Bray-Curtis")
+Plot_PCoA(TAX=taxa_corrected2, factor=covar$Region, main="ConQuR (Penalized), Bray-Curtis")
+Plot_PCoA(TAX=taxa, factor=covar$Region, dissimilarity="Aitch", main="Before Correction, Aitchison")
+Plot_PCoA(TAX=taxa_corrected1, factor=covar$Region, dissimilarity="Aitch", main="ConQuR (Default), Aitchison")
+Plot_PCoA(TAX=taxa_corrected2, factor=covar$Region, dissimilarity="Aitch", main="ConQuR (Penalized), Aitchison")
+
+
+
+```
+
+## permanova
+```{r}
+PERMANOVA_R2(TAX=taxa, batchid=batchid, covariates=covar, key_index=2)
+PERMANOVA_R2(TAX=taxa_corrected1, batchid=batchid, covariates=covar, key_index=2)
+PERMANOVA_R2(TAX=taxa_corrected2, batchid=batchid, covariates=covar, key_index=2)
+
+```
+
+##save 18S
+```{r}
+corrected18sCQR <- taxa_corrected2
+
+```
+
+#COI next:
+##get data
+```{r}
+taxa <- otutable_coi
+batchid <- factor(sampledata_coi$Mesh)
+summary(batchid)
+
+covar <- sampledata_coi[, c('depth_bin', 'Region', 'Diel', 'StationID', 'Lat.N.', 'Lon.W.', 'MeanTemp', 'MeanOxy')]
+covar[, c('depth_bin', 'Region', 'Diel', 'StationID')] <- data.frame(lapply(covar[, c('depth_bin', 'Region', 'Diel', 'StationID')],factor))
+summary(covar)
+```
+
+##ConQuR
+```{r}
+options(warn=-1)
+taxa_corrected1 <- ConQuR(tax_tab=taxa, batchid=batchid, covariates=covar, batch_ref="100um")
+taxa_corrected2 = ConQuR(tax_tab=taxa, batchid=batchid, covariates=covar, batch_ref="100um",
+                         logistic_lasso=T, quantile_type="lasso", interplt=T)
+```
+
+##visualize
+```{r}
+par(mfrow=c(2, 3))
+Plot_PCoA(TAX=taxa, factor=batchid, main="Before Correction, Bray-Curtis")
+Plot_PCoA(TAX=taxa_corrected1, factor=batchid, main="ConQuR (Default), Bray-Curtis")
+Plot_PCoA(TAX=taxa_corrected2, factor=batchid, main="ConQuR (Penalized), Bray-Curtis")
+Plot_PCoA(TAX=taxa, factor=batchid, dissimilarity="Aitch", main="Before Correction, Aitchison")
+Plot_PCoA(TAX=taxa_corrected1, factor=batchid, dissimilarity="Aitch", main="ConQuR (Default), Aitchison")
+Plot_PCoA(TAX=taxa_corrected2, factor=batchid, dissimilarity="Aitch", main="ConQuR (Penalized), Aitchison")
+
+par(mfrow=c(2, 3))
+Plot_PCoA(TAX=taxa, factor=covar$depth_bin, main="Before Correction, Bray-Curtis")
+Plot_PCoA(TAX=taxa_corrected1, factor=covar$depth_bin, main="ConQuR (Default), Bray-Curtis")
+Plot_PCoA(TAX=taxa_corrected2, factor=covar$depth_bin, main="ConQuR (Penalized), Bray-Curtis")
+Plot_PCoA(TAX=taxa, factor=covar$depth_bin, dissimilarity="Aitch", main="Before Correction, Aitchison")
+Plot_PCoA(TAX=taxa_corrected1, factor=covar$depth_bin, dissimilarity="Aitch", main="ConQuR (Default), Aitchison")
+Plot_PCoA(TAX=taxa_corrected2, factor=covar$depth_bin, dissimilarity="Aitch", main="ConQuR (Penalized), Aitchison")
+
+par(mfrow=c(2, 3))
+Plot_PCoA(TAX=taxa, factor=covar$Region, main="Before Correction, Bray-Curtis")
+Plot_PCoA(TAX=taxa_corrected1, factor=covar$Region, main="ConQuR (Default), Bray-Curtis")
+Plot_PCoA(TAX=taxa_corrected2, factor=covar$Region, main="ConQuR (Penalized), Bray-Curtis")
+Plot_PCoA(TAX=taxa, factor=covar$Region, dissimilarity="Aitch", main="Before Correction, Aitchison")
+Plot_PCoA(TAX=taxa_corrected1, factor=covar$Region, dissimilarity="Aitch", main="ConQuR (Default), Aitchison")
+Plot_PCoA(TAX=taxa_corrected2, factor=covar$Region, dissimilarity="Aitch", main="ConQuR (Penalized), Aitchison")
+```
+
+## permanova
+```{r}
+PERMANOVA_R2(TAX=taxa, batchid=batchid, covariates=covar, key_index=1)
+PERMANOVA_R2(TAX=taxa_corrected1, batchid=batchid, covariates=covar, key_index=1)
+PERMANOVA_R2(TAX=taxa_corrected2, batchid=batchid, covariates=covar, key_index=1)
+
+```
+
+
+##save 18S
+```{r}
+correctedcoiCQR <- taxa_corrected2
+```
+
+```{r}
+save(correctedcoiCQR, corrected18sCQR, file = "data_objects/ConQuR-corrected_data.Rdat")
+
+```
+
+
+
+#PLSDA::
+
+```{r}
+Scatter_Density_Steph <- function (object, batch = NULL, trt = NULL, xlim = NULL, ylim = NULL, 
+          color.set = NULL, batch.legend.title = "Batch", trt.legend.title = "Treatment", 
+          density.lwd = 0.2, title = NULL, title.cex = 1.5, legend.cex = 0.7, 
+          legend.title.cex = 0.75) 
+{
+  data = as.data.frame(object[["variates"]][["X"]])
+  expl.var = object[["prop_expl_var"]][["X"]]
+  if (is.null(batch)) {
+    batch <- batch
+  }
+  else {
+    batch <- as.factor(batch)
+  }
+  if (is.null(trt)) {
+    trt <- trt
+  }
+  else {
+    trt <- as.factor(trt)
+  }
+  if (is.null(color.set)) {
+    color.set = color.mixo(seq_len(10))
+  }
+  else {
+    color.set = color.set
+  }
+  pMain <- ggplot(data = data, aes(x = data[, 1], y = data[, 
+                                                           2], colour = batch, shape = trt)) + geom_point() + xlab(paste0("PC1: ", 
+                                                                                                                          round(as.numeric(expl.var[1]) * 100), "% expl.var")) + 
+    ylab(paste0("PC2: ", round(as.numeric(expl.var[2]) * 
+                                 100), "% expl.var")) + scale_shape_manual(values = c(1, 
+                                                                                      19, 2, 17, 4, 7)) + scale_color_manual(values = color.set) + 
+    theme_bw() + labs(colour = batch.legend.title, shape = trt.legend.title) + 
+    scale_x_continuous(limits = xlim) + scale_y_continuous(limits = ylim) + 
+    theme(legend.position = "right", legend.box = "horizontal", 
+          legend.direction = "vertical", legend.key.height = unit(0.2, 
+                                                                  "cm"), legend.key.width = unit(0.1, "cm"), legend.title = element_text(size = rel(legend.title.cex)), 
+          legend.spacing.x = unit(0.1, "cm"), legend.spacing.y = unit(0.1, 
+                                                                      "cm"), legend.text = element_text(size = rel(legend.cex)))
+  xlim.update <- layer_scales(pMain)$x$get_limits()
+  ylim.update <- layer_scales(pMain)$y$get_limits()
+  pTop <- ggplot(data = data, aes(x = data[, 1], fill = batch, 
+                                  linetype = trt)) + geom_density(size = density.lwd, 
+                                                                  alpha = 0.5) + ylab("Density") + theme(axis.title.x = element_blank(), 
+                                                                                                         axis.title.y = element_text(size = rel(0.8)), plot.title = element_text(hjust = 0.5, 
+                                                                                                                                                                                 size = rel(title.cex)), axis.line = element_blank(), 
+                                                                                                         axis.text = element_blank(), axis.ticks = element_blank(), 
+                                                                                                         panel.background = element_blank(), legend.position = "none") + 
+    scale_fill_manual(values = color.set) + scale_x_continuous(limits = xlim.update) + 
+    labs(title = title)
+  pRight <- ggplot(data = data, aes(x = data[, 2], fill = batch, 
+                                    linetype = trt)) + geom_density(size = density.lwd, 
+                                                                    alpha = 0.5) + coord_flip() + ylab("Density") + theme(axis.title.x = element_text(size = rel(0.8)), 
+                                                                                                                          axis.title.y = element_blank(), axis.line = element_blank(), 
+                                                                                                                          axis.text = element_blank(), axis.ticks = element_blank(), 
+                                                                                                                          panel.background = element_blank(), legend.position = "none") + 
+    scale_fill_manual(values = color.set) + scale_x_continuous(limits = ylim.update)
+  if (is.null(batch) && is.null(trt)) {
+    legend <- grid.rect(gp = gpar(col = "white"))
+  }
+  else {
+    legend <- ggpubr::get_legend(pMain)
+  }
+  grid.arrange(pTop, legend, pMain + theme(legend.position = "none"), 
+               pRight, ncol = 2, nrow = 2, widths = c(3, 1), heights = c(1, 
+                                                                         3))
+}
+
+
+```
+
+
+```{r load data}
+
+load("~/Documents/Chapter3/BasinScale_AllSamples_v1/CleanZooplanktonPhyloseqs.rdat")
+
+otutable_coi <- data.frame(phyloseq::otu_table(zoopsCOI))
+sampledata_coi <- data.frame(phyloseq::sample_data(zoopsCOI))
+taxtable_coi <- data.frame(phyloseq::tax_table(zoopsCOI))
+
+otutable_18s <- data.frame(phyloseq::otu_table(zoops18S))
+sampledata_18s <- data.frame(phyloseq::sample_data(zoops18S))
+taxtable_18s <- data.frame(phyloseq::tax_table(zoops18S))
+
+
+save(otutable_coi, sampledata_coi, taxtable_coi, otutable_18s, sampledata_18s, taxtable_18s, file = "data_objects/exporteddataforbatcheffects.rdat")
+
+```
+
+
+We'll first try PLSDA-batch
+wPLSDA-batch and swPLSDA-batch 
+
+
+```{r}
+
+# CRAN
+cran.pkgs <- c('pheatmap', 'vegan', 'ruv', 'UpSetR', 'gplots', 
+               'ggplot2', 'gridExtra', 'performance')
+# Bioconductor
+bioc.pkgs <- c('mixOmics', 'sva', 'limma', 'Biobase', 'metagenomeSeq')
+# GitHub
+github.pkg <- 'PLSDAbatch' 
+# devtools::install_github("https://github.com/EvaYiwenWang/PLSDAbatch")
+
+#detach("package:phyloseq",unload=TRUE)
+#detach("package:vegan")
+#detach("package:mgcv")
+# load packages 
+sapply(c(cran.pkgs, bioc.pkgs, github.pkg), require, character.only = TRUE)
+
+```
+
+
+
+```{r}
+# load data
+load("data_objects/exporteddataforbatcheffects.rdat")
+
+```
+
+```{r}
+sampledata_18s$Mesh[sampledata_18s$Location.ID %in% c(31, 30, 29, 28, 27, 26, 25, 24)] <- "200um"
+sampledata_18s$Mesh[sampledata_18s$Location.ID %in% c(11, 12, 13, 32)] <- "150um"
+sampledata_18s$Mesh[sampledata_18s$Location.ID %in% c(1,2,3,4,5,6,7,8,9,10,14,15,16,17,18,19,20,21,22,23)] <- "100um"
+sampledata_coi$Mesh[sampledata_coi$Location.ID %in% c(31, 30, 29, 28, 27, 26, 25, 24)] <- "200um"
+sampledata_coi$Mesh[sampledata_coi$Location.ID %in% c(11, 12, 13, 32)] <- "150um"
+sampledata_coi$Mesh[sampledata_coi$Location.ID %in% c(1,2,3,4,5,6,7,8,9,10,14,15,16,17,18,19,20,21,22,23)] <- "100um"
+
+sampledata_18s$Region[sampledata_18s$Location.ID %in% c(25,26,27,28,29,30)] <- "CCE"
+sampledata_18s$Region[sampledata_18s$Location.ID %in% c(7,8,20,31)] <- "ENP"
+sampledata_18s$Region[sampledata_18s$Location.ID %in% c(14,15,21,22)] <- "KUR"
+sampledata_18s$Region[sampledata_18s$Location.ID %in% c(1,2,3,4,5,6,9,10,13,24)] <- "NPSG"
+sampledata_18s$Region[sampledata_18s$Location.ID %in% c(23,32)] <- "SP"
+sampledata_18s$Region[sampledata_18s$Location.ID %in% c(11,12,16,17,18,19)] <- "WWD"
+
+sampledata_coi$Region[sampledata_coi$Location.ID %in% c(25,26,27,28,29,30)] <- "CCE"
+sampledata_coi$Region[sampledata_coi$Location.ID %in% c(7,8,20,31)] <- "ENP"
+sampledata_coi$Region[sampledata_coi$Location.ID %in% c(14,15,21,22)] <- "KUR"
+sampledata_coi$Region[sampledata_coi$Location.ID %in% c(1,2,3,4,5,6,9,10,13,24)] <- "NPSG"
+sampledata_coi$Region[sampledata_coi$Location.ID %in% c(23,32)] <- "SP"
+sampledata_coi$Region[sampledata_coi$Location.ID %in% c(11,12,16,17,18,19)] <- "WWD"
+
+```
+
+##first 18s
+```{r}
+
+ad.count <- otutable_18s
+dim(ad.count)
+## [1]  75 567
+
+#The raw AD data include 567 OTUs and 75 samples. We then use the function PreFL() from our PLSDAbatch R package to filter the data.
+
+ad.filter.res <- PreFL(data = ad.count, keep.spl = 5, keep.var = 0.005)
+ad.filter <- ad.filter.res$data.filter
+dim(ad.filter)
+## [1]  75 231
+# zero proportion before filtering
+ad.filter.res$zero.prob
+## [1] 0.6328042
+# zero proportion after filtering
+sum(ad.filter == 0)/(nrow(ad.filter) * ncol(ad.filter))
+#After filtering, 363 OTUs remained, and the proportion of zeroes decreased from 91% to 78%.
+
+#we recommend adding 1 as the offset for the data that are raw count data, and 0.01 as the offset for the data that are relative abundance data. We use logratio.transfo() function in mixOmics package to CLR transform the data.
+ad.clr <- logratio.transfo(X = ad.filter, logratio = 'CLR', offset = 1) 
+class(ad.clr) = 'matrix'
+
+ad.count.clr <- logratio.transfo(X = ad.count, logratio = 'CLR', offset = 1)  
+class(ad.count.clr) = 'matrix'
+
+ad.metadata <- sampledata_18s
+ad.batch.dpth = factor(ad.metadata$Mesh, 
+                  levels = unique(ad.metadata$Mesh))
+ad.trt.dpth = as.factor(ad.metadata$depth_bin)
+names(ad.batch.dpth) <- names(ad.trt.dpth) <- rownames(ad.metadata)
+
+ad.batch.rgn = factor(ad.metadata$Mesh, 
+                  levels = unique(ad.metadata$Mesh))
+ad.trt.rgn = as.factor(ad.metadata$Region)
+names(ad.batch.rgn) <- names(ad.trt.rgn) <- rownames(ad.metadata)
+
+ad.pca.before <- pca(ad.clr, ncomp = 3, scale = TRUE)
+Scatter_Density_Steph(object = ad.pca.before, batch = ad.batch.dpth, trt = ad.trt.dpth, 
+                title = '18S', trt.legend.title = 'Depth zone', batch.legend.title = "Mesh Size", color.set = color.mixo(seq_len(5)))
+
+Scatter_Density_Steph(object = ad.pca.before, batch = ad.batch.rgn, trt = ad.trt.rgn, 
+                title = '18S', trt.legend.title = 'Region', batch.legend.title = "Mesh Size", color.set = color.mixo(seq_len(9)))
+```
+
+
+```{r how does the first otu vary across batches?}
+ad.OTU.name <- selectVar(ad.pca.before, comp = 1)$name[1]
+ad.OTU_batch <- data.frame(value = ad.clr[,ad.OTU.name], batch = ad.batch.dpth)
+box_plot(df = ad.OTU_batch, title = paste(ad.OTU.name, '(18S, depth)'), 
+         x.angle = 30)
+density_plot(df = ad.OTU_batch, title = paste(ad.OTU.name, '(18S)'))
+
+ad.OTU.name <- selectVar(ad.pca.before, comp = 1)$name[1]
+ad.OTU_batch <- data.frame(value = ad.clr[,ad.OTU.name], batch = ad.batch.rgn)
+box_plot(df = ad.OTU_batch, title = paste(ad.OTU.name, '(18S)'), 
+         x.angle = 30)
+density_plot(df = ad.OTU_batch, title = paste(ad.OTU.name, '(18S)'))
+```
+
+
+```{r test for significant differences if we use different reference batchs}
+# reference batch: 200um
+ad.batch <- relevel(x = ad.batch.dpth, ref = '200um')
+ad.OTU.lm <- linear_regres(data = ad.clr[,ad.OTU.name], 
+                           trt = ad.trt.dpth, batch.fix = ad.batch.dpth, 
+                           type = 'linear model')
+summary(ad.OTU.lm$model$data)
+
+
+# reference batch: 150um
+ad.batch <- relevel(x = ad.batch.dpth, ref = '150um')
+ad.OTU.lm <- linear_regres(data = ad.clr[,ad.OTU.name], 
+                           trt = ad.trt.dpth, batch.fix = ad.batch.dpth, 
+                           type = 'linear model')
+summary(ad.OTU.lm$model$data)
+#there do appear to be significant differences
+
+#again with region as treatment
+# reference batch: 200um
+ad.batch <- relevel(x = ad.batch.rgn, ref = '200um')
+ad.OTU.lm <- linear_regres(data = ad.clr[,ad.OTU.name], 
+                           trt = ad.trt.rgn, batch.fix = ad.batch.rgn, 
+                           type = 'linear model')
+summary(ad.OTU.lm$model$data)
+
+
+# reference batch: 150um
+ad.batch <- relevel(x = ad.batch.rgn, ref = '150um')
+ad.OTU.lm <- linear_regres(data = ad.clr[,ad.OTU.name], 
+                           trt = ad.trt.rgn, batch.fix = ad.batch.rgn, 
+                           type = 'linear model')
+summary(ad.OTU.lm$model$data)
+```
+
+
+```{r let's make a heatmap...}
+# scale the clr data on both OTUs and samples
+ad.clr.s <- scale(ad.clr, center = TRUE, scale = TRUE)
+ad.clr.ss <- scale(t(ad.clr.s), center = TRUE, scale = TRUE)
+
+ad.anno_col <- data.frame(Batch = ad.batch.dpth, Treatment = ad.trt.dpth)
+ad.anno_colors <- list(Batch = color.mixo(seq_len(3)), 
+                       Treatment = pb_color(seq_len(3)))
+names(ad.anno_colors$Batch) = levels(ad.batch.dpth)
+names(ad.anno_colors$Treatment) = levels(ad.trt.dpth)
+pheatmap(ad.clr.ss, 
+         cluster_rows = FALSE, 
+         fontsize_row = 4, 
+         fontsize_col = 6,
+         fontsize = 8,
+         clustering_distance_rows = 'euclidean',
+         clustering_method = 'ward.D',
+         treeheight_row = 30,
+         annotation_col = ad.anno_col,
+         annotation_colors = ad.anno_colors,
+         border_color = 'NA',
+         main = '18S data - Scaled, depth')
+
+
+ad.anno_col <- data.frame(Batch = ad.batch.rgn, Treatment = ad.trt.rgn)
+ad.anno_colors <- list(Batch = color.mixo(seq_len(3)), 
+                       Treatment = pb_color(seq_len(6)))
+names(ad.anno_colors$Batch) = levels(ad.batch.rgn)
+names(ad.anno_colors$Treatment) = levels(ad.trt.rgn)
+pheatmap(ad.clr.ss, 
+         cluster_rows = FALSE, 
+         fontsize_row = 4, 
+         fontsize_col = 6,
+         fontsize = 8,
+         clustering_distance_rows = 'euclidean',
+         clustering_method = 'ward.D',
+         treeheight_row = 30,
+         annotation_col = ad.anno_col,
+         annotation_colors = ad.anno_colors,
+         border_color = 'NA',
+         main = '18S data - Scaled, region')
+```
+
+accounting for batch effects - detection
+```{r}
+
+# Creating a MRexperiment object (make sure no NA in metadata)
+AD.phenotypeData = AnnotatedDataFrame(data = sampledata_18s)
+AD.taxaData = AnnotatedDataFrame(data = taxtable_18s)
+assadata18S <- t(otutable_18s)
+rownames(assadata18S) <- rownames(taxtable_18s)
+AD.obj = newMRexperiment(counts = assadata18S, 
+                         phenoData = AD.phenotypeData, 
+                         featureData = AD.taxaData)
+AD.obj
+
+
+# filtering data to maintain a threshold of minimum depth or OTU presence
+dim(MRcounts(AD.obj))
+## [1] 567  75
+AD.obj = filterData(obj = AD.obj, present = 20, depth = 5)
+dim(MRcounts(AD.obj))
+## [1] 289  75
+
+# calculate the percentile for CSS normalisation
+AD.pctl = cumNormStatFast(obj = AD.obj)
+# CSS normalisation
+AD.obj <- cumNorm(obj = AD.obj, p = AD.pctl)
+# export normalised data
+AD.norm.data <- MRcounts(obj = AD.obj, norm = TRUE)
+
+# normalisation scaling factors for each sample 
+AD.normFactor = normFactors(object = AD.obj)
+AD.normFactor = log2(AD.normFactor/median(AD.normFactor) + 1)
+
+# treatment variable
+phenol_conc = pData(object = AD.obj)$depthbin
+# batch variable
+seq_run = pData(object = AD.obj)$Mesh
+
+# build a design matrix
+AD.mod.full = model.matrix(~ phenol_conc + seq_run + AD.normFactor)
+
+# settings for the fitZig() function
+AD.settings <- zigControl(maxit = 10, verbose = TRUE)
+
+# apply the ZIG model
+ADfit <- fitZig(obj = AD.obj, mod = AD.mod.full, 
+                useCSSoffset = FALSE, control = AD.settings)
+ADcoefs <- MRcoefs(ADfit, coef = 2, group = 3, number = 50, eff = 0.5)
+head(ADcoefs)
+
+## try linear models
+ad.clr <- ad.clr[seq_len(nrow(ad.clr)), seq_len(ncol(ad.clr))]
+ad.lm <- linear_regres(data = ad.clr, trt = ad.trt.dpth, 
+                       batch.fix = ad.batch.dpth, type = 'linear model')
+
+ad.p <- sapply(ad.lm$lm.table, function(x){x$coefficients[2,4]})
+ad.p.adj <- p.adjust(p = ad.p, method = 'fdr')
+
+check_model(ad.lm$model$dcbc2fcc6a1fdcfc0d6f6793002394c8)
+```
+
+#correct for batch effects using sPLSDA-batch
+
+```{r}
+# estimate the number of variables to select per treatment component - with depth
+set.seed(777)
+ad.test.keepX = c(seq(1, 10, 1), seq(20, 100, 10), 
+                  seq(150, 231, 50), 231)
+ad.trt.tune.v <- tune.splsda(X = ad.clr, Y = ad.trt.dpth, 
+                             ncomp = 1, test.keepX = ad.test.keepX, 
+                             validation = 'Mfold', folds = 4, 
+                             nrepeat = 50)
+ad.trt.tune.v$choice.keepX #100
+# estimate the number of batch components
+ad.batch.tune <- PLSDA_batch(X = ad.clr, 
+                             Y.trt = ad.trt.dpth, Y.bat = ad.batch.dpth,
+                             ncomp.trt = 1, keepX.trt = 40,
+                             ncomp.bat = 10)
+ad.batch.tune$explained_variance.bat #4
+sum(ad.batch.tune$explained_variance.bat$Y[seq_len(2)])
+#According to the result, we needed 2 batch related components to remove batch variance from the data with function PLSDA_batch().
+
+ad.sPLSDA_batch.res <- PLSDA_batch(X = ad.clr, 
+                                   Y.trt = ad.trt.dpth, Y.bat = ad.batch.dpth,
+                                   ncomp.trt = 1, keepX.trt = 40,
+                                   ncomp.bat = 2, 
+                                   balance = FALSE)
+ad.sPLSDA_batch_depth <- ad.sPLSDA_batch.res$X.nobatch
+
+Depth_18S_corrected_for_mesh <- ad.sPLSDA_batch_depth
+
+# estimate the number of variables to select per treatment component
+set.seed(777)
+ad.test.keepX = c(seq(1, 10, 1), seq(20, 100, 10), 
+                  seq(150, 231, 50), 231)
+ad.trt.tune.v <- tune.splsda(X = ad.clr, Y = ad.trt.rgn, 
+                             ncomp = 1, test.keepX = ad.test.keepX, 
+                             validation = 'Mfold', folds = 4, 
+                             nrepeat = 50)
+ad.trt.tune.v$choice.keepX #100
+# estimate the number of batch components
+ad.batch.tune <- PLSDA_batch(X = ad.clr, 
+                             Y.trt = ad.trt.rgn, Y.bat = ad.batch.rgn,
+                             ncomp.trt = 1, keepX.trt = 150,
+                             ncomp.bat = 10)
+ad.batch.tune$explained_variance.bat #4
+sum(ad.batch.tune$explained_variance.bat$Y[seq_len(2)])
+#According to the result, we needed 2 batch related components to remove batch variance from the data with function PLSDA_batch().
+
+ad.sPLSDA_batch.res <- PLSDA_batch(X = ad.clr, 
+                                   Y.trt = ad.trt.rgn, Y.bat = ad.batch.rgn,
+                                   ncomp.trt = 1, keepX.trt = 150,
+                                   ncomp.bat = 2, 
+                                   balance = FALSE)
+ad.sPLSDA_batch_region <- ad.sPLSDA_batch.res$X.nobatch
+
+Region_18S_corrected_for_mesh <- ad.sPLSDA_batch_region
+
+```
+
+
+
+```{r}
+
+ad.pca.before <- pca(ad.clr, ncomp = 3, scale = TRUE)
+ad.pca.sPLSDA_batch_depth <- pca(ad.sPLSDA_batch_depth, ncomp = 3, scale = TRUE)
+ad.pca.sPLSDA_batch_region <- pca(ad.sPLSDA_batch_region, ncomp = 3, scale = TRUE)
+
+
+# order batches
+ad.batch = factor(ad.metadata$Mesh, 
+                  levels = unique(ad.metadata$Mesh))
+
+ad.pca.before.plot_depth <- Scatter_Density(object = ad.pca.before, 
+                                      batch = ad.batch.dpth, 
+                                      trt = ad.trt.dpth, 
+                                      title = 'Before correction')
+ad.pca.sPLSDA_batch_depth.plot <- Scatter_Density(object = ad.pca.sPLSDA_batch_depth, 
+                                            batch = ad.batch.dpth, 
+                                            trt = ad.trt.dpth, 
+                                            title = 'sPLSDA-batch, Depth treatment')
+ad.pca.before.plot_region <- Scatter_Density_Steph(object = ad.pca.before, 
+                                      batch = ad.batch.rgn, 
+                                      trt = ad.trt.rgn, 
+                                      title = 'Before correction')
+ad.pca.sPLSDA_batch_region.plot <- Scatter_Density_Steph(object = ad.pca.sPLSDA_batch_region, 
+                                            batch = ad.batch.rgn, 
+                                            trt = ad.trt.rgn, 
+                                            title = 'sPLSDA-batch, Region treatment')
+ggpubr::ggarrange(ad.pca.before.plot_depth, ad.pca.before.plot_region, ad.pca.sPLSDA_batch_depth.plot, ad.pca.sPLSDA_batch_region.plot)
+```
+
+## now for coi
+
+```{r}
+
+ad.count <- otutable_coi
+dim(ad.count)
+## [1]  75 567
+
+#The raw AD data include 567 OTUs and 75 samples. We then use the function PreFL() from our PLSDAbatch R package to filter the data.
+
+ad.filter.res <- PreFL(data = ad.count, keep.spl = 5, keep.var = 0.005)
+ad.filter <- ad.filter.res$data.filter
+dim(ad.filter)
+## [1]  75 231
+# zero proportion before filtering
+ad.filter.res$zero.prob
+## [1] 0.6328042
+# zero proportion after filtering
+sum(ad.filter == 0)/(nrow(ad.filter) * ncol(ad.filter))
+#After filtering, 363 OTUs remained, and the proportion of zeroes decreased from 91% to 78%.
+
+#we recommend adding 1 as the offset for the data that are raw count data, and 0.01 as the offset for the data that are relative abundance data. We use logratio.transfo() function in mixOmics package to CLR transform the data.
+ad.clr <- logratio.transfo(X = ad.filter, logratio = 'CLR', offset = 1) 
+class(ad.clr) = 'matrix'
+
+ad.count.clr <- logratio.transfo(X = ad.count, logratio = 'CLR', offset = 1)  
+class(ad.count.clr) = 'matrix'
+
+ad.metadata <- sampledata_coi
+ad.batch.dpth = factor(ad.metadata$Mesh, 
+                  levels = unique(ad.metadata$Mesh))
+ad.trt.dpth = as.factor(ad.metadata$depth_bin)
+names(ad.batch.dpth) <- names(ad.trt.dpth) <- rownames(ad.metadata)
+
+ad.batch.rgn = factor(ad.metadata$Mesh, 
+                  levels = unique(ad.metadata$Mesh))
+ad.trt.rgn = as.factor(ad.metadata$Region)
+names(ad.batch.rgn) <- names(ad.trt.rgn) <- rownames(ad.metadata)
+
+ad.pca.before <- pca(ad.clr, ncomp = 3, scale = TRUE)
+Scatter_Density_Steph(object = ad.pca.before, batch = ad.batch.dpth, trt = ad.trt.dpth, 
+                title = 'COI', trt.legend.title = 'Depth zone', batch.legend.title = "Mesh Size", color.set = color.mixo(seq_len(5)))
+
+Scatter_Density_Steph(object = ad.pca.before, batch = ad.batch.rgn, trt = ad.trt.rgn, 
+                title = 'COI', trt.legend.title = 'Region', batch.legend.title = "Mesh Size", color.set = color.mixo(seq_len(9)))
+```
+
+
+```{r how does the first otu vary across batches?}
+ad.OTU.name <- selectVar(ad.pca.before, comp = 1)$name[1]
+ad.OTU_batch <- data.frame(value = ad.clr[,ad.OTU.name], batch = ad.batch.dpth)
+box_plot(df = ad.OTU_batch, title = paste(ad.OTU.name, '(COI, depth)'), 
+         x.angle = 30)
+density_plot(df = ad.OTU_batch, title = paste(ad.OTU.name, '(COI)'))
+
+ad.OTU.name <- selectVar(ad.pca.before, comp = 1)$name[1]
+ad.OTU_batch <- data.frame(value = ad.clr[,ad.OTU.name], batch = ad.batch.rgn)
+box_plot(df = ad.OTU_batch, title = paste(ad.OTU.name, '(COI, region)'), 
+         x.angle = 30)
+density_plot(df = ad.OTU_batch, title = paste(ad.OTU.name, '(18S)'))
+```
+
+
+```{r test for significant differences if we use different reference batchs}
+# reference batch: 200um
+ad.batch <- relevel(x = ad.batch.dpth, ref = '200um')
+ad.OTU.lm <- linear_regres(data = ad.clr[,ad.OTU.name], 
+                           trt = ad.trt.dpth, batch.fix = ad.batch.dpth, 
+                           type = 'linear model')
+summary(ad.OTU.lm$model$data)
+
+
+# reference batch: 150um
+ad.batch <- relevel(x = ad.batch.dpth, ref = '150um')
+ad.OTU.lm <- linear_regres(data = ad.clr[,ad.OTU.name], 
+                           trt = ad.trt.dpth, batch.fix = ad.batch.dpth, 
+                           type = 'linear model')
+summary(ad.OTU.lm$model$data)
+#there do appear to be significant differences
+
+#again with region as treatment
+# reference batch: 200um
+ad.batch <- relevel(x = ad.batch.rgn, ref = '200um')
+ad.OTU.lm <- linear_regres(data = ad.clr[,ad.OTU.name], 
+                           trt = ad.trt.rgn, batch.fix = ad.batch.rgn, 
+                           type = 'linear model')
+summary(ad.OTU.lm$model$data)
+
+
+# reference batch: 150um
+ad.batch <- relevel(x = ad.batch.rgn, ref = '150um')
+ad.OTU.lm <- linear_regres(data = ad.clr[,ad.OTU.name], 
+                           trt = ad.trt.rgn, batch.fix = ad.batch.rgn, 
+                           type = 'linear model')
+summary(ad.OTU.lm$model$data)
+```
+
+
+```{r let's make a heatmap...}
+# scale the clr data on both OTUs and samples
+ad.clr.s <- scale(ad.clr, center = TRUE, scale = TRUE)
+ad.clr.ss <- scale(t(ad.clr.s), center = TRUE, scale = TRUE)
+
+ad.anno_col <- data.frame(Batch = ad.batch.dpth, Treatment = ad.trt.dpth)
+ad.anno_colors <- list(Batch = color.mixo(seq_len(3)), 
+                       Treatment = pb_color(seq_len(3)))
+names(ad.anno_colors$Batch) = levels(ad.batch.dpth)
+names(ad.anno_colors$Treatment) = levels(ad.trt.dpth)
+pheatmap(ad.clr.ss, 
+         cluster_rows = FALSE, 
+         fontsize_row = 4, 
+         fontsize_col = 6,
+         fontsize = 8,
+         clustering_distance_rows = 'euclidean',
+         clustering_method = 'ward.D',
+         treeheight_row = 30,
+         annotation_col = ad.anno_col,
+         annotation_colors = ad.anno_colors,
+         border_color = 'NA',
+         main = '18S data - Scaled, depth')
+
+
+ad.anno_col <- data.frame(Batch = ad.batch.rgn, Treatment = ad.trt.rgn)
+ad.anno_colors <- list(Batch = color.mixo(seq_len(3)), 
+                       Treatment = pb_color(seq_len(6)))
+names(ad.anno_colors$Batch) = levels(ad.batch.rgn)
+names(ad.anno_colors$Treatment) = levels(ad.trt.rgn)
+pheatmap(ad.clr.ss, 
+         cluster_rows = FALSE, 
+         fontsize_row = 4, 
+         fontsize_col = 6,
+         fontsize = 8,
+         clustering_distance_rows = 'euclidean',
+         clustering_method = 'ward.D',
+         treeheight_row = 30,
+         annotation_col = ad.anno_col,
+         annotation_colors = ad.anno_colors,
+         border_color = 'NA',
+         main = '18S data - Scaled, region')
+```
+
+accounting for batch effects - detection
+```{r}
+
+# Creating a MRexperiment object (make sure no NA in metadata)
+AD.phenotypeData = AnnotatedDataFrame(data = sampledata_18s)
+AD.taxaData = AnnotatedDataFrame(data = taxtable_18s)
+assadata18S <- t(otutable_18s)
+rownames(assadata18S) <- rownames(taxtable_18s)
+AD.obj = newMRexperiment(counts = assadata18S, 
+                         phenoData = AD.phenotypeData, 
+                         featureData = AD.taxaData)
+AD.obj
+
+
+# filtering data to maintain a threshold of minimum depth or OTU presence
+dim(MRcounts(AD.obj))
+## [1] 567  75
+AD.obj = filterData(obj = AD.obj, present = 20, depth = 5)
+dim(MRcounts(AD.obj))
+## [1] 289  75
+
+# calculate the percentile for CSS normalisation
+AD.pctl = cumNormStatFast(obj = AD.obj)
+# CSS normalisation
+AD.obj <- cumNorm(obj = AD.obj, p = AD.pctl)
+# export normalised data
+AD.norm.data <- MRcounts(obj = AD.obj, norm = TRUE)
+
+# normalisation scaling factors for each sample 
+AD.normFactor = normFactors(object = AD.obj)
+AD.normFactor = log2(AD.normFactor/median(AD.normFactor) + 1)
+
+# treatment variable
+phenol_conc = pData(object = AD.obj)$depthbin
+# batch variable
+seq_run = pData(object = AD.obj)$Mesh
+
+# build a design matrix
+AD.mod.full = model.matrix(~ phenol_conc + seq_run + AD.normFactor)
+
+# settings for the fitZig() function
+AD.settings <- zigControl(maxit = 10, verbose = TRUE)
+
+# apply the ZIG model
+ADfit <- fitZig(obj = AD.obj, mod = AD.mod.full, 
+                useCSSoffset = FALSE, control = AD.settings)
+ADcoefs <- MRcoefs(ADfit, coef = 2, group = 3, number = 50, eff = 0.5)
+head(ADcoefs)
+
+## try linear models
+ad.clr <- ad.clr[seq_len(nrow(ad.clr)), seq_len(ncol(ad.clr))]
+ad.lm <- linear_regres(data = ad.clr, trt = ad.trt.dpth, 
+                       batch.fix = ad.batch.dpth, type = 'linear model')
+
+ad.p <- sapply(ad.lm$lm.table, function(x){x$coefficients[2,4]})
+ad.p.adj <- p.adjust(p = ad.p, method = 'fdr')
+
+#check_model(ad.lm$model$ff37a250573bd4d3c9f31100ba7bbcad)
+```
+
+#correct for batch effects using sPLSDA-batch
+
+```{r}
+# estimate the number of variables to select per treatment component - with depth
+set.seed(777)
+ad.test.keepX = c(seq(1, 10, 1), seq(20, 100, 10), 
+                  seq(150, 231, 50), 231)
+ad.trt.tune.v <- tune.splsda(X = ad.clr, Y = ad.trt.dpth, 
+                             ncomp = 1, test.keepX = ad.test.keepX, 
+                             validation = 'Mfold', folds = 4, 
+                             nrepeat = 50)
+ad.trt.tune.v$choice.keepX #100
+# estimate the number of batch components
+ad.batch.tune <- PLSDA_batch(X = ad.clr, 
+                             Y.trt = ad.trt.dpth, Y.bat = ad.batch.dpth,
+                             ncomp.trt = 1, keepX.trt = 231,
+                             ncomp.bat = 10)
+ad.batch.tune$explained_variance.bat #4
+sum(ad.batch.tune$explained_variance.bat$Y[seq_len(2)])
+#According to the result, we needed 2 batch related components to remove batch variance from the data with function PLSDA_batch().
+
+ad.sPLSDA_batch.res <- PLSDA_batch(X = ad.clr, 
+                                   Y.trt = ad.trt.dpth, Y.bat = ad.batch.dpth,
+                                   ncomp.trt = 1, keepX.trt = 231,
+                                   ncomp.bat = 2, 
+                                   balance = FALSE)
+ad.sPLSDA_batch_depth <- ad.sPLSDA_batch.res$X.nobatch
+
+Depth_COI_corrected_for_mesh <- ad.sPLSDA_batch_depth
+
+# estimate the number of variables to select per treatment component
+set.seed(777)
+ad.test.keepX = c(seq(1, 10, 1), seq(20, 100, 10), 
+                  seq(150, 231, 50), 231)
+ad.trt.tune.v <- tune.splsda(X = ad.clr, Y = ad.trt.rgn, 
+                             ncomp = 1, test.keepX = ad.test.keepX, 
+                             validation = 'Mfold', folds = 4, 
+                             nrepeat = 50)
+ad.trt.tune.v$choice.keepX #100
+# estimate the number of batch components
+ad.batch.tune <- PLSDA_batch(X = ad.clr, 
+                             Y.trt = ad.trt.rgn, Y.bat = ad.batch.rgn,
+                             ncomp.trt = 1, keepX.trt = 4,
+                             ncomp.bat = 10)
+ad.batch.tune$explained_variance.bat #4
+sum(ad.batch.tune$explained_variance.bat$Y[seq_len(2)])
+#According to the result, we needed 2 batch related components to remove batch variance from the data with function PLSDA_batch().
+
+ad.sPLSDA_batch.res <- PLSDA_batch(X = ad.clr, 
+                                   Y.trt = ad.trt.rgn, Y.bat = ad.batch.rgn,
+                                   ncomp.trt = 1, keepX.trt = 4,
+                                   ncomp.bat = 2, 
+                                   balance = FALSE)
+ad.sPLSDA_batch_region <- ad.sPLSDA_batch.res$X.nobatch
+
+Region_COI_corrected_for_mesh <- ad.sPLSDA_batch_region
+
+```
+
+
+
+```{r}
+
+ad.pca.before <- pca(ad.clr, ncomp = 3, scale = TRUE)
+ad.pca.sPLSDA_batch_depth <- pca(ad.sPLSDA_batch_depth, ncomp = 3, scale = TRUE)
+ad.pca.sPLSDA_batch_region <- pca(ad.sPLSDA_batch_region, ncomp = 3, scale = TRUE)
+
+
+# order batches
+ad.batch = factor(ad.metadata$Mesh, 
+                  levels = unique(ad.metadata$Mesh))
+
+ad.pca.before.plot_depth <- Scatter_Density(object = ad.pca.before, 
+                                      batch = ad.batch.dpth, 
+                                      trt = ad.trt.dpth, 
+                                      title = 'Before correction')
+ad.pca.sPLSDA_batch_depth.plot <- Scatter_Density(object = ad.pca.sPLSDA_batch_depth, 
+                                            batch = ad.batch.dpth, 
+                                            trt = ad.trt.dpth, 
+                                            title = 'sPLSDA-batch, Depth treatment')
+ad.pca.before.plot_region <- Scatter_Density_Steph(object = ad.pca.before, 
+                                      batch = ad.batch.rgn, 
+                                      trt = ad.trt.rgn, 
+                                      title = 'Before correction')
+ad.pca.sPLSDA_batch_region.plot <- Scatter_Density_Steph(object = ad.pca.sPLSDA_batch_region, 
+                                            batch = ad.batch.rgn, 
+                                            trt = ad.trt.rgn, 
+                                            title = 'sPLSDA-batch, Region treatment')
+ggpubr::ggarrange(ad.pca.before.plot_depth, ad.pca.before.plot_region, ad.pca.sPLSDA_batch_depth.plot, ad.pca.sPLSDA_batch_region.plot)
+```
+
+
+```{r}
+save(Depth_COI_corrected_for_mesh, Depth_18S_corrected_for_mesh, Region_COI_corrected_for_mesh, Region_18S_corrected_for_mesh, file = "data_objects/PLSDA-corrected_data")
+
+```
+
+
+
+
+```{r}
+load("data_objects/ConQuR-corrected_data.Rdat")
+load("CleanZooplanktonPhyloseqs.rdat")
+load("data_objects/PLSDA-corrected_data")
+
+otutable_coi_raw <- data.frame(phyloseq::otu_table(rarefy_even_depth(zoopsCOI)))
+sampledata_coi <- data.frame(phyloseq::sample_data(rarefy_even_depth(zoopsCOI)))
+
+otutable_18s_raw <- data.frame(phyloseq::otu_table(rarefy_even_depth(zoops18S)))
+sampledata_18s <- data.frame(phyloseq::sample_data(rarefy_even_depth(zoops18S)))
+
+
+otutable_coi_ConQuR <- correctedcoiCQR
+otutable_18s_ConQuR <- corrected18sCQR
+
+otutable_coi_PLSDA <- Depth_COI_corrected_for_mesh
+otutable_18s_PLSDA <- Depth_18S_corrected_for_mesh
+
+
+```
+
+
+```{r}
+Scatter_Density_Steph <- function (object, batch = NULL, trt = NULL, xlim = NULL, ylim = NULL, 
+                                   color.set = NULL, batch.legend.title = "Batch", trt.legend.title = "Treatment", 
+                                   density.lwd = 0.2, title = NULL, title.cex = 1.5, legend.cex = 0.7, 
+                                   legend.title.cex = 0.75) 
+{
+  data = as.data.frame(object[["variates"]][["X"]])
+  expl.var = object[["prop_expl_var"]][["X"]]
+  if (is.null(batch)) {
+    batch <- batch
+  }
+  else {
+    batch <- as.factor(batch)
+  }
+  if (is.null(trt)) {
+    trt <- trt
+  }
+  else {
+    trt <- as.factor(trt)
+  }
+  if (is.null(color.set)) {
+    color.set = color.mixo(seq_len(10))
+  }
+  else {
+    color.set = color.set
+  }
+  pMain <- ggplot(data = data, aes(x = data[, 1], y = data[, 
+                                                           2], colour = batch, shape = trt)) + geom_point() + xlab(paste0("PC1: ", 
+                                                                                                                          round(as.numeric(expl.var[1]) * 100), "% expl.var")) + 
+    ylab(paste0("PC2: ", round(as.numeric(expl.var[2]) * 
+                                 100), "% expl.var")) + scale_shape_manual(values = c(1, 
+                                                                                      19, 2, 17, 4, 7)) + scale_color_manual(values = color.set) + 
+    theme_bw() + labs(colour = batch.legend.title, shape = trt.legend.title) + 
+    scale_x_continuous(limits = xlim) + scale_y_continuous(limits = ylim) + 
+    theme(legend.position = "right", legend.box = "horizontal", 
+          legend.direction = "vertical", legend.key.height = unit(0.2, 
+                                                                  "cm"), legend.key.width = unit(0.1, "cm"), legend.title = element_text(size = rel(legend.title.cex)), 
+          legend.spacing.x = unit(0.1, "cm"), legend.spacing.y = unit(0.1, 
+                                                                      "cm"), legend.text = element_text(size = rel(legend.cex)))
+  xlim.update <- layer_scales(pMain)$x$get_limits()
+  ylim.update <- layer_scales(pMain)$y$get_limits()
+  pTop <- ggplot(data = data, aes(x = data[, 1], fill = batch, 
+                                  linetype = trt)) + geom_density(size = density.lwd, 
+                                                                  alpha = 0.5) + ylab("Density") + theme(axis.title.x = element_blank(), 
+                                                                                                         axis.title.y = element_text(size = rel(0.8)), plot.title = element_text(hjust = 0.5, 
+                                                                                                                                                                                 size = rel(title.cex)), axis.line = element_blank(), 
+                                                                                                         axis.text = element_blank(), axis.ticks = element_blank(), 
+                                                                                                         panel.background = element_blank(), legend.position = "none") + 
+    scale_fill_manual(values = color.set) + scale_x_continuous(limits = xlim.update) + 
+    labs(title = title)
+  pRight <- ggplot(data = data, aes(x = data[, 2], fill = batch, 
+                                    linetype = trt)) + geom_density(size = density.lwd, 
+                                                                    alpha = 0.5) + coord_flip() + ylab("Density") + theme(axis.title.x = element_text(size = rel(0.8)), 
+                                                                                                                          axis.title.y = element_blank(), axis.line = element_blank(), 
+                                                                                                                          axis.text = element_blank(), axis.ticks = element_blank(), 
+                                                                                                                          panel.background = element_blank(), legend.position = "none") + 
+    scale_fill_manual(values = color.set) + scale_x_continuous(limits = ylim.update)
+  if (is.null(batch) && is.null(trt)) {
+    legend <- grid.rect(gp = gpar(col = "white"))
+  }
+  else {
+    legend <- ggpubr::get_legend(pMain)
+  }
+  grid.arrange(pTop, legend, pMain + theme(legend.position = "none"), 
+               pRight, ncol = 2, nrow = 2, widths = c(3, 1), heights = c(1, 
+                                                                         3))
+}
+
+Scatter_Density_Steph_nolegend <- function (object, batch = NULL, trt = NULL, xlim = NULL, ylim = NULL, 
+                                            color.set = NULL, batch.legend.title = "Batch", trt.legend.title = "Treatment", 
+                                            density.lwd = 0.2, title = NULL, title.cex = 1.5, legend.cex = 0.7, 
+                                            legend.title.cex = 0.75) 
+{
+  data = as.data.frame(object[["variates"]][["X"]])
+  expl.var = object[["prop_expl_var"]][["X"]]
+  if (is.null(batch)) {
+    batch <- batch
+  }
+  else {
+    batch <- as.factor(batch)
+  }
+  if (is.null(trt)) {
+    trt <- trt
+  }
+  else {
+    trt <- as.factor(trt)
+  }
+  if (is.null(color.set)) {
+    color.set = color.mixo(seq_len(10))
+  }
+  else {
+    color.set = color.set
+  }
+  pMain <- ggplot(data = data, aes(x = data[, 1], y = data[, 
+                                                           2], colour = batch, shape = trt)) + geom_point() + xlab(paste0("PC1: ", 
+                                                                                                                          round(as.numeric(expl.var[1]) * 100), "%")) + 
+    ylab(paste0("PC2: ", round(as.numeric(expl.var[2]) * 
+                                 100), "%")) + scale_shape_manual(values = c(1, 
+                                                                                      19, 2, 17, 4, 7)) + scale_color_manual(values = color.set) + 
+    theme_bw() + labs(colour = batch.legend.title, shape = trt.legend.title) + 
+    scale_x_continuous(limits = xlim) + scale_y_continuous(limits = ylim) + 
+    theme(legend.position = "right", legend.box = "horizontal", 
+          legend.direction = "vertical", legend.key.height = unit(0.2, 
+                                                                  "cm"), legend.key.width = unit(0.1, "cm"), legend.title = element_text(size = rel(legend.title.cex)), 
+          legend.spacing.x = unit(0.1, "cm"), legend.spacing.y = unit(0.1, 
+                                                                      "cm"), legend.text = element_text(size = rel(legend.cex)))
+  xlim.update <- layer_scales(pMain)$x$get_limits()
+  ylim.update <- layer_scales(pMain)$y$get_limits()
+  pTop <- ggplot(data = data, aes(x = data[, 1], fill = batch, 
+                                  linetype = trt)) + geom_density(size = density.lwd, 
+                                                                  alpha = 0.5) + ylab("Density") + theme(axis.title.x = element_blank(), 
+                                                                                                         axis.title.y = element_text(size = rel(0.8)), plot.title = element_text(hjust = 0.5, 
+                                                                                                                                                                                 size = rel(1.1)), axis.line = element_blank(), 
+                                                                                                         axis.text = element_blank(), axis.ticks = element_blank(), 
+                                                                                                         panel.background = element_blank(), legend.position = "none") + 
+    scale_fill_manual(values = color.set) + scale_x_continuous(limits = xlim.update) + 
+    labs(title = title)
+  pRight <- ggplot(data = data, aes(x = data[, 2], fill = batch, 
+                                    linetype = trt)) + geom_density(size = density.lwd, 
+                                                                    alpha = 0.5) + coord_flip() + ylab("Density") + theme(axis.title.x = element_text(size = rel(0.8)), 
+                                                                                                                          axis.title.y = element_blank(), axis.line = element_blank(), 
+                                                                                                                          axis.text = element_blank(), axis.ticks = element_blank(), 
+                                                                                                                          panel.background = element_blank(), legend.position = "none") + 
+    scale_fill_manual(values = color.set) + scale_x_continuous(limits = ylim.update)
+  if (is.null(batch) && is.null(trt)) {
+    legend <- grid.rect(gp = gpar(col = "white"))
+  }
+  else {
+    legend <- ggpubr::get_legend(pMain)
+  }
+  blank <- grid.rect(gp=gpar(col="white"))
+  Pmainwithoutleg <- pMain + theme(legend.position = "none")
+library(patchwork)  
+  pTop + plot_spacer() + Pmainwithoutleg + pRight + plot_layout(ncol = 2, widths = c(3,1), heights = c(1,2.5))
+}
+
+```
+
+#18S raw
+```{r}
+
+ad.count <- otutable_18s_raw
+dim(ad.count)
+ad.filter.res <- PreFL(data = ad.count, keep.spl = 10, keep.var = 0.01)
+ad.filter <- ad.filter.res$data.filter
+dim(ad.filter)
+# zero proportion before filtering
+ad.filter.res$zero.prob
+# zero proportion after filtering
+sum(ad.filter == 0)/(nrow(ad.filter) * ncol(ad.filter))
+#we recommend adding 1 as the offset for the data that are raw count data, and 0.01 as the offset for the data that are relative abundance data. We use logratio.transfo() function in mixOmics package to CLR transform the data.
+ad.clr <- logratio.transfo(X = ad.filter, logratio = 'CLR', offset = 1) 
+class(ad.clr) = 'matrix'
+ad.count.clr <- logratio.transfo(X = ad.count, logratio = 'CLR', offset = 1)  
+class(ad.count.clr) = 'matrix'
+ad.metadata <- sampledata_18s
+ad.batch.dpth = factor(ad.metadata$Mesh, 
+                  levels = unique(ad.metadata$Mesh))
+ad.trt.dpth = as.factor(ad.metadata$depth_bin)
+names(ad.batch.dpth) <- names(ad.trt.dpth) <- rownames(ad.metadata)
+ad.batch.rgn = factor(ad.metadata$Mesh, 
+                  levels = unique(ad.metadata$Mesh))
+ad.trt.rgn = as.factor(ad.metadata$Region)
+names(ad.batch.rgn) <- names(ad.trt.rgn) <- rownames(ad.metadata)
+ad.pca.before <- pca(ad.clr, ncomp = 3, scale = TRUE)
+raw_18S <- Scatter_Density_Steph_nolegend(object = ad.pca.before, batch = ad.batch.dpth, trt = ad.trt.dpth, 
+                title = '18S, Rarified', trt.legend.title = 'Depth zone', batch.legend.title = "Mesh Size", color.set = color.mixo(seq_len(5)))
+raw_18S
+```
+
+#18S ConQuR
+```{r}
+
+ad.count <- otutable_18s_ConQuR[rownames(otutable_18s_ConQuR) %in% sample_names(zoops18S),]
+dim(ad.count)
+ad.filter.res <- PreFL(data = ad.count, keep.spl = 10, keep.var = 0.01)
+ad.filter <- ad.filter.res$data.filter
+dim(ad.filter)
+# zero proportion before filtering
+ad.filter.res$zero.prob
+# zero proportion after filtering
+sum(ad.filter == 0)/(nrow(ad.filter) * ncol(ad.filter))
+#we recommend adding 1 as the offset for the data that are raw count data, and 0.01 as the offset for the data that are relative abundance data. We use logratio.transfo() function in mixOmics package to CLR transform the data.
+ad.clr <- logratio.transfo(X = ad.filter, logratio = 'CLR', offset = 1) 
+class(ad.clr) = 'matrix'
+ad.count.clr <- logratio.transfo(X = ad.count, logratio = 'CLR', offset = 1)  
+class(ad.count.clr) = 'matrix'
+ad.metadata <- sampledata_18s
+ad.batch.dpth = factor(ad.metadata$Mesh, 
+                  levels = unique(ad.metadata$Mesh))
+ad.trt.dpth = as.factor(ad.metadata$depth_bin)
+names(ad.batch.dpth) <- names(ad.trt.dpth) <- rownames(ad.metadata)
+ad.batch.rgn = factor(ad.metadata$Mesh, 
+                  levels = unique(ad.metadata$Mesh))
+ad.trt.rgn = as.factor(ad.metadata$Region)
+names(ad.batch.rgn) <- names(ad.trt.rgn) <- rownames(ad.metadata)
+ad.pca.before <- pca(ad.clr, ncomp = 2, scale = TRUE)
+ConQuR_18S <- Scatter_Density_Steph_nolegend(object = ad.pca.before, batch = ad.batch.dpth, trt = ad.trt.dpth, 
+                title = '18S, ConQuR', trt.legend.title = 'Depth zone', batch.legend.title = "Mesh Size", color.set = color.mixo(seq_len(5)))
+```
+
+#18S PLSDA
+```{r}
+
+ad.count <- otutable_18s_PLSDA[rownames(otutable_18s_PLSDA) %in% sample_names(zoops18S),]
+#dim(ad.count)
+#ad.filter.res <- PreFL(data = ad.count, keep.spl = 5, keep.var = 0.1)
+#ad.filter <- ad.filter.res$data.filter
+#dim(ad.filter)
+## zero proportion before filtering
+#ad.filter.res$zero.prob
+## zero proportion after filtering
+#sum(ad.filter == 0)/(nrow(ad.filter) * ncol(ad.filter))
+##we recommend adding 1 as the offset for the data that are raw count data, and 0.01 as the offset for the data that are relative abundance data. We use logratio.transfo() function in mixOmics package to #CLR transform the data.
+#ad.clr <- logratio.transfo(X = ad.filter, logratio = 'CLR', offset = 1) 
+#class(ad.clr) = 'matrix'
+#ad.count.clr <- logratio.transfo(X = ad.count, logratio = 'CLR', offset = 1)  
+#class(ad.count.clr) = 'matrix'
+ad.metadata <- sampledata_18s
+ad.batch.dpth = factor(ad.metadata$Mesh, 
+                  levels = unique(ad.metadata$Mesh))
+ad.trt.dpth = as.factor(ad.metadata$depth_bin)
+names(ad.batch.dpth) <- names(ad.trt.dpth) <- rownames(ad.metadata)
+ad.batch.rgn = factor(ad.metadata$Mesh, 
+                  levels = unique(ad.metadata$Mesh))
+ad.trt.rgn = as.factor(ad.metadata$Region)
+names(ad.batch.rgn) <- names(ad.trt.rgn) <- rownames(ad.metadata)
+ad.pca.before <- pca(ad.count, ncomp = 2, scale = TRUE)
+PLSDA_18S <- Scatter_Density_Steph_nolegend(object = ad.pca.before, batch = ad.batch.dpth, trt = ad.trt.dpth, 
+                title = '18S, PLSDA', trt.legend.title = 'Depth zone', batch.legend.title = "Mesh Size", color.set = color.mixo(seq_len(5)))
+```
+
+#COI raw
+```{r}
+
+ad.count <- otutable_coi_raw
+dim(ad.count)
+ad.filter.res <- PreFL(data = ad.count, keep.spl = 10, keep.var = 0.01)
+ad.filter <- ad.filter.res$data.filter
+dim(ad.filter)
+# zero proportion before filtering
+ad.filter.res$zero.prob
+# zero proportion after filtering
+sum(ad.filter == 0)/(nrow(ad.filter) * ncol(ad.filter))
+#we recommend adding 1 as the offset for the data that are raw count data, and 0.01 as the offset for the data that are relative abundance data. We use logratio.transfo() function in mixOmics package to CLR transform the data.
+ad.clr <- logratio.transfo(X = ad.filter, logratio = 'CLR', offset = 1) 
+class(ad.clr) = 'matrix'
+ad.count.clr <- logratio.transfo(X = ad.count, logratio = 'CLR', offset = 1)  
+class(ad.count.clr) = 'matrix'
+ad.metadata <- sampledata_coi
+ad.batch.dpth = factor(ad.metadata$Mesh, 
+                  levels = unique(ad.metadata$Mesh))
+ad.trt.dpth = as.factor(ad.metadata$depth_bin)
+names(ad.batch.dpth) <- names(ad.trt.dpth) <- rownames(ad.metadata)
+ad.batch.rgn = factor(ad.metadata$Mesh, 
+                  levels = unique(ad.metadata$Mesh))
+ad.trt.rgn = as.factor(ad.metadata$Region)
+names(ad.batch.rgn) <- names(ad.trt.rgn) <- rownames(ad.metadata)
+ad.pca.before <- pca(ad.clr, ncomp = 2, scale = TRUE)
+raw_COI <- Scatter_Density_Steph_nolegend(object = ad.pca.before, batch = ad.batch.dpth, trt = ad.trt.dpth, 
+                title = 'COI, Rarified', trt.legend.title = 'Depth zone', batch.legend.title = "Mesh Size", color.set = color.mixo(seq_len(5)))
+```
+
+
+#COI ConQuR
+```{r}
+
+ad.count <- otutable_coi_ConQuR[rownames(otutable_coi_ConQuR) %in% sample_names(zoopsCOI),]
+dim(ad.count)
+ad.filter.res <- PreFL(data = ad.count, keep.spl = 10, keep.var = 0.01)
+ad.filter <- ad.filter.res$data.filter
+dim(ad.filter)
+# zero proportion before filtering
+ad.filter.res$zero.prob
+# zero proportion after filtering
+sum(ad.filter == 0)/(nrow(ad.filter) * ncol(ad.filter))
+#we recommend adding 1 as the offset for the data that are raw count data, and 0.01 as the offset for the data that are relative abundance data. We use logratio.transfo() function in mixOmics package to CLR transform the data.
+ad.clr <- logratio.transfo(X = ad.filter, logratio = 'CLR', offset = 1) 
+class(ad.clr) = 'matrix'
+ad.count.clr <- logratio.transfo(X = ad.count, logratio = 'CLR', offset = 1)  
+class(ad.count.clr) = 'matrix'
+ad.metadata <- sampledata_coi
+ad.batch.dpth = factor(ad.metadata$Mesh, 
+                  levels = unique(ad.metadata$Mesh))
+ad.trt.dpth = as.factor(ad.metadata$depth_bin)
+names(ad.batch.dpth) <- names(ad.trt.dpth) <- rownames(ad.metadata)
+ad.batch.rgn = factor(ad.metadata$Mesh, 
+                  levels = unique(ad.metadata$Mesh))
+ad.trt.rgn = as.factor(ad.metadata$Region)
+names(ad.batch.rgn) <- names(ad.trt.rgn) <- rownames(ad.metadata)
+ad.pca.before <- pca(ad.clr, ncomp = 2, scale = TRUE)
+ConQuR_COI <- Scatter_Density_Steph_nolegend(object = ad.pca.before, batch = ad.batch.dpth, trt = ad.trt.dpth, 
+                title = 'COI, ConQuR', trt.legend.title = 'Depth zone', batch.legend.title = "Mesh Size", color.set = color.mixo(seq_len(5)))
+```
+
+
+#COI PLSDA
+```{r}
+
+ad.count <- otutable_coi_PLSDA[rownames(otutable_coi_PLSDA) %in% sample_names(zoopsCOI),]
+#dim(ad.count)
+#ad.filter.res <- PreFL(data = ad.count, keep.spl = 5, keep.var = 0.01)
+#ad.filter <- ad.filter.res$data.filter
+#dim(ad.filter)
+## zero proportion before filtering
+#ad.filter.res$zero.prob
+## zero proportion after filtering
+#sum(ad.filter == 0)/(nrow(ad.filter) * ncol(ad.filter))
+##we recommend adding 1 as the offset for the data that are raw count data, and 0.01 as the offset for the data that are relative abundance data. We use logratio.transfo() function in mixOmics package to CLR transform the data.#
+#ad.clr <- logratio.transfo(X = ad.filter, logratio = 'CLR', offset = 1) 
+#class(ad.clr) = 'matrix'
+#ad.count.clr <- logratio.transfo(X = ad.count, logratio = 'CLR', offset = 1)  
+#class(ad.count.clr) = 'matrix'
+ad.metadata <- sampledata_coi
+ad.batch.dpth = factor(ad.metadata$Mesh, 
+                  levels = unique(ad.metadata$Mesh))
+ad.trt.dpth = as.factor(ad.metadata$depth_bin)
+names(ad.batch.dpth) <- names(ad.trt.dpth) <- rownames(ad.metadata)
+ad.batch.rgn = factor(ad.metadata$Mesh, 
+                  levels = unique(ad.metadata$Mesh))
+ad.trt.rgn = as.factor(ad.metadata$Region)
+names(ad.batch.rgn) <- names(ad.trt.rgn) <- rownames(ad.metadata)
+ad.pca.before <- pca(ad.count, ncomp = 3, scale = TRUE)
+PLSDA_COI <- Scatter_Density_Steph_nolegend(object = ad.pca.before, batch = ad.batch.dpth, trt = ad.trt.dpth, 
+                title = 'COI, PLSDA', trt.legend.title = 'Depth zone', batch.legend.title = "Mesh Size", color.set = color.mixo(seq_len(5)))
+```
+
+#plots
+```{r}
+plot6 <- ggarrange(raw_18S, raw_COI, ConQuR_18S, ConQuR_COI, PLSDA_18S, PLSDA_COI, nrow = 3, ncol = 2, labels = c("a)", "b)", "c)", "d)", "e)", "f)"))
+legend <- get_legend(ggplot(data = as.data.frame(ad.pca.before[["variates"]][["X"]]), aes(x = as.data.frame(ad.pca.before[["variates"]][["X"]])[, 1], y = as.data.frame(ad.pca.before[["variates"]][["X"]])[, 
+                                                           2], colour = ad.batch.dpth, shape = ad.trt.dpth)) + geom_point() + scale_shape_manual(values = c(1, 
+                                                                                      19, 2, 17, 4, 7), name = "Depth zone") + scale_color_manual(values = color.mixo(seq_len(5)), name = "Mesh Size")+
+    theme(legend.position="bottom", legend.direction = "horizontal") )
+plot6 <- ggarrange(plot6, legend, ncol = 1, heights = c(8, .3))
+
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/CompareMeshCorrections.jpeg", height =9, width = 8, unit = "in", quality = 100, res = 300)
+plot6
+dev.off()
+
+
+
+```
+
+
+

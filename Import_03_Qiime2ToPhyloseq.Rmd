@@ -1,0 +1,1577 @@
+---
+title: "Import_03_Qiime2ToPhyloseq"
+output: html_document
+date: "2024-10-31"
+---
+
+
+```{r load libraries}
+library(phyloseq)
+library(ggplot2)
+library(decontam)
+library(ggmagnify)
+```
+
+#import bioms
+
+```{r import COI}
+in_biom <- import_biom("~/Documents/Chapter4/qiime2-analyses/COI_v1_alllibraries/COI-exported-feature-table/feature-table_json.biom", refseqfilename = "~/Documents/Chapter4/qiime2-analyses/COI_v1_alllibraries/sequences.fasta")
+sample_names(in_biom)
+
+md <- import_qiime_sample_data("~/Documents/Chapter4/qiime2-analyses/COI_v1_alllibraries/Metadata_all_COI.txt") #### saved from metadata file for whole project
+
+sample_names(md)
+
+table(sample_names(md) %in% sample_names(in_biom))
+table(sample_names(in_biom) %in% sample_names(md))
+sample_names(md)[!(sample_names(md) %in% sample_names(in_biom))] #what metadata samples are missing from the phyloseq? 
+sample_names(in_biom)[!(sample_names(in_biom) %in% sample_names(md))] #what biom samples are missing from the metadata? 
+
+in_biom_COI <- merge_phyloseq(in_biom, md)
+#in_biom_COI <- subset_samples(in_biom_COI, sample_sums(in_biom_COI) > 0)
+#sample_data(in_biom_COI)$Depth_midpoint <- as.numeric(sample_data(in_biom_COI)$Depth_midpoint)
+#
+#sample_data(in_biom_COI)$Min_depth <- as.numeric(sample_data(in_biom_COI)$Min_depth)
+#sample_data(in_biom_COI)$Max_depth <- as.numeric(sample_data(in_biom_COI)$Max_depth)
+#
+#coi.ord1 <- ordinate(in_biom_COI, "NMDS", "jaccard", binary = TRUE)
+#plot_ordination(in_biom_COI, coi.ord1, type="samples", color = "Depth_midpoint")
+#plot_ordination(in_biom_COI, coi.ord1, type="samples", color = "Location.ID")
+#plot_ordination(in_biom_COI, coi.ord1, type="samples", color = "Library_name") + scale_color_manual(values = c(c("#EE3B3B", "#0000EE", "#8B2323", "#68228B", #"#FFC125", "#98F5FF", "#9ACD32", "#008B00", "#EEAEEE", "black")))
+#
+#sample_data(in_biom_COI)$depth_bin[sample_data(in_biom_COI)$Depth_midpoint < 200] <- "0-200m"
+#sample_data(in_biom_COI)$depth_bin[sample_data(in_biom_COI)$Depth_midpoint > 200 & sample_data(in_biom_COI)$Depth_midpoint < 500] <- "200-500m"
+#sample_data(in_biom_COI)$depth_bin[sample_data(in_biom_COI)$Depth_midpoint > 500] <- "500-1000m"
+#
+#sample_data(in_biom_COI)$depth_bin <- as.factor(sample_data(in_biom_COI)$depth_bin)
+#sample_data(in_biom_COI)$Location.ID <- as.factor(sample_data(in_biom_COI)$Location.ID)
+
+#sample_data(in_biom_COI)$unique_to_merge <- paste(sample_data(in_biom_COI)$Location.ID, sample_data(in_biom_COI)$depth_bin)
+#
+#in_biom_COI_merged <- merge_samples(in_biom_COI, "unique_to_merge")
+##sample_data(in_biom_COI_merged)$Location.ID <- strsplit(sample_names(in_biom_COI_merged))
+#
+#
+#coi.ord1_merg <- ordinate(in_biom_COI_merged, "NMDS", "jaccard", binary = TRUE)
+#plot_ordination(in_biom_COI_merged, coi.ord1_merg, type="samples", color = "depth_bin")
+#plot_ordination(in_biom_COI_merged, coi.ord1_merg, type="samples", color = "Location.ID")
+#plot_ordination(in_biom_COI_merged, coi.ord1, type="samples", color = "Library_name") + scale_color_manual(values = c(c("#EE3B3B", "#0000EE", "#8B2323", "#68228B", "#FFC125", "#98F5FF", "#9ACD32", "#008B00", "#EEAEEE", "black")))
+
+```
+
+
+```{r import 18S}
+in_biom <- import_biom("~/Documents/Chapter4/qiime2-analyses/18S_v1_alllibraries/18S-exported-feature-table/feature-table_json.biom", refseqfilename = "~/Documents/Chapter4/qiime2-analyses/18S_v1_alllibraries/sequences.fasta")
+sample_names(in_biom)
+
+md <- import_qiime_sample_data("~/Documents/Chapter4/qiime2-analyses/18S_v1_alllibraries/Metadata_all_18S.txt") #### saved from metadata file for whole project
+sample_names(md)
+
+table(sample_names(md) %in% sample_names(in_biom))
+table(sample_names(in_biom) %in% sample_names(md))
+sample_names(md)[!(sample_names(md) %in% sample_names(in_biom))] #what metadata samples are missing from the phyloseq? 
+sample_names(in_biom)[!(sample_names(in_biom) %in% sample_names(md))] #what biom samples are missing from the metadata? 
+
+in_biom_18S <- merge_phyloseq(in_biom, md)
+#in_biom_18S <- subset_samples(in_biom_18S, sample_sums(in_biom_18S) > 4000)
+#sample_data(in_biom_18S)$Depth_midpoint <- as.numeric(sample_data(in_biom_18S)$Depth_midpoint)
+#
+#v4.ord1 <- ordinate(in_biom_18S, "NMDS", "jaccard", binary = TRUE)
+#plot_ordination(in_biom_18S, v4.ord1, type="samples", color = "Depth_midpoint")
+#plot_ordination(in_biom_18S, v4.ord1, type="samples", color = "Location.ID")
+#plot_ordination(in_biom_18S, v4.ord1, type="samples", color = "Library_name")
+#plot_ordination(in_biom_18S, v4.ord1, type="samples", color = "Library_name") + scale_color_manual(values = c(c("#EE3B3B", "#0000EE", "#8B2323", "#68228B", "#FFC125", "#98F5FF", "#9ACD32", "#008B00", "#EEAEEE")))
+```
+
+
+#filter contaminants per library: 
+
+##Library1:
+```{r Library 1 COI}
+library <- subset_samples(in_biom_COI, Library_name == "library-1")
+library <- filter_taxa(library, function(x) sum(x > 0) > 1, TRUE)
+sample_data(library)$Sample_or_Control <- "True Sample" 
+sample_data(library)$Sample_or_Control[sample_data(library)$SampleID == "NC"] <- "Control Sample"
+
+df <- as.data.frame(sample_data(library)) # Put sample_data into a ggplot-friendly data.frame
+df$LibrarySize <- sample_sums(library)
+df <- df[order(df$LibrarySize),]
+df$Index <- seq(nrow(df))
+ggplot(data=df, aes(x=Index, y=LibrarySize, color=Sample_or_Control)) + geom_point()
+otutable <- data.frame(otu_table(library))
+sample_data(library)$is.neg <- sample_data(library)$Sample_or_Control == "Control Sample"
+
+contamdf.prev <- isContaminant(library, method="prevalence", neg="is.neg")
+table(contamdf.prev$contaminant)
+
+library1_contam_COI <- taxa_names(library)[which(contamdf.prev$contaminant)]
+```
+
+```{r Library 1 18S}
+library <- subset_samples(in_biom_18S, Library_name == "library-1")
+library <- filter_taxa(library, function(x) sum(x > 0) > 1, TRUE)
+sample_data(library)$Sample_or_Control <- "True Sample" 
+sample_data(library)$Sample_or_Control[sample_data(library)$SampleID == "NC"] <- "Control Sample"
+
+df <- as.data.frame(sample_data(library)) # Put sample_data into a ggplot-friendly data.frame
+df$LibrarySize <- sample_sums(library)
+df <- df[order(df$LibrarySize),]
+df$Index <- seq(nrow(df))
+ggplot(data=df, aes(x=Index, y=LibrarySize, color=Sample_or_Control)) + geom_point()
+otutable <- data.frame(otu_table(library))
+sample_data(library)$is.neg <- sample_data(library)$Sample_or_Control == "Control Sample"
+
+contamdf.prev <- isContaminant(library, method="prevalence", neg="is.neg")
+table(contamdf.prev$contaminant)
+
+library1_contam_18S <- taxa_names(library)[which(contamdf.prev$contaminant)]
+```
+
+
+##Library2:
+```{r Library 2 COI}
+library <- subset_samples(in_biom_COI, Library_name == "library-2")
+library <- filter_taxa(library, function(x) sum(x > 0) > 1, TRUE)
+sample_data(library)$Sample_or_Control <- "True Sample" 
+sample_data(library)$Sample_or_Control[sample_data(library)$SampleID == "NC"] <- "Control Sample"
+
+df <- as.data.frame(sample_data(library)) # Put sample_data into a ggplot-friendly data.frame
+df$LibrarySize <- sample_sums(library)
+df <- df[order(df$LibrarySize),]
+df$Index <- seq(nrow(df))
+ggplot(data=df, aes(x=Index, y=LibrarySize, color=Sample_or_Control)) + geom_point()
+otutable <- data.frame(otu_table(library))
+sample_data(library)$is.neg <- sample_data(library)$Sample_or_Control == "Control Sample"
+
+contamdf.prev <- isContaminant(library, method="prevalence", neg="is.neg")
+table(contamdf.prev$contaminant)
+
+library2_contam_COI <- taxa_names(library)[which(contamdf.prev$contaminant)]
+```
+
+```{r Library 2 18S}
+library <- subset_samples(in_biom_18S, Library_name == "library-2")
+library <- filter_taxa(library, function(x) sum(x > 0) > 1, TRUE)
+sample_data(library)$Sample_or_Control <- "True Sample" 
+sample_data(library)$Sample_or_Control[sample_data(library)$SampleID == "NC"] <- "Control Sample"
+
+df <- as.data.frame(sample_data(library)) # Put sample_data into a ggplot-friendly data.frame
+df$LibrarySize <- sample_sums(library)
+df <- df[order(df$LibrarySize),]
+df$Index <- seq(nrow(df))
+ggplot(data=df, aes(x=Index, y=LibrarySize, color=Sample_or_Control)) + geom_point()
+otutable <- data.frame(otu_table(library))
+sample_data(library)$is.neg <- sample_data(library)$Sample_or_Control == "Control Sample"
+
+contamdf.prev <- isContaminant(library, method="prevalence", neg="is.neg")
+table(contamdf.prev$contaminant)
+
+library2_contam_18S <- taxa_names(library)[which(contamdf.prev$contaminant)]
+```
+
+
+##Library3:
+```{r Library 3 COI}
+library <- subset_samples(in_biom_COI, Library_name == "library-3")
+library <- filter_taxa(library, function(x) sum(x > 0) > 1, TRUE)
+sample_data(library)$Sample_or_Control <- "True Sample" 
+sample_data(library)$Sample_or_Control[sample_data(library)$SampleID == "NC"] <- "Control Sample"
+
+df <- as.data.frame(sample_data(library)) # Put sample_data into a ggplot-friendly data.frame
+df$LibrarySize <- sample_sums(library)
+df <- df[order(df$LibrarySize),]
+df$Index <- seq(nrow(df))
+ggplot(data=df, aes(x=Index, y=LibrarySize, color=Sample_or_Control)) + geom_point()
+otutable <- data.frame(otu_table(library))
+sample_data(library)$is.neg <- sample_data(library)$Sample_or_Control == "Control Sample"
+
+contamdf.prev <- isContaminant(library, method="prevalence", neg="is.neg")
+table(contamdf.prev$contaminant)
+
+library3_contam_COI <- taxa_names(library)[which(contamdf.prev$contaminant)]
+```
+
+```{r Library 3 18S}
+library <- subset_samples(in_biom_18S, Library_name == "library-3")
+library <- filter_taxa(library, function(x) sum(x > 0) > 1, TRUE)
+sample_data(library)$Sample_or_Control <- "True Sample" 
+sample_data(library)$Sample_or_Control[sample_data(library)$SampleID == "NC"] <- "Control Sample"
+
+df <- as.data.frame(sample_data(library)) # Put sample_data into a ggplot-friendly data.frame
+df$LibrarySize <- sample_sums(library)
+df <- df[order(df$LibrarySize),]
+df$Index <- seq(nrow(df))
+ggplot(data=df, aes(x=Index, y=LibrarySize, color=Sample_or_Control)) + geom_point()
+otutable <- data.frame(otu_table(library))
+sample_data(library)$is.neg <- sample_data(library)$Sample_or_Control == "Control Sample"
+
+contamdf.prev <- isContaminant(library, method="prevalence", neg="is.neg")
+table(contamdf.prev$contaminant)
+
+library3_contam_18S <- taxa_names(library)[which(contamdf.prev$contaminant)]
+```
+
+
+
+##LibraryBB:
+```{r Library BB COI}
+library <- subset_samples(in_biom_COI, Library_name == "Library-BB")
+library <- filter_taxa(library, function(x) sum(x > 0) > 1, TRUE)
+sample_data(library)$Sample_or_Control <- "True Sample" 
+sample_data(library)$Sample_or_Control[sample_data(library)$SampleID == "NC"] <- "Control Sample"
+
+df <- as.data.frame(sample_data(library)) # Put sample_data into a ggplot-friendly data.frame
+df$LibrarySize <- sample_sums(library)
+df <- df[order(df$LibrarySize),]
+df$Index <- seq(nrow(df))
+ggplot(data=df, aes(x=Index, y=LibrarySize, color=Sample_or_Control)) + geom_point()
+otutable <- data.frame(otu_table(library))
+sample_data(library)$is.neg <- sample_data(library)$Sample_or_Control == "Control Sample"
+
+contamdf.prev <- isContaminant(library, method="prevalence", neg="is.neg")
+table(contamdf.prev$contaminant)
+
+libraryBB_contam_COI <- taxa_names(library)[which(contamdf.prev$contaminant)]
+```
+
+```{r Library BB 18S}
+library <- subset_samples(in_biom_18S, Library_name == "Library-BB")
+library <- filter_taxa(library, function(x) sum(x > 0) > 1, TRUE)
+sample_data(library)$Sample_or_Control <- "True Sample" 
+sample_data(library)$Sample_or_Control[sample_data(library)$SampleID == "NC"] <- "Control Sample"
+
+df <- as.data.frame(sample_data(library)) # Put sample_data into a ggplot-friendly data.frame
+df$LibrarySize <- sample_sums(library)
+df <- df[order(df$LibrarySize),]
+df$Index <- seq(nrow(df))
+ggplot(data=df, aes(x=Index, y=LibrarySize, color=Sample_or_Control)) + geom_point()
+otutable <- data.frame(otu_table(library))
+sample_data(library)$is.neg <- sample_data(library)$Sample_or_Control == "Control Sample"
+
+contamdf.prev <- isContaminant(library, method="prevalence", neg="is.neg")
+table(contamdf.prev$contaminant)
+
+libraryBB_contam_18S <- taxa_names(library)[which(contamdf.prev$contaminant)]
+```
+
+
+##LibraryHirai1:
+```{r Library Hirai 1 COI}
+library <- subset_samples(in_biom_COI, Library_name == "Library-Hirai1")
+library <- filter_taxa(library, function(x) sum(x > 0) > 1, TRUE)
+sample_data(library)$Sample_or_Control <- "True Sample" 
+sample_data(library)$Sample_or_Control[sample_data(library)$SampleID == "NC"] <- "Control Sample"
+
+df <- as.data.frame(sample_data(library)) # Put sample_data into a ggplot-friendly data.frame
+df$LibrarySize <- sample_sums(library)
+df <- df[order(df$LibrarySize),]
+df$Index <- seq(nrow(df))
+ggplot(data=df, aes(x=Index, y=LibrarySize, color=Sample_or_Control)) + geom_point()
+otutable <- data.frame(otu_table(library))
+sample_data(library)$is.neg <- sample_data(library)$Sample_or_Control == "Control Sample"
+
+contamdf.prev <- isContaminant(library, method="prevalence", neg="is.neg")
+table(contamdf.prev$contaminant)
+
+libraryHirai1_contam_COI <- taxa_names(library)[which(contamdf.prev$contaminant)]
+```
+
+```{r Library Hirai 1 18S}
+library <- subset_samples(in_biom_18S, Library_name == "Library-Hirai1")
+library <- filter_taxa(library, function(x) sum(x > 0) > 1, TRUE)
+sample_data(library)$Sample_or_Control <- "True Sample" 
+sample_data(library)$Sample_or_Control[sample_data(library)$SampleID == "NC"] <- "Control Sample"
+
+df <- as.data.frame(sample_data(library)) # Put sample_data into a ggplot-friendly data.frame
+df$LibrarySize <- sample_sums(library)
+df <- df[order(df$LibrarySize),]
+df$Index <- seq(nrow(df))
+ggplot(data=df, aes(x=Index, y=LibrarySize, color=Sample_or_Control)) + geom_point()
+otutable <- data.frame(otu_table(library))
+sample_data(library)$is.neg <- sample_data(library)$Sample_or_Control == "Control Sample"
+
+contamdf.prev <- isContaminant(library, method="prevalence", neg="is.neg")
+table(contamdf.prev$contaminant)
+
+libraryHirai1_contam_18S <- taxa_names(library)[which(contamdf.prev$contaminant)]
+```
+
+
+##LibraryHirai2:
+```{r Library Hirai 2 COI}
+library <- subset_samples(in_biom_COI, Library_name == "Library-Hirai2")
+library <- filter_taxa(library, function(x) sum(x > 0) > 1, TRUE)
+sample_data(library)$Sample_or_Control <- "True Sample" 
+sample_data(library)$Sample_or_Control[sample_data(library)$SampleID == "NC"] <- "Control Sample"
+
+df <- as.data.frame(sample_data(library)) # Put sample_data into a ggplot-friendly data.frame
+df$LibrarySize <- sample_sums(library)
+df <- df[order(df$LibrarySize),]
+df$Index <- seq(nrow(df))
+ggplot(data=df, aes(x=Index, y=LibrarySize, color=Sample_or_Control)) + geom_point()
+otutable <- data.frame(otu_table(library))
+sample_data(library)$is.neg <- sample_data(library)$Sample_or_Control == "Control Sample"
+
+contamdf.prev <- isContaminant(library, method="prevalence", neg="is.neg")
+table(contamdf.prev$contaminant)
+
+libraryhirai2_contam_COI <- taxa_names(library)[which(contamdf.prev$contaminant)]
+```
+
+```{r Library Hirai 2 18S}
+library <- subset_samples(in_biom_18S, Library_name == "Library-Hirai2")
+library <- filter_taxa(library, function(x) sum(x > 0) > 1, TRUE)
+sample_data(library)$Sample_or_Control <- "True Sample" 
+sample_data(library)$Sample_or_Control[sample_data(library)$SampleID == "NC"] <- "Control Sample"
+
+df <- as.data.frame(sample_data(library)) # Put sample_data into a ggplot-friendly data.frame
+df$LibrarySize <- sample_sums(library)
+df <- df[order(df$LibrarySize),]
+df$Index <- seq(nrow(df))
+ggplot(data=df, aes(x=Index, y=LibrarySize, color=Sample_or_Control)) + geom_point()
+otutable <- data.frame(otu_table(library))
+sample_data(library)$is.neg <- sample_data(library)$Sample_or_Control == "Control Sample"
+
+contamdf.prev <- isContaminant(library, method="prevalence", neg="is.neg")
+table(contamdf.prev$contaminant)
+
+libraryhirai2_contam_18S <- taxa_names(library)[which(contamdf.prev$contaminant)]
+```
+
+
+##LibraryP2107:
+```{r Library P2107 COI}
+library <- subset_samples(in_biom_COI, Library_name == "library-P2107")
+library <- filter_taxa(library, function(x) sum(x > 0) > 1, TRUE)
+sample_data(library)$Sample_or_Control <- "True Sample" 
+sample_data(library)$Sample_or_Control[sample_data(library)$SampleID == "NC"] <- "Control Sample"
+
+df <- as.data.frame(sample_data(library)) # Put sample_data into a ggplot-friendly data.frame
+df$LibrarySize <- sample_sums(library)
+df <- df[order(df$LibrarySize),]
+df$Index <- seq(nrow(df))
+ggplot(data=df, aes(x=Index, y=LibrarySize, color=Sample_or_Control)) + geom_point()
+otutable <- data.frame(otu_table(library))
+sample_data(library)$is.neg <- sample_data(library)$Sample_or_Control == "Control Sample"
+
+contamdf.prev <- isContaminant(library, method="prevalence", neg="is.neg")
+table(contamdf.prev$contaminant)
+
+libraryP2107_contam_COI <- taxa_names(library)[which(contamdf.prev$contaminant)]
+```
+
+```{r Library P2107 18S}
+library <- subset_samples(in_biom_18S, Library_name == "library-P2107")
+library <- filter_taxa(library, function(x) sum(x > 0) > 1, TRUE)
+sample_data(library)$Sample_or_Control <- "True Sample" 
+sample_data(library)$Sample_or_Control[sample_data(library)$SampleID == "NC"] <- "Control Sample"
+
+df <- as.data.frame(sample_data(library)) # Put sample_data into a ggplot-friendly data.frame
+df$LibrarySize <- sample_sums(library)
+df <- df[order(df$LibrarySize),]
+df$Index <- seq(nrow(df))
+ggplot(data=df, aes(x=Index, y=LibrarySize, color=Sample_or_Control)) + geom_point()
+otutable <- data.frame(otu_table(library))
+sample_data(library)$is.neg <- sample_data(library)$Sample_or_Control == "Control Sample"
+
+contamdf.prev <- isContaminant(library, method="prevalence", neg="is.neg")
+table(contamdf.prev$contaminant)
+
+libraryP2107_contam_18S <- taxa_names(library)[which(contamdf.prev$contaminant)]
+```
+
+
+##LibraryENP:
+```{r Library ENP COI}
+library <- subset_samples(in_biom_COI, Library_name == "library-ENP")
+library <- filter_taxa(library, function(x) sum(x > 0) > 1, TRUE)
+sample_data(library)$Sample_or_Control <- "True Sample" 
+sample_data(library)$Sample_or_Control[sample_data(library)$SampleID == "NC"] <- "Control Sample"
+
+df <- as.data.frame(sample_data(library)) # Put sample_data into a ggplot-friendly data.frame
+df$LibrarySize <- sample_sums(library)
+df <- df[order(df$LibrarySize),]
+df$Index <- seq(nrow(df))
+ggplot(data=df, aes(x=Index, y=LibrarySize, color=Sample_or_Control)) + geom_point()
+otutable <- data.frame(otu_table(library))
+sample_data(library)$is.neg <- sample_data(library)$Sample_or_Control == "Control Sample"
+
+contamdf.prev <- isContaminant(library, method="prevalence", neg="is.neg")
+table(contamdf.prev$contaminant)
+
+libraryENP_contam_COI <- taxa_names(library)[which(contamdf.prev$contaminant)]
+```
+
+```{r Library ENP 18S}
+library <- subset_samples(in_biom_18S, Library_name == "library-ENP")
+library <- filter_taxa(library, function(x) sum(x > 0) > 1, TRUE)
+sample_data(library)$Sample_or_Control <- "True Sample" 
+sample_data(library)$Sample_or_Control[sample_data(library)$SampleID == "NC"] <- "Control Sample"
+
+df <- as.data.frame(sample_data(library)) # Put sample_data into a ggplot-friendly data.frame
+df$LibrarySize <- sample_sums(library)
+df <- df[order(df$LibrarySize),]
+df$Index <- seq(nrow(df))
+ggplot(data=df, aes(x=Index, y=LibrarySize, color=Sample_or_Control)) + geom_point()
+otutable <- data.frame(otu_table(library))
+sample_data(library)$is.neg <- sample_data(library)$Sample_or_Control == "Control Sample"
+
+contamdf.prev <- isContaminant(library, method="prevalence", neg="is.neg")
+table(contamdf.prev$contaminant)
+
+libraryENP_contam_18S <- taxa_names(library)[which(contamdf.prev$contaminant)]
+```
+
+##LibraryGAK:
+Don't have negative control data for
+LibraryENP:
+```{r Library GAK COI}
+#library <- subset_samples(in_biom_COI, Library_name == "library-ENP")
+#library <- filter_taxa(library, function(x) sum(x > 0) > 1, TRUE)
+#sample_data(library)$Sample_or_Control <- "True Sample" 
+#sample_data(library)$Sample_or_Control[sample_data(library)$SampleID == "NC"] <- "Control Sample"
+
+#df <- as.data.frame(sample_data(library)) # Put sample_data into a ggplot-friendly data.frame
+#df$LibrarySize <- sample_sums(library)
+#df <- df[order(df$LibrarySize),]
+#df$Index <- seq(nrow(df))
+#ggplot(data=df, aes(x=Index, y=LibrarySize, color=Sample_or_Control)) + geom_point()
+#otutable <- data.frame(otu_table(library))
+#sample_data(library)$is.neg <- sample_data(library)$Sample_or_Control == "Control Sample"
+
+#contamdf.prev <- isContaminant(library, method="prevalence", neg="is.neg")
+#table(contamdf.prev$contaminant)
+
+#libraryGAK_contam_COI <- taxa_names(library)[which(contamdf.prev$contaminant)]
+```
+
+```{r Library GAK 18S}
+#library <- subset_samples(in_biom_18S, Library_name == "library-ENP")
+#library <- filter_taxa(library, function(x) sum(x > 0) > 1, TRUE)
+#sample_data(library)$Sample_or_Control <- "True Sample" 
+#sample_data(library)$Sample_or_Control[sample_data(library)$SampleID == "NC"] <- "Control Sample"
+#
+#df <- as.data.frame(sample_data(library)) # Put sample_data into a ggplot-friendly data.frame
+#df$LibrarySize <- sample_sums(library)
+#df <- df[order(df$LibrarySize),]
+#df$Index <- seq(nrow(df))
+#ggplot(data=df, aes(x=Index, y=LibrarySize, color=Sample_or_Control)) + geom_point()
+#otutable <- data.frame(otu_table(library))
+#sample_data(library)$is.neg <- sample_data(library)$Sample_or_Control == "Control Sample"
+#
+#contamdf.prev <- isContaminant(library, method="prevalence", neg="is.neg")
+#table(contamdf.prev$contaminant)
+#
+#libraryGAK_contam_18S <- taxa_names(library)[which(contamdf.prev$contaminant)]
+```
+
+##LibraryDG5B:
+```{r Library DG5B COI}
+library <- subset_samples(in_biom_COI, Library_name == "DG5B")
+library <- filter_taxa(library, function(x) sum(x > 0) > 1, TRUE)
+sample_data(library)$Sample_or_Control <- "True Sample" 
+sample_data(library)$Sample_or_Control[sample_data(library)$SampleID == "NC"] <- "Control Sample"
+
+df <- as.data.frame(sample_data(library)) # Put sample_data into a ggplot-friendly data.frame
+df$LibrarySize <- sample_sums(library)
+df <- df[order(df$LibrarySize),]
+df$Index <- seq(nrow(df))
+ggplot(data=df, aes(x=Index, y=LibrarySize, color=Sample_or_Control)) + geom_point()
+otutable <- data.frame(otu_table(library))
+sample_data(library)$is.neg <- sample_data(library)$Sample_or_Control == "Control Sample"
+
+contamdf.prev <- isContaminant(library, method="prevalence", neg="is.neg")
+table(contamdf.prev$contaminant)
+
+libraryDG5B_contam_COI <- taxa_names(library)[which(contamdf.prev$contaminant)]
+```
+
+Don't have data for 18S
+```{r Library DG5B 18S}
+#library <- subset_samples(in_biom_18S, Library_name == "DG5B")
+#library <- filter_taxa(library, function(x) sum(x > 0) > 1, TRUE)
+#sample_data(library)$Sample_or_Control <- "True Sample" 
+#sample_data(library)$Sample_or_Control[sample_data(library)$SampleID == "NC"] <- "Control Sample"
+#
+#df <- as.data.frame(sample_data(library)) # Put sample_data into a ggplot-friendly data.frame
+#df$LibrarySize <- sample_sums(library)
+#df <- df[order(df$LibrarySize),]
+#df$Index <- seq(nrow(df))
+#ggplot(data=df, aes(x=Index, y=LibrarySize, color=Sample_or_Control)) + geom_point()
+#otutable <- data.frame(otu_table(library))
+#sample_data(library)$is.neg <- sample_data(library)$Sample_or_Control == "Control Sample"
+#
+#contamdf.prev <- isContaminant(library, method="prevalence", neg="is.neg")
+#table(contamdf.prev$contaminant)
+#
+#libraryDG5B_contam_18S <- taxa_names(library)[which(contamdf.prev$contaminant)]
+```
+
+
+## remove contaminants
+```{r}
+contamCOI <- c(library2_contam_COI, library3_contam_COI, libraryBB_contam_COI, libraryHirai1_contam_COI, libraryhirai2_contam_COI, libraryP2107_contam_COI, libraryENP_contam_COI, libraryDG5B_contam_COI)
+
+allTaxa <- taxa_names(in_biom_COI)
+goodTaxa <- allTaxa[!(allTaxa %in% contamCOI)]
+COI_contam <- prune_taxa(contamCOI, in_biom_COI)
+COI_nocontam <- prune_taxa(goodTaxa, in_biom_COI)
+ntaxa(in_biom_COI)
+ntaxa(COI_nocontam)
+#contamtax <- data.frame(tax_table(COI_contam))
+#write.csv(contamtax, file = "COIcontam_tax.csv")
+contamab <- data.frame(otu_table(COI_contam))
+write.csv(contamab, file = "COIcontam_ab.csv")
+contam_samdat <- data.frame(sample_data(COI_contam))
+write.csv(contam_samdat, file = "COIcontam_sampdat.csv")
+COI_clean <- subset_samples(COI_nocontam, sample_data(COI_nocontam)$SampleID != "NC")##remove Neg controls
+
+
+contam18S <- c(library1_contam_18S, library2_contam_18S, library3_contam_18S, libraryBB_contam_18S, libraryHirai1_contam_18S, libraryhirai2_contam_18S, libraryP2107_contam_18S, libraryENP_contam_18S)
+
+allTaxa <- taxa_names(in_biom_18S)
+goodTaxa <- allTaxa[!(allTaxa %in% contam18S)]
+z18S_contam <- prune_taxa(contam18S, in_biom_18S)
+z18S_nocontam <- prune_taxa(goodTaxa, in_biom_18S)
+ntaxa(in_biom_18S)
+ntaxa(z18S_nocontam)
+#contamtax <- data.frame(tax_table(z18S_contam))
+#write.csv(contamtax, file = "18Scontam_tax.csv")
+contamab <- data.frame(otu_table(z18S_contam))
+write.csv(contamab, file = "18Scontam_ab.csv")
+contam_samdat <- data.frame(sample_data(z18S_contam))
+write.csv(contam_samdat, file = "18Scontam_sampdat.csv")
+z18S_clean <- subset_samples(z18S_nocontam, sample_data(z18S_nocontam)$SampleID != "NC")##remove Neg controls
+
+```
+
+
+# visually assess replicates for outliers
+```{r}
+#we have replicates for the following libraries: (COI and 18S replicates both)
+#library-1
+#library-2
+#library-3
+#Library-BB
+#Library-Hirai-1
+#Library-Hirai2
+#library-P2107
+#library-ENP
+#GAK
+
+#no replicates for the following libraries:
+#DG5B (COI only)
+# 
+# COI:
+# ord1 <- ordinate(transform_sample_counts(subset_samples(COI_clean, Library_name == "library-1"), function(x) x / sum(x)), "NMDS", "jaccard", binary = TRUE)
+# plot_ordination(transform_sample_counts(subset_samples(COI_clean, Library_name == "library-1"), function(x) x / sum(x)), ord1, type="samples", color = "Depth_midpoint", title = "Library 1")
+# ord1 <- ordinate(subset_samples(subset_samples(COI_clean, Library_name == "library-2"), Sample.number != "S263"), "NMDS", "jaccard", binary = TRUE)
+# plot_ordination(subset_samples(subset_samples(COI_clean, Library_name == "library-2"), Sample.number != "S263"), ord1, type="samples", color = "Depth_midpoint", shape = "Diel", title = "Library 2", label = "Sample.number")
+# ord1 <- ordinate(subset_samples(COI_clean, Library_name == "library-3"), "NMDS", "jaccard", binary = TRUE)
+# plot_ordination(subset_samples(COI_clean, Library_name == "library-3"), ord1, type="samples", color = "Depth_midpoint", title = "Library 3", shape = "Cruise")
+# ord1 <- ordinate(subset_samples(COI_clean, Library_name == "Library-BB"), "NMDS", "jaccard", binary = TRUE)
+# plot_ordination(subset_samples(COI_clean, Library_name == "Library-BB"), ord1, type="samples", color = "Depth_midpoint", title = "Library BB")
+# ord1 <- ordinate(subset_samples(subset_samples(COI_clean, Library_name == "Library-Hirai1"), sample_sums(subset_samples(COI_clean, Library_name == "Library-Hirai1")) > 0), "NMDS", "jaccard", binary = TRUE)
+# plot_ordination(subset_samples(subset_samples(COI_clean, Library_name == "Library-Hirai1"), sample_sums(subset_samples(COI_clean, Library_name == "Library-Hirai1")) > 0), ord1, type="samples", color = "SampleID", title = "Library Hirai 1", label = "Sample.number")
+# ord1 <- ordinate(subset_samples(subset_samples(COI_clean, Library_name == "Library-Hirai2"), sample_sums(subset_samples(COI_clean, Library_name == "Library-Hirai2")) > 0), "NMDS", "jaccard", binary = TRUE)
+# plot_ordination(subset_samples(subset_samples(COI_clean, Library_name == "Library-Hirai2"), sample_sums(subset_samples(COI_clean, Library_name == "Library-Hirai2")) > 0), ord1, type="samples", color = "SampleID", title = "Library Hirai 2", label = "Sample.number") #S1525
+# ### these are odd:
+# ord1 <- ordinate(subset_samples(COI_clean, Library_name == "library-P2107"), "NMDS", "jaccard", binary = TRUE)
+# plot_ordination(subset_samples(COI_clean, Library_name == "library-P2107"), ord1, type="samples", color = "Max_depth", title = "Library P2107", shape = "Tow", label = "Sample.number")
+# #plot_heatmap(subset_samples(COI_clean, Library_name == "library-P2107"))
+# #maybe ok - these are just the two different cycles
+# enpclean <- subset_samples(COI_clean, Library_name %in% c("library-ENP"))
+# enpclean <- prune_samples(!(sample_names(enpclean) %in% c("S2240", "S2215", "S2218", "S2235", "S2260", "S2263", "S2288", "S2283", "S2266", "S2236", "S2212", "S2284", "S2264", "S2216", "S2270", "S2222", "S2213")), enpclean)
+# ord1 <- ordinate(enpclean, "NMDS", "jaccard", binary = TRUE)
+# plot_ordination(enpclean, ord1, type="samples", color = "Max_depth", title = "Library ENP", shape = "Size_frac", label = "Sample.number")
+# enpclean <- subset_samples(COI_clean, Library_name %in% c("library-ENP", "DG5B"))
+# enpclean <- prune_samples(!(sample_names(enpclean) %in% c("S2240", "S2215", "S2218", "S2235", "S2260", "S2263", "S2288", "S2283", "S2266", "S2236", "S2212", "S2284", "S2264", "S2216", "S2270", "S2222", "S2213")), enpclean)
+# ord1 <- ordinate(enpclean, "NMDS", "jaccard", binary = TRUE)
+# plot_ordination(enpclean, ord1, type="samples", color = "Max_depth", title = "Library ENP + DG5B", shape = "replicate", label = "Sample.number") #+ facet_wrap(.~Size_frac)
+# ord1 <- ordinate(subset_samples(subset_samples(COI_clean, Library_name %in% c("DG5B")), sample_sums(subset_samples(COI_clean, Library_name %in% c("DG5B"))) > 0), "NMDS", "jaccard", binary = TRUE)
+# plot_ordination(subset_samples(subset_samples(COI_clean, Library_name %in% c("DG5B")), sample_sums(subset_samples(COI_clean, Library_name %in% c( "DG5B"))) > 0), ord1, type="samples", color = "Depth_midpoint", title = "Library ENP", shape = "Size_frac", label = "Sample.number")
+# enpclean <- subset_samples(COI_clean, Library_name %in% c("GAK"))
+# #enpclean <- prune_samples(!sample_names(enpclean) %in% c("S3116", "S3106", "S3103", "S3107", "S3105"))
+# enpclean <- prune_samples(!(sample_names(enpclean) %in% c("S3116", "S3106", "S3103", "S3107", "S3105", "S3101", "S3118")), enpclean)
+# ord1 <- ordinate(enpclean, "NMDS", "jaccard", binary = TRUE)
+# plot_ordination(enpclean, ord1, type="samples", color = "Depth_midpoint", title = "Library ENP", shape = "Library_name", label = "Sample.number")
+# 
+# 
+# 
+# #need to remove: S263, S1123, S1525, 2240, 2215, 2218, 2235, 2260, 2263, 2288, 2283, 2266, 2236, 2212, 2284, 2264, 2216, 2270, 2222, S1897 #these all look weird, and also were ones where the PCR failed and we had to bead clean PCR1 without daphnia, and use that for PCR2. 
+# 
+# 
+# #18S:
+# ord1 <- ordinate(transform_sample_counts(subset_samples(z18S_clean, Library_name == "library-1"), function(x) x / sum(x)), "NMDS", "jaccard", binary = TRUE)
+# plot_ordination(transform_sample_counts(subset_samples(z18S_clean, Library_name == "library-1"), function(x) x / sum(x)), ord1, type="samples", color = "Depth_midpoint", title = "Library 1")
+# ord1 <- ordinate(subset_samples(subset_samples(z18S_clean, Library_name == "library-2"), Sample.number != "S263"), "NMDS", "jaccard", binary = TRUE)
+# plot_ordination(subset_samples(subset_samples(z18S_clean, Library_name == "library-2"), Sample.number != "S263"), ord1, type="samples", color = "Depth_midpoint", shape = "Diel", title = "Library 2")
+# ord1 <- ordinate(subset_samples(z18S_clean, Library_name == "library-3"), "NMDS", "jaccard", binary = TRUE)
+# plot_ordination(subset_samples(z18S_clean, Library_name == "library-3"), ord1, type="samples", color = "Depth_midpoint", title = "Library 3", shape = "Cruise")
+# enpclean <- subset_samples(subset_samples(z18S_clean, Library_name == "Library-BB"), sample_sums(subset_samples(z18S_clean, Library_name == "Library-BB")) > 0)
+# enpclean <- prune_samples(!(sample_names(enpclean) %in% c("S991", "S999", "S975", "S979", "S963", "S955", "S967")), enpclean)
+# ord1 <- ordinate(enpclean, "NMDS", "jaccard", binary = TRUE)
+# plot_ordination(enpclean, ord1, type="samples", color = "Max_depth", title = "Library BB", shape = "Diel", label = "Sample.number")
+# enpclean <- subset_samples(subset_samples(z18S_clean, Library_name == "Library-Hirai1"), sample_sums(subset_samples(z18S_clean, Library_name == "Library-Hirai1")) > 0)
+# enpclean <- prune_samples(!(sample_names(enpclean) %in% c("S1368", "S1360", "S1356", "S1340")), enpclean)
+# ord1 <- ordinate(enpclean, "NMDS", "jaccard", binary = TRUE)
+# plot_ordination(enpclean, ord1, type="samples", color = "Max_depth", title = "Library Hirai 1", shape = "Diel", label = "Sample.number")
+# enpclean <- subset_samples(subset_samples(z18S_clean, Library_name == "Library-Hirai2"), sample_sums(subset_samples(z18S_clean, Library_name == "Library-Hirai2")) > 0)
+# enpclean <- prune_samples(!(sample_names(enpclean) %in% c("1757", "1716")), enpclean)
+# ord1 <- ordinate(enpclean, "NMDS", "jaccard", binary = TRUE)
+# plot_ordination(enpclean, ord1, type="samples", color = "Station", title = "Library Hirai 2", shape = "Depth_midpoint", label = "Sample.number")
+# ### these are odd: 
+# ord1 <- ordinate(subset_samples(subset_samples(z18S_clean, Library_name == "library-P2107"), sample_sums(subset_samples(z18S_clean, Library_name == "library-P2107")) > 0), "NMDS", "jaccard", binary = TRUE)
+# plot_ordination(subset_samples(z18S_clean, Library_name == "library-P2107"), ord1, type="samples", color = "Depth_midpoint", title = "Library P2107", shape = "Tow", label = "Sample.number")
+# enpclean <- subset_samples(z18S_clean, Library_name %in% c("library-ENP"))
+# enpclean <- prune_samples(!(sample_names(enpclean) %in% c("S2380", "S2356", "S2408", "S2379", "S2360", "S2427", "S2384", "S2410", "S2432", "S2359", "S2407", "S2428", "S2362", "S2404", "S2414", "S2366")), enpclean)
+# ord1 <- ordinate(enpclean, "NMDS", "jaccard", binary = TRUE)
+# plot_ordination(enpclean, ord1, type="samples", color = "Max_depth", title = "Library ENP", shape = "Diel", label = "Sample.number")
+# ord1 <- ordinate(subset_samples(z18S_clean, Library_name == "GAK"), "NMDS", "jaccard", binary = TRUE)
+# plot_ordination(subset_samples(z18S_clean, Library_name == "GAK"), ord1, type="samples", color = "Depth_midpoint", title = "GAK")
+
+##consider removing S979, S963, S955, S967, S999, S975, S991, also S1368, S1360, S1356, S1340, also 1757, 1716, also "S2380", "S2356", "S2408", "S2379", "S2360", "S2427", "S2384", "S2410", "S2432", "S2359", "S2407", "S2428", "S2362", "S2404", "S2414", "S2366"
+
+```
+
+
+##assess mock communities
+```{r is this reasonable based on the distances among mock communities?}
+# 
+# ord1 <- ordinate(subset_samples(z18S_clean, sample_sums(z18S_clean) > 100), "NMDS", "jaccard", binary = TRUE)
+# plot_ordination(subset_samples(z18S_clean, sample_sums(z18S_clean) > 100), ord1, type="samples", color = "Library_name", title = "All 18S", label = "Sample.number")
+# 
+# ord1 <- ordinate(subset_samples(COI_clean, sample_sums(COI_clean) > 100), "NMDS", "jaccard", binary = TRUE)
+# plot_ordination(subset_samples(COI_clean, sample_sums(COI_clean) > 100), ord1, type="samples", color = "Library_name", title = "All COI")
+# 
+# clean <- subset_samples(subset_samples(z18S_clean, SampleID %in% c("MOCK-EVEN", "MOCK-STAGGERED")), sample_sums(subset_samples(z18S_clean, SampleID %in% c("MOCK-EVEN", "MOCK-STAGGERED"))) > 100)
+# #clean <- prune_samples(!(sample_names(clean) %in% c("1723")), clean)
+# ord1 <- ordinate(clean, "NMDS", "bray")
+# plot_ordination(clean, ord1, type="samples", color = "Library_name", title = "MOCK COMMUNITIES: 18S", shape = "SampleID", label = "Sample.number")
+# 
+clean <- subset_samples(subset_samples(COI_clean, SampleID %in% c("MOCK-EVEN", "MOCK-STAGGERED")), sample_sums(subset_samples(COI_clean, SampleID %in% c("MOCK-EVEN", "MOCK-STAGGERED"))) > 1000)
+plot_richness(clean, measures = "Simpson", x = "Library_name") + facet_wrap(.~SampleID) 
+
+ord <- ordinate(clean, "NMDS", "bray")
+plotord <- plot_ordination(clean, ord, type = "samples", color  = "Library_name", shape = "SampleID") + scale_color_brewer(palette = "Set1", name = "Sequencing Run") + scale_shape_manual(values = c(16, 17), name = "Mock Community Type")
+#ord1 <- ordinate(prune_samples(!(sample_names(clean) %in% c("S2238", "S2286", "S2285")), clean), "NMDS", "bray")
+#plotord1 <- plot_ordination(prune_samples(!(sample_names(clean) %in% c("S2238", "S2286", "S2285")), clean), ord1, type = "samples", color  = "Library_name", shape = "SampleID") + scale_color_brewer(palette = "Set1", name = "Sequencing Run") + scale_shape_manual(values = c(16, 17), name = "Mock Community Type")
+
+plotords <- plotord + geom_magnify(from=c(-.119, -.0105, -.1178, -.00985), to = c(0.2, -0.1, 0.85,0.6)) + ggtitle("COI, Mock Communities")
+plotords
+
+
+
+clean <- subset_samples(subset_samples(z18S_clean, SampleID %in% c("MOCK-EVEN", "MOCK-STAGGERED")), sample_sums(subset_samples(z18S_clean, SampleID %in% c("MOCK-EVEN", "MOCK-STAGGERED"))) > 1000)
+plot_richness(clean, measures = "Simpson", x = "Library_name") + facet_wrap(.~SampleID) 
+ord1 <- ordinate(subset_samples(clean, Sample.number != 1723), "NMDS", "bray")
+plotord18S <- plot_ordination(subset_samples(clean, Sample.number != 1723), ord1, type = "samples", color  = "Library_name", shape = "SampleID")+ scale_color_brewer(palette = "Set1", name = "Sequencing Run") + scale_shape_manual(values = c(16, 17), name = "Mock Community Type")+ ggtitle("18S, Mock Communities")
+plotord18S
+#plotord18S <- plotord18S + geom_magnify(from=c(-.1188, -.0104, -.1177, -0.01), to = c(0.1, -0.2, 0.75,0.6)) + ggtitle("18S, Mock Community Samples")
+#plotord18S
+
+bothords <- ggarrange(plotord18S, plotords, align = "hv", common.legend = T, legend = "right", labels = c("a)", "b)"))
+jpeg(file = "~/Documents/Chapter4/BasinScale_AllSamples_v1/Plots/MockCommunityOrdination.jpeg", height =3, width = 7.5, unit = "in", quality = 100, res = 300)
+bothords
+dev.off()
+# clean <- rarefy_even_depth(clean, sample.size = 10000)
+# phyloseq_standardize_otu_abundance(clean, method = "pa")
+# #clean <- subset_samples(clean, replicate %in% c( "rep3"))
+# #clean <- prune_samples(!(sample_names(clean) %in% c("S2238", "S2286", "S2287", "S2237", "S2285")), clean)
+# ord1 <- ordinate(clean, "NMDS",  "bray")
+# plot_ordination(clean, ord1, type="samples", color = "Library_name", title = "MOCK COMMUNITIES: 18S", shape = "replicate", label = "Sample.number")
+# 
+
+
+
+tax_table(z18S_clean) <- tax_table(as.matrix(ZhanGoodTax))
+tax_table(COI_clean) <- tax_table(as.matrix(COIGoodTax))
+
+clean18s <- subset_samples(subset_samples(z18S_clean, SampleID %in% c("MOCK-EVEN", "MOCK-STAGGERED")), sample_sums(subset_samples(z18S_clean, SampleID %in% c("MOCK-EVEN", "MOCK-STAGGERED"))) > 1000)
+cleanCOI <- subset_samples(subset_samples(COI_clean, SampleID %in% c("MOCK-EVEN", "MOCK-STAGGERED")), sample_sums(subset_samples(COI_clean, SampleID %in% c("MOCK-EVEN", "MOCK-STAGGERED"))) > 1000)
+
+
+save(clean18s, cleanCOI, file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/data_objects/CleanMOCKSPhyloseqs.rdat")
+
+
+clean18s <- rarefy_even_depth(clean18s)
+cleanCOI <- rarefy_even_depth(cleanCOI, sample.size = 10200)
+
+plot_richness(clean18s, measures = "Chao1", x = "Library_name") + facet_wrap(.~SampleID) + ylim(0,320) + ylab("Chao estimated richness") + ggtitle("18S Mock Communities")+ theme(axis.text.x = element_blank())
+plot_richness(cleanCOI, measures = "Chao1", x = "Library_name") + facet_wrap(.~SampleID) + ylim(0,320) + ylab("Chao estimated richness") + ggtitle("COI Mock Communities")+ theme(axis.text.x = element_blank())
+
+
+
+clean18s_glom <- tax_glom(clean18s, "X8")
+taxa_names(clean18s_glom) <- tax_table(clean18s_glom)[,"X8"]
+sort(taxa_sums(clean18s_glom))
+tax_table(clean18s_glom)[,"X8"][tax_table(clean18s_glom)[,"X8"] == "Polychaeta"] <- "Other"
+tax_table(clean18s_glom)[,"X8"][tax_table(clean18s_glom)[,"X8"] == "Tentaculata"] <- "Other"
+tax_table(clean18s_glom)[,"X8"][tax_table(clean18s_glom)[,"X8"] == "Actinoptergii"] <- "Other"
+tax_table(clean18s_glom)[,"X8"][tax_table(clean18s_glom)[,"X8"] == "Anthozoa"] <- "Other"
+clean18s_glom <- tax_glom(transform_sample_counts(clean18s_glom,  function(x) x / sum(x)), "X8")
+
+
+tax_table(cleanCOI)[,"X1"][tax_table(cleanCOI)[,"X1"] == "HYPNO032-15__Praya_dubia\tMZGdb_v2023-m01-12 (BOLD:coi)\tAnimalia"] <- "Animalia"
+cleanCOI_glom <- tax_glom(cleanCOI, "X8")
+taxa_names(cleanCOI_glom) <- tax_table(cleanCOI_glom)[,"X8"]
+sort(taxa_sums(cleanCOI_glom))
+tax_table(cleanCOI_glom)[,"X8"][tax_table(cleanCOI_glom)[,"X8"] == "Polychaeta"] <- "Other"
+tax_table(cleanCOI_glom)[,"X8"][tax_table(cleanCOI_glom)[,"X8"] == "Tentaculata"] <- "Other"
+tax_table(cleanCOI_glom)[,"X8"][tax_table(cleanCOI_glom)[,"X8"] == "Actinoptergii"] <- "Other"
+tax_table(cleanCOI_glom)[,"X8"][tax_table(cleanCOI_glom)[,"X8"] == "Sagittoidea"] <- "Other"
+tax_table(cleanCOI_glom)[,"X8"][tax_table(cleanCOI_glom)[,"X8"] == "Cephalopoda"] <- "Other"
+tax_table(cleanCOI_glom)[,"X8"][tax_table(cleanCOI_glom)[,"X8"] == "Echinoidea"] <- "Other"
+tax_table(cleanCOI_glom)[,"X8"][tax_table(cleanCOI_glom)[,"X8"] == "Appendicularia"] <- "Other"
+tax_table(cleanCOI_glom)[,"X8"][tax_table(cleanCOI_glom)[,"X8"] == "Branchiopoda"] <- "Other"
+cleanCOI_glom <- tax_glom(transform_sample_counts(cleanCOI_glom,  function(x) x / sum(x)), "X8")
+
+
+plot_bar(clean18s_glom, fill = "X8", x = "Sample.number") + facet_wrap(.~SampleID, scales = "free") + scale_x_discrete(labels = sample_data(clean18s_glom)$Library_name) + scale_fill_manual(name = "Taxon", values = c("Actinoptergyii"="#006400","Appendicularia"="#0000EE", "Gastropoda" = "#FF6EB4", "Hydrozoa" = "#FFC125", "Hexanauplia" = "#9A32CD", "Malacostraca" = "#EE2C2C", "Other" = "#00C5CD", "Scyphozoa" = "#9ACD32", "Thaliacea" = "#BFEFFF", "Ostracoda"="#FFB6C1"), limits = c("Actinoptergyii","Appendicularia", "Gastropoda", "Hydrozoa", "Hexanauplia", "Malacostraca", "Other", "Scyphozoa", "Thaliacea", "Ostracoda")) + ggtitle("18S Mock Communities")
+plot_bar(cleanCOI_glom, fill = "X8", x = "Sample.number") + facet_wrap(.~SampleID, scales = "free") + scale_x_discrete(labels = sample_data(cleanCOI_glom)$Library_name) + scale_fill_manual(name = "Taxon", values = c("Actinoptergyii"="#006400","Appendicularia"="#0000EE", "Gastropoda" = "#FF6EB4", "Hydrozoa" = "#FFC125", "Hexanauplia" = "#9A32CD", "Malacostraca" = "#EE2C2C", "Other" = "#00C5CD", "Scyphozoa" = "#9ACD32", "Thaliacea" = "#BFEFFF", "Ostracoda"="#FFB6C1"), limits = c("Actinoptergyii","Appendicularia", "Gastropoda", "Hydrozoa", "Hexanauplia", "Malacostraca", "Other", "Scyphozoa", "Thaliacea", "Ostracoda")) + ggtitle("COI Mock Communities")
+
+
+mockcomp <-  read.csv("~/Documents/barcodes_ind/MockComposition_QIIME_Input.csv")
+mockcommunityphylo <- phyloseq(otu_table(mockcomp[,c("Mock_Even_ng", "Mock_Staggered_ng")], taxa_are_rows = T),  tax_table(mockcomp[,c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")]))
+mockcommunityphylopa <- phyloseq_standardize_otu_abundance(mockcommunityphylo, method = "pa")
+
+plot_richness(mockcommunityphylopa, measures = "Observed") + facet_wrap(.~samples, scales = "free") + ylim(0,320) + ylab("Observed richness") + ggtitle("Assembled Mock Community") + theme(axis.text.x = element_blank())
+
+
+mockcommunityphylo_glom <- tax_glom(mockcommunityphylo, "ta3")
+taxa_names(mockcommunityphylo_glom) <- tax_table(mockcommunityphylo_glom)[,"ta3"]
+sort(taxa_sums(mockcommunityphylo_glom))
+tax_table(mockcommunityphylo_glom)[,"ta3"][tax_table(mockcommunityphylo_glom)[,"ta3"] == "Polychaeta"] <- "Other"
+tax_table(mockcommunityphylo_glom)[,"ta3"][tax_table(mockcommunityphylo_glom)[,"ta3"] == "Tentaculata"] <- "Other"
+tax_table(mockcommunityphylo_glom)[,"ta3"][tax_table(mockcommunityphylo_glom)[,"ta3"] == "Actinoptergii"] <- "Other"
+tax_table(mockcommunityphylo_glom)[,"ta3"][tax_table(mockcommunityphylo_glom)[,"ta3"] == "Sagittoidea"] <- "Other"
+tax_table(mockcommunityphylo_glom)[,"ta3"][tax_table(mockcommunityphylo_glom)[,"ta3"] == "Cephalopoda"] <- "Other"
+tax_table(mockcommunityphylo_glom)[,"ta3"][tax_table(mockcommunityphylo_glom)[,"ta3"] == "Echinoidea"] <- "Other"
+tax_table(mockcommunityphylo_glom)[,"ta3"][tax_table(mockcommunityphylo_glom)[,"ta3"] == "Appendicularia"] <- "Other"
+tax_table(mockcommunityphylo_glom)[,"ta3"][tax_table(mockcommunityphylo_glom)[,"ta3"] == "Branchiopoda"] <- "Other"
+mockcommunityphylo_glom <- tax_glom(transform_sample_counts(mockcommunityphylo_glom,  function(x) x / sum(x)), "ta3")
+
+plot_bar(phyloseq_standardize_otu_abundance(mockcommunityphylo_glom), fill = "ta3")+ facet_wrap(.~Sample, scales = "free") + scale_fill_manual(name = "Taxon", values = c("Actinoptergyii"="#006400","Appendicularia"="#0000EE", "Gastropoda" = "#FF6EB4", "Hydrozoa" = "#FFC125", "Hexanauplia" = "#9A32CD", "Malacostraca" = "#EE2C2C", "Other" = "#00C5CD", "Scyphozoa" = "#9ACD32", "Thaliacea" = "#BFEFFF", "Ostracoda"="#FFB6C1"), limits = c("Actinoptergyii","Appendicularia", "Gastropoda", "Hydrozoa", "Hexanauplia", "Malacostraca", "Other", "Scyphozoa", "Thaliacea", "Ostracoda")) + ggtitle("Assembled Mock Community")
+
+```
+
+Seems to be reasonable to remove outliers, based on the distances we see among mock communities
+
+
+Except:
+##ENP is weird - are the outlier taxa in the mock communities represented within the full dataset? is this lab contamination? 
+```{r}
+# cleanenp18s <- subset_samples(z18S_clean, Library_name == "library-ENP")
+# tax_table(cleanenp18s) <- tax_table(as.matrix(ZhanGoodTax))
+# cleanenp18ssubset <- prune_taxa(names(sort(taxa_sums(cleanenp18s), TRUE)[1:400]), cleanenp18s)
+# plot_heatmap(cleanenp18ssubset, sample.order = "Max_depth", sample.label = "net", max.label = 400)
+# jpeg("~/Desktop/18stemp.jpeg", height = 20, width = 10, units = "in", res = 300)
+# plot_heatmap(cleanenp18ssubset, sample.order = "Max_depth", sample.label = "net", taxa.label = "X12", max.label = 400)
+# dev.off()
+# 
+# cleanenpcoi <- subset_samples(COI_clean, Library_name %in% c("library-ENP", "DG5B") | SampleID %in% c("MOCK-EVEN", "MOCK-STAGGERED"))
+# tax_table(cleanenpcoi) <- tax_table(as.matrix(COIGoodTax))
+# cleanenpcoisubset <- prune_taxa(names(sort(taxa_sums(cleanenpcoi), TRUE)[1:400]), cleanenpcoi)
+# plot_heatmap(cleanenpcoisubset, sample.order = "Max_depth", sample.label = "Library_name", taxa.label = "X12", max.label = 400)
+# 
+
+
+#jpeg("~/Desktop/coitemp.jpeg", height = 20, width = 6, units = "in", res = 300)
+#plot_heatmap(cleanenpcoisubset, sample.order = "Max_depth", sample.label = "Library_name", taxa.label = "X12", max.label = #400)
+#dev.off()
+```
+
+
+
+##remove outlier samples
+```{r}
+badcoi <- c("S263", "S2240", "S2215", "S2218", "S2235", "S2260", "S2263", "S2288", "S2283", "S2266", "S2236", "S2212", "S2284", "S2264", "S2216", "S2270", "S2222", "S2213", "S3116", "S3106", "S3103", "S3107", "S3105",  "S3101", "S3118", "S1123", "S1525", "S1897", "S1825", "S3004", "S1888", "S1840", "S1936")
+bad18s <- c("S1368", "S1360", "S1356", "S1340", "1757", "1716", "S2380", "S2356", "S2408", "S2379", "S2360", "S2427", "S2384", "S2410", "S2432", "S2359", "S2407", "S2428", "S2362", "S2404", "S2414", "S2366", "S991", "S999", "S975", "S979", "S963", "S955", "S967", "S1831", "S1362", "S1361", "1667", "S1984", "S2032", "S2080")
+COI_clean <- prune_samples(!(sample_names(COI_clean) %in% badcoi), COI_clean)
+z18S_clean <- prune_samples(!(sample_names(z18S_clean) %in% bad18s), z18S_clean)
+```
+
+##remove rare taxa
+we'll remove anything not observed in at least two samples. It's reasonable to something appeared only in one biological sample, or that a rare taxon doesn't appear in all three PCR replicates (especially since we removed some PCR replicates), but it should appear in at least two samples 
+
+```{r}
+COI_clean <- filter_taxa(COI_clean, function(x) sum(x > 1) > 1, TRUE)
+z18S_clean <- filter_taxa(z18S_clean, function(x) sum(x > 1) > 1, TRUE)
+COI_clean <- subset_samples(COI_clean, sample_sums(COI_clean) > 0)
+z18S_clean <- subset_samples(z18S_clean, sample_sums(z18S_clean) > 0)
+
+
+#ord1 <- ordinate(COI_clean, "NMDS", "jaccard", binary = TRUE)
+#plot_ordination(COI_clean, ord1, type="samples", color = "Library_name", title = "Cleaned Data: 18S", shape = "replicate", label = "Sample.number")
+
+#ord1 <- ordinate(z18S_clean, "NMDS", "jaccard", binary = TRUE)
+#plot_ordination(z18S_clean, ord1, type="samples", color = "Library_name", title = "Cleaned Data: COI", shape = "replicate", label = "Sample.number")
+```
+
+```{r update lat/lon so that day night are at a single location}
+
+sample_data(z18S_clean)$Lat.N.[sample_data(z18S_clean)$Cruise == "P1604" & sample_data(z18S_clean)$Station == "Cycle 1"] <- "33.038935"
+sample_data(z18S_clean)$Lon.W.[sample_data(z18S_clean)$Cruise == "P1604" & sample_data(z18S_clean)$Station == "Cycle 1"] <- "-122.9185"
+sample_data(z18S_clean)$Lat.N.[sample_data(z18S_clean)$Cruise == "P1604" & sample_data(z18S_clean)$Station == "Cycle 2"] <- "33.54405"
+sample_data(z18S_clean)$Lon.W.[sample_data(z18S_clean)$Cruise == "P1604" & sample_data(z18S_clean)$Station == "Cycle 2"] <- "-122.0922"
+sample_data(z18S_clean)$Lat.N.[sample_data(z18S_clean)$Cruise == "P1604" & sample_data(z18S_clean)$Station == "Cycle 3"] <- "34.713655"
+sample_data(z18S_clean)$Lon.W.[sample_data(z18S_clean)$Cruise == "P1604" & sample_data(z18S_clean)$Station == "Cycle 3"] <- "-122.0922"
+sample_data(z18S_clean)$Lat.N.[sample_data(z18S_clean)$Cruise == "P1604" & sample_data(z18S_clean)$Station == "Cycle 4"] <- "34.50589"
+sample_data(z18S_clean)$Lon.W.[sample_data(z18S_clean)$Cruise == "P1604" & sample_data(z18S_clean)$Station == "Cycle 4"] <- "-122.0922"
+
+sample_data(z18S_clean)$Lat.N.[sample_data(z18S_clean)$Cruise == "P2007"] <- "32.51216667"
+sample_data(z18S_clean)$Lon.W.[sample_data(z18S_clean)$Cruise == "P2007" ] <- "-118.3308667"
+
+sample_data(z18S_clean)$Lat.N.[sample_data(z18S_clean)$Cruise == "P2107" & sample_data(z18S_clean)$Station == "Cycle 1"] <- "36.145"
+sample_data(z18S_clean)$Lon.W.[sample_data(z18S_clean)$Cruise == "P2107" & sample_data(z18S_clean)$Station == "Cycle 1"] <- "-122.28"
+sample_data(z18S_clean)$Lat.N.[sample_data(z18S_clean)$Cruise == "P2107" & sample_data(z18S_clean)$Station == "Cycle 3"] <- "34.42"
+sample_data(z18S_clean)$Lon.W.[sample_data(z18S_clean)$Cruise == "P2107" & sample_data(z18S_clean)$Station == "Cycle 3"] <- "-130.41"
+
+sample_data(z18S_clean)$Lat.N.[sample_data(z18S_clean)$Cruise == "NH1208" & sample_data(z18S_clean)$Station == "7"] <- "47.0103165"
+sample_data(z18S_clean)$Lon.W.[sample_data(z18S_clean)$Cruise == "NH1208" & sample_data(z18S_clean)$Station == "7"] <- "-144.6739975"
+sample_data(z18S_clean)$Lat.N.[sample_data(z18S_clean)$Cruise == "NH1208" & sample_data(z18S_clean)$Station == "15"] <- "43.04988"
+sample_data(z18S_clean)$Lon.W.[sample_data(z18S_clean)$Cruise == "NH1208" & sample_data(z18S_clean)$Station == "15"] <- "-138.1465175"
+sample_data(z18S_clean)$Lat.N.[sample_data(z18S_clean)$Cruise == "NH1208" & sample_data(z18S_clean)$Station == "34"] <- "33.5469525"
+sample_data(z18S_clean)$Lon.W.[sample_data(z18S_clean)$Cruise == "NH1208" & sample_data(z18S_clean)$Station == "34"] <- "-134.9893835"
+
+sample_data(z18S_clean)$Lat.N.[sample_data(z18S_clean)$Cruise == "DG5B"] <- "10.8595"
+sample_data(z18S_clean)$Lon.W.[sample_data(z18S_clean)$Cruise == "DG5B" ] <- "-116.20965"
+
+
+##COI
+sample_data(COI_clean)$Lat.N.[sample_data(COI_clean)$Cruise == "P1604" & sample_data(COI_clean)$Station == "Cycle 1"] <- "33.038935"
+sample_data(COI_clean)$Lon.W.[sample_data(COI_clean)$Cruise == "P1604" & sample_data(COI_clean)$Station == "Cycle 1"] <- "-122.9185"
+sample_data(COI_clean)$Lat.N.[sample_data(COI_clean)$Cruise == "P1604" & sample_data(COI_clean)$Station == "Cycle 2"] <- "33.54405"
+sample_data(COI_clean)$Lon.W.[sample_data(COI_clean)$Cruise == "P1604" & sample_data(COI_clean)$Station == "Cycle 2"] <- "-122.0922"
+sample_data(COI_clean)$Lat.N.[sample_data(COI_clean)$Cruise == "P1604" & sample_data(COI_clean)$Station == "Cycle 3"] <- "34.713655"
+sample_data(COI_clean)$Lon.W.[sample_data(COI_clean)$Cruise == "P1604" & sample_data(COI_clean)$Station == "Cycle 3"] <- "-122.0922"
+sample_data(COI_clean)$Lat.N.[sample_data(COI_clean)$Cruise == "P1604" & sample_data(COI_clean)$Station == "Cycle 4"] <- "34.50589"
+sample_data(COI_clean)$Lon.W.[sample_data(COI_clean)$Cruise == "P1604" & sample_data(COI_clean)$Station == "Cycle 4"] <- "-122.0922"
+
+sample_data(COI_clean)$Lat.N.[sample_data(COI_clean)$Cruise == "P2007"] <- "32.51216667"
+sample_data(COI_clean)$Lon.W.[sample_data(COI_clean)$Cruise == "P2007" ] <- "-118.3308667"
+
+sample_data(COI_clean)$Lat.N.[sample_data(COI_clean)$Cruise == "P2107" & sample_data(COI_clean)$Station == "Cycle 1"] <- "36.145"
+sample_data(COI_clean)$Lon.W.[sample_data(COI_clean)$Cruise == "P2107" & sample_data(COI_clean)$Station == "Cycle 1"] <- "-122.28"
+sample_data(COI_clean)$Lat.N.[sample_data(COI_clean)$Cruise == "P2107" & sample_data(COI_clean)$Station == "Cycle 3"] <- "34.42"
+sample_data(COI_clean)$Lon.W.[sample_data(COI_clean)$Cruise == "P2107" & sample_data(COI_clean)$Station == "Cycle 3"] <- "-130.41"
+
+sample_data(COI_clean)$Lat.N.[sample_data(COI_clean)$Cruise == "NH1208" & sample_data(COI_clean)$Station == "7"] <- "47.0103165"
+sample_data(COI_clean)$Lon.W.[sample_data(COI_clean)$Cruise == "NH1208" & sample_data(COI_clean)$Station == "7"] <- "-144.6739975"
+sample_data(COI_clean)$Lat.N.[sample_data(COI_clean)$Cruise == "NH1208" & sample_data(COI_clean)$Station == "15"] <- "43.04988"
+sample_data(COI_clean)$Lon.W.[sample_data(COI_clean)$Cruise == "NH1208" & sample_data(COI_clean)$Station == "15"] <- "-138.1465175"
+sample_data(COI_clean)$Lat.N.[sample_data(COI_clean)$Cruise == "NH1208" & sample_data(COI_clean)$Station == "34"] <- "33.5469525"
+sample_data(COI_clean)$Lon.W.[sample_data(COI_clean)$Cruise == "NH1208" & sample_data(COI_clean)$Station == "34"] <- "-134.9893835"
+
+sample_data(COI_clean)$Lat.N.[sample_data(COI_clean)$Cruise == "DG5B"] <- "10.8595"
+sample_data(COI_clean)$Lon.W.[sample_data(COI_clean)$Cruise == "DG5B" ] <- "-116.20965"
+```
+
+# add location numbers
+```{r}
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "47.0103165"] <- 11 
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "43.04988"] <-  12
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "33.5469525"] <-13
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "57.19301"] <-    32  
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "10.8595"] <- 31
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "33.038935"] <- 30  
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "33.54405"] <-  29
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "34.713655"] <-28
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "34.50589"] <-   27
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "32.51216667"] <-     26
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "36.145"] <-  25
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "34.42"] <- 24
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "54.99333333"] <- 23    
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "50.00166667"] <- 19    
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "45.00666667"] <-   17  
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "40.01166667"] <-     16
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "35.03166667"] <-     18
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "24"] <- 1
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "20.01"] <-2 
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "15.01333333"] <- 3     
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "23.00833333"] <-  4   
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "23.00166667"] <-   5  
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "0.02"] <- 6
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "-0.001666667"] <-  7    
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "0.001666667"] <-     20
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "0"] <-   8
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "23.00333333"] <- 9    
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "23.01"] <-  10
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "33.75"] <- 21
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "33"] <-  22
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "32.91"] <- 14
+sample_data(z18S_clean)$Location.ID[sample_data(z18S_clean)$Lat.N. == "31"] <- 15
+
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "47.0103165"] <- 11 
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "43.04988"] <-  12
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "33.5469525"] <-13
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "57.19301"] <-    32  
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "10.8595"] <- 31
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "33.038935"] <- 30  
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "33.54405"] <-  29
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "34.713655"] <-28
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "34.50589"] <-   27
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "32.51216667"] <-     26
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "36.145"] <-  25
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "34.42"] <- 24
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "54.99333333"] <- 23    
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "50.00166667"] <- 19    
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "45.00666667"] <-   17  
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "40.01166667"] <-     16
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "35.03166667"] <-     18
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "24"] <- 1
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "20.01"] <-2 
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "15.01333333"] <- 3     
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "23.00833333"] <-  4   
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "23.00166667"] <-   5  
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "0.02"] <- 6
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "-0.001666667"] <-  7    
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "0.001666667"] <-     20
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "0"] <-   8
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "23.00333333"] <- 9    
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "23.01"] <-  10
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "33.75"] <- 21
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "33"] <-  22
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "32.91"] <- 14
+sample_data(COI_clean)$Location.ID[sample_data(COI_clean)$Lat.N. == "31"] <- 15
+
+```
+
+# add depth bins
+```{r}
+sample_data(z18S_clean)$Depth_midpoint_num <- as.numeric(sample_data(z18S_clean)$Depth_midpoint)
+sample_data(COI_clean)$Depth_midpoint_num <- as.numeric(sample_data(COI_clean)$Depth_midpoint)
+
+sample_data(z18S_clean)$depth_bin[sample_data(z18S_clean)$Depth_midpoint_num < 200] <- "0-200m"
+sample_data(z18S_clean)$depth_bin[sample_data(z18S_clean)$Depth_midpoint_num >= 200 & sample_data(z18S_clean)$Depth_midpoint_num < 500] <- "200-500m"
+sample_data(z18S_clean)$depth_bin[sample_data(z18S_clean)$Depth_midpoint_num >= 500 & sample_data(z18S_clean)$Depth_midpoint_num < 1000] <- "500-1000m"
+sample_data(z18S_clean)$depth_bin[sample_data(z18S_clean)$Depth_midpoint_num >= 1000] <- ">1000m"
+
+
+
+sample_data(COI_clean)$depth_bin[sample_data(COI_clean)$Depth_midpoint_num < 200] <- "0-200m"
+sample_data(COI_clean)$depth_bin[sample_data(COI_clean)$Depth_midpoint_num >= 200 & sample_data(COI_clean)$Depth_midpoint_num < 500] <- "200-500m"
+sample_data(COI_clean)$depth_bin[sample_data(COI_clean)$Depth_midpoint_num >= 500 & sample_data(COI_clean)$Depth_midpoint_num < 1000] <- "500-1000m"
+sample_data(COI_clean)$depth_bin[sample_data(COI_clean)$Depth_midpoint_num >= 1000] <- ">1000m"
+
+```
+
+
+```{r take a peak at richness}
+
+plot_richness(z18S_clean, x = "Library_name", measures = c("Observed", "Chao1", "Shannon", "Simpson")) + ggtitle("18S richness")
+
+plot_richness(COI_clean, x = "Library_name", measures = c("Observed", "Chao1", "Shannon", "Simpson")) + ggtitle("COI richness")
+
+#plot_heatmap(prune_taxa(names(sort(taxa_sums(subset_samples(z18S_clean, Library_name == "library-ENP")),TRUE)[1:100]), subset_samples(z18S_clean, Library_name == "library-ENP")), sample.order = "Max_depth", sample.label = "depth_bin")
+
+#plot_heatmap(prune_taxa(names(sort(taxa_sums(subset_samples(COI_clean, Library_name == "library-ENP")),TRUE)[1:100]), subset_samples(COI_clean, Library_name == "library-ENP")), sample.order = "Max_depth", sample.label = "depth_bin")
+
+```
+
+
+
+```{r take a peak at mock communities - troubleshooting ENP}
+# clean18S <- subset_samples(subset_samples(z18S_clean, SampleID %in% c("MOCK-EVEN", "MOCK-STAGGERED")), sample_sums(subset_samples(z18S_clean, SampleID %in% c("MOCK-EVEN", "MOCK-STAGGERED"))) > 100)
+# #clean18S <- prune_samples(!(sample_names(clean18S) %in% c("1723")), clean18S)
+# ord18 <- ordinate(clean18S, "NMDS", "jaccard", binary = TRUE)
+# plot_ordination(clean18S, ord18, type="samples", color = "Library_name", title = "MOCK COMMUNITIES: 18S", shape = "SampleID", label = "Sample.number")
+# 
+# cleancoi <- subset_samples(subset_samples(COI_clean, SampleID %in% c("MOCK-EVEN", "MOCK-STAGGERED")), sample_sums(subset_samples(COI_clean, SampleID %in% c("MOCK-EVEN", "MOCK-STAGGERED"))) > 1000)
+# #cleancoi <- rarefy_even_depth(cleancoi, sample.size = 10000)
+# #phyloseq_standardize_otu_abundance(cleancoi, method = "pa")
+# #clean <- subset_samples(cleancoi, replicate %in% c( "rep3"))
+# #cleancoi <- prune_samples(!(sample_names(cleancoi) %in% c("S2238", "S2286", "S2287", "S2237", "S2285")), cleancoi)
+# ordcoi <- ordinate(cleancoi, "NMDS", "jaccard", binary = TRUE)
+# plot_ordination(cleancoi, ordcoi, type="samples", color = "Library_name", title = "MOCK COMMUNITIES: 18S", shape = "replicate", label = "Sample.number")
+# 
+# plot_heatmap(prune_taxa(names(sort(taxa_sums(clean18S),TRUE)[1:250]), clean18S), sample.order = "SampleID", sample.label = "Library_name") + ggtitle("18S")
+# plot_heatmap(prune_taxa(names(sort(taxa_sums(cleancoi),TRUE)[1:250]), cleancoi), sample.order = "SampleID", sample.label = "Library_name") + ggtitle("COI")
+# 
+# plot_richness(clean18S, x = "Library_name", measures = c("Observed", "Chao1", "Shannon", "Simpson")) + ggtitle("18S richness")
+# 
+# plot_richness(cleancoi, x = "Library_name", measures = c("Observed", "Chao1", "Shannon", "Simpson")) + ggtitle("COI richness")
+```
+
+Seems like all the COI data we have is problematic - let's just use the data from Alexus
+```{r}
+z18S_clean <- z18S_clean
+COI_clean <- subset_samples(COI_clean, Library_name != "library-ENP")
+
+```
+
+Seems like 18S is also really rich which seems like a sequencing error - remove for now 
+```{r}
+z18S_clean <- subset_samples(z18S_clean, Library_name != "library-ENP")
+COI_clean <- COI_clean
+
+```
+
+
+#merge good replicates, use averages (for PCR replicates)
+```{r merge replicates}
+
+sample_data(COI_clean)$formerging <- paste(sample_data(COI_clean)$Cruise, sample_data(COI_clean)$Station, sample_data(COI_clean)$Tow, sample_data(COI_clean)$net, sample_data(COI_clean)$Mesh_size, sample_data(COI_clean)$Size_frac, sample_data(COI_clean)$Min_depth, sample_data(COI_clean)$Max_depth, sample_data(COI_clean)$Depth_midpoint, sample_data(COI_clean)$Diel, sample_data(COI_clean)$Province, sample_data(COI_clean)$Lat.N., sample_data(COI_clean)$Lon.W., sample_data(COI_clean)$depth_bin, sample_data(COI_clean)$Location.ID, sep = ":")
+
+sample_data(z18S_clean)$formerging <- paste(sample_data(z18S_clean)$Cruise, sample_data(z18S_clean)$Station, sample_data(z18S_clean)$Tow, sample_data(z18S_clean)$net, sample_data(z18S_clean)$Mesh_size, sample_data(z18S_clean)$Size_frac, sample_data(z18S_clean)$Min_depth, sample_data(z18S_clean)$Max_depth, sample_data(z18S_clean)$Depth_midpoint, sample_data(z18S_clean)$Diel, sample_data(z18S_clean)$Province, sample_data(z18S_clean)$Lat.N., sample_data(z18S_clean)$Lon.W., sample_data(z18S_clean)$depth_bin, sample_data(z18S_clean)$Location.ID, sep = ":")
+
+COI_merged <- merge_samples(COI_clean, group = "formerging")
+z18S_merged <- merge_samples(z18S_clean, group = "formerging")
+
+sample_data(COI_merged) <- sample_data(COI_merged)[,c("Cruise", "Station", "Tow", "net", "Mesh_size", "Size_frac", "Min_depth", "Max_depth", "Depth_midpoint", "Diel", "Province", "Lat.N.", "Lon.W.", "depth_bin")]
+sample_data(z18S_merged) <- sample_data(z18S_merged)[,c("Cruise", "Station", "Tow", "net", "Mesh_size", "Size_frac", "Min_depth", "Max_depth", "Depth_midpoint", "Diel", "Province", "Lat.N.", "Lon.W.", "depth_bin")]
+
+```
+
+
+
+```{r pull out metadata again}
+sample_data(z18S_merged)$Cruise         <- stringr::str_split_i(sample_names(z18S_merged), ":", i = 1)
+sample_data(z18S_merged)$Station        <- stringr::str_split_i(sample_names(z18S_merged), ":", i = 2)
+sample_data(z18S_merged)$Tow            <- stringr::str_split_i(sample_names(z18S_merged), ":", i = 3)
+sample_data(z18S_merged)$net            <- stringr::str_split_i(sample_names(z18S_merged), ":", i = 4)
+sample_data(z18S_merged)$Mesh_size      <- stringr::str_split_i(sample_names(z18S_merged), ":", i = 5)
+sample_data(z18S_merged)$Size_frac      <- stringr::str_split_i(sample_names(z18S_merged), ":", i = 6)
+sample_data(z18S_merged)$Min_depth      <- stringr::str_split_i(sample_names(z18S_merged), ":", i = 7)
+sample_data(z18S_merged)$Max_depth      <- stringr::str_split_i(sample_names(z18S_merged), ":", i = 8)
+sample_data(z18S_merged)$Depth_midpoint <- stringr::str_split_i(sample_names(z18S_merged), ":", i = 9)
+sample_data(z18S_merged)$Diel           <- stringr::str_split_i(sample_names(z18S_merged), ":", i = 10)
+sample_data(z18S_merged)$Province       <- stringr::str_split_i(sample_names(z18S_merged), ":", i = 11)
+sample_data(z18S_merged)$Lat.N.         <- stringr::str_split_i(sample_names(z18S_merged), ":", i = 12)
+sample_data(z18S_merged)$Lon.W.         <- stringr::str_split_i(sample_names(z18S_merged), ":", i = 13)
+sample_data(z18S_merged)$depth_bin      <- stringr::str_split_i(sample_names(z18S_merged), ":", i = 14)
+sample_data(z18S_merged)$Location.ID    <- as.numeric(stringr::str_split_i(sample_names(z18S_merged), ":", i = 15))
+
+sample_data(COI_merged)$Cruise         <- stringr::str_split_i(sample_names(COI_merged), ":", i = 1)
+sample_data(COI_merged)$Station        <- stringr::str_split_i(sample_names(COI_merged), ":", i = 2)
+sample_data(COI_merged)$Tow            <- stringr::str_split_i(sample_names(COI_merged), ":", i = 3)
+sample_data(COI_merged)$net            <- stringr::str_split_i(sample_names(COI_merged), ":", i = 4)
+sample_data(COI_merged)$Mesh_size      <- stringr::str_split_i(sample_names(COI_merged), ":", i = 5)
+sample_data(COI_merged)$Size_frac      <- stringr::str_split_i(sample_names(COI_merged), ":", i = 6)
+sample_data(COI_merged)$Min_depth      <- stringr::str_split_i(sample_names(COI_merged), ":", i = 7)
+sample_data(COI_merged)$Max_depth      <- stringr::str_split_i(sample_names(COI_merged), ":", i = 8)
+sample_data(COI_merged)$Depth_midpoint <- stringr::str_split_i(sample_names(COI_merged), ":", i = 9)
+sample_data(COI_merged)$Diel           <- stringr::str_split_i(sample_names(COI_merged), ":", i = 10)
+sample_data(COI_merged)$Province       <- stringr::str_split_i(sample_names(COI_merged), ":", i = 11)
+sample_data(COI_merged)$Lat.N.         <- stringr::str_split_i(sample_names(COI_merged), ":", i = 12)
+sample_data(COI_merged)$Lon.W.         <- stringr::str_split_i(sample_names(COI_merged), ":", i = 13)
+sample_data(COI_merged)$depth_bin      <- stringr::str_split_i(sample_names(COI_merged), ":", i = 14)
+sample_data(COI_merged)$Location.ID    <- as.numeric(stringr::str_split_i(sample_names(COI_merged), ":", i = 15))
+
+View(sample_data(COI_merged))
+View(sample_data(z18S_merged))
+```
+
+
+#merge 3 depth bins
+Maybe this should be weighted based on the depths sampled, but that would require 1) normalizing sequencing depth, 2) weighting sequences for each net based on the proportion of the overall range, and 3) summing weighted, normalized sequences. 
+There's already a lot of variability in the types of sampling, the tow times, there can be non-linear profiles for oblique tows - in general, PA or PA after removal of rare taxa will be a more conservative method 
+```{r}
+sample_data(z18S_merged)$formerging <- paste(sample_data(z18S_merged)$Location.ID, sample_data(z18S_merged)$depth_bin, sample_data(z18S_merged)$Diel)
+sample_data(COI_merged)$formerging <- paste(sample_data(COI_merged)$Location.ID, sample_data(COI_merged)$depth_bin, sample_data(COI_merged)$Diel)
+
+
+COI_3depths <- merge_samples(COI_merged, group = "formerging" )
+ZHAN_3depths <- merge_samples(z18S_merged, group = "formerging" )
+
+sample_data(COI_3depths)$Diel      <- stringr::str_split_i(sample_names(COI_3depths), " ", i = 3)
+sample_data(COI_3depths)$depth_bin      <- stringr::str_split_i(sample_names(COI_3depths), " ", i = 2)
+sample_data(COI_3depths)$Location.ID    <- as.numeric(stringr::str_split_i(sample_names(COI_3depths), " ", i = 1))
+
+sample_data(ZHAN_3depths)$Diel      <- stringr::str_split_i(sample_names(ZHAN_3depths), " ", i = 3)
+sample_data(ZHAN_3depths)$depth_bin      <- stringr::str_split_i(sample_names(ZHAN_3depths), " ", i = 2)
+sample_data(ZHAN_3depths)$Location.ID    <- as.numeric(stringr::str_split_i(sample_names(ZHAN_3depths), " ", i = 1))
+
+sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Diel == "day"] <- "Day"
+sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Diel == "night"] <- "Night"
+sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Diel == "day"] <- "Day"
+sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Diel == "night"] <- "Night"
+
+View(sample_data(COI_3depths))
+View(sample_data(ZHAN_3depths))
+
+
+```
+
+#add metadata
+```{r organize metadata}
+#chl: out_CHL
+#exporflux: out_ef
+#netprimaryprod: out_npp
+#oxygen: out_oxy
+#tempsalinity: out_ts
+
+ts_for_phyloseq <- spread(out_ts, key = "key", value = "value")
+ts_for_phyloseq$SampleID <- paste(ts_for_phyloseq$StationID, ts_for_phyloseq$depthbin, sep = " ")
+
+oxy_for_phyloseq <- data.frame(t(out_oxy))
+oxy_for_phyloseq$StationID <- rownames(oxy_for_phyloseq)
+
+chl_for_phyloseq <- data.frame(t(out_CHL))
+chl_for_phyloseq$StationID <- rownames(chl_for_phyloseq)
+
+ef_for_phyloseq <- data.frame(t(out_ef))
+ef_for_phyloseq$StationID <- rownames(ef_for_phyloseq)
+
+npp_for_phyloseq <- data.frame(t(out_npp))
+npp_for_phyloseq$StationID <- rownames(npp_for_phyloseq)
+
+forphyloseq <- c(oxy_for_phyloseq, chl_for_phyloseq, ef_for_phyloseq, npp_for_phyloseq) %>% dplyr::bind_cols() %>% dplyr::select(-c(`StationID...6`, `StationID...12`, `StationID...18`, `StationID...24`))
+forphyloseq$StationID <- rownames(forphyloseq)
+
+metadata_for_phyloseq <- dplyr::full_join(ts_for_phyloseq, forphyloseq)
+
+```
+
+
+```{r add to phyloseq}
+COImetadata <- data.frame(sample_data(COI_3depths))
+COImetadata$SampleID <- paste(COImetadata$Location.ID, COImetadata$depth_bin, sep = " ")
+COImetadata$SampleName <- rownames(COImetadata)
+COImetadata <- merge(COImetadata, metadata_for_phyloseq, by = "SampleID", all.x = T, all.y = F)
+rownames(COImetadata) <- COImetadata$SampleName 
+COImetadata <- COImetadata[, c(
+  "SampleID"      ,
+  "Diel"          ,
+  "Lat.N."        ,
+  "Lon.W."        ,
+  "depth_bin"       ,
+  "Location.ID"   ,
+  "StationID"       ,
+  "chl_meanyearlytotal" ,
+  "chl_meanyearlymax"  ,
+  "chl_meanyearlymin"  ,
+  "chl_meanmean"       ,
+  "chl_meanamplitude"  ,
+  "ef_meanyearlytotal",
+  "ef_meanyearlymax"   ,
+  "ef_meanyearlymin"   ,
+  "ef_meanmean"       ,
+  "ef_meanamplitude"   ,
+  "npp_meanyearlytotal",
+  "npp_meanyearlymax" ,
+  "npp_meanyearlymin"  ,
+  "npp_meanmean"       ,
+  "npp_meanamplitude" ,
+  "depthbin"      ,
+  "MaxOxy"        ,
+  "MaxSal"          ,
+  "MaxTemp"       ,
+  "MeanOxy"       ,
+  "MeanSal"         ,
+  "MeanTemp"      ,
+  "MinOxy"        ,
+  "MinSal"          ,
+  "MinTemp"       ,
+  "oxyat20m"      ,
+  "depth_mod_hypox",
+  "depth_sev_hypox" ,
+  "range_mod_hypox"  ,
+  "range_sev_hypox"  
+)]
+sample_data(COI_3depths) <- sample_data(COImetadata)
+
+ZHANmetadata <- data.frame(sample_data(ZHAN_3depths))
+ZHANmetadata$SampleID <- paste(ZHANmetadata$Location.ID, ZHANmetadata$depth_bin, sep = " ")
+ZHANmetadata$SampleName <- rownames(ZHANmetadata)
+ZHANmetadata <- merge(ZHANmetadata, metadata_for_phyloseq, by = "SampleID", all.x = T, all.y = F)
+rownames(ZHANmetadata) <- ZHANmetadata$SampleName 
+ZHANmetadata <- ZHANmetadata[, c(
+  "SampleID"      ,
+  "Diel"          ,
+  "Lat.N."        ,
+  "Lon.W."        ,
+  "depth_bin"       ,
+  "Location.ID"   ,
+  "StationID"       ,
+  "chl_meanyearlytotal" ,
+  "chl_meanyearlymax"  ,
+  "chl_meanyearlymin"  ,
+  "chl_meanmean"       ,
+  "chl_meanamplitude"  ,
+  "ef_meanyearlytotal",
+  "ef_meanyearlymax"   ,
+  "ef_meanyearlymin"   ,
+  "ef_meanmean"       ,
+  "ef_meanamplitude"   ,
+  "npp_meanyearlytotal",
+  "npp_meanyearlymax" ,
+  "npp_meanyearlymin"  ,
+  "npp_meanmean"       ,
+  "npp_meanamplitude" ,
+  "depthbin"      ,
+  "MaxOxy"        ,
+  "MaxSal"         ,
+  "MaxTemp"       ,
+  "MeanOxy"       ,
+  "MeanSal"         ,
+  "MeanTemp"      ,
+  "MinOxy"        ,
+  "MinSal"          ,
+  "MinTemp"       ,
+  "oxyat20m"      ,
+  "depth_mod_hypox",
+  "depth_sev_hypox" ,
+  "range_mod_hypox"  ,
+  "range_sev_hypox"  
+)]
+sample_data(ZHAN_3depths) <- sample_data(ZHANmetadata)
+
+```
+
+# add location names
+```{r}
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 11] <- "Subarctic Gyre South East"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 12] <- "Transition East"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 13] <- "Subtropical Gyre North East"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 32] <- "Subarctic Gyre North East"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 31] <- "ENP with OMZ"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 30] <- "CCE-P1604-C1-offshore"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 29] <- "CCE-P1604-C2-moderate"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 28] <- "CCE-P1604-C3-upwelling"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 27] <- "CCE-P1604-C4-shelf"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 26] <- "CCE-2007-Bight"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 25] <- "CCE-P2107-coastal"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 24] <- "CCE-P2107-offshore"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 23] <- "Bering"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 19] <- "Subarctic Gyre North West"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 17] <- "Subarctic Gyre South West"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 16] <- "Transition North West"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 18] <- "Transition South West"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 1 ] <- "Subtropical North West"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 2 ] <- "Subtropical Central West"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 3 ] <- "Subtropical South West"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 4 ] <- "Westerly Subtropical W"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 5 ] <- "Westerly Subtropical E" 
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 6 ] <- "Equatorial Vertical"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 7 ] <- "Equatorial W ENP"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 20] <- "Equatorial C ENP"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 8 ] <- "Equatorial E ENP"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 9 ] <- "Easterly Subtropical W"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 10] <- "Easterly Subtropical E"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 21] <- "Kuroshio-N"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 22] <- "Kuroshio-Mid-N"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 14] <- "Kuroshio-Mid-D"
+sample_data(ZHAN_3depths)$LocationName[sample_data(ZHAN_3depths)$Location.ID == 15] <- "Kuroshio-S"
+
+
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 11] <- "Subarctic Gyre South East"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 12] <- "Transition East"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 13] <- "Subtropical Gyre North East"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 32] <- "Subarctic Gyre North East"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 31] <- "ENP with OMZ"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 30] <- "CCE-P1604-C1-offshore"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 29] <- "CCE-P1604-C2-moderate"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 28] <- "CCE-P1604-C3-upwelling"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 27] <- "CCE-P1604-C4-shelf"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 26] <- "CCE-2007-Bight"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 25] <- "CCE-P2107-coastal"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 24] <- "CCE-P2107-offshore"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 23] <- "Bering"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 19] <- "Subarctic Gyre North West"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 17] <- "Subarctic Gyre South West"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 16] <- "Transition North West"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 18] <- "Transition South West"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 1 ] <- "Subtropical North West"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 2 ] <- "Subtropical Central West"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 3 ] <- "Subtropical South West"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 4 ] <- "Westerly Subtropical W"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 5 ] <- "Westerly Subtropical E" 
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 6 ] <- "Equatorial Vertical"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 7 ] <- "Equatorial W ENP"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 20] <- "Equatorial C ENP"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 8 ] <- "Equatorial E ENP"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 9 ] <- "Easterly Subtropical W"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 10] <- "Easterly Subtropical E"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 21] <- "Kuroshio-N"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 22] <- "Kuroshio-Mid-N"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 14] <- "Kuroshio-Mid-D"
+sample_data(COI_3depths)$LocationName[sample_data(COI_3depths)$Location.ID == 15] <- "Kuroshio-S"
+
+#sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 11] <- B
+#sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 12] <- B
+#sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 13] <- B
+sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 32] <- "Crepuscular"
+#sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 31] <- B 
+#sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 30] <- B
+#sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 29] <- B
+#sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 28] <- B
+#sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 27] <- B
+#sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 26] <- B
+#sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 25] <- B
+#sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 24] <- B
+sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 23] <- "Day"
+sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 19] <- "Night"
+sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 17] <- "Day"
+sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 16] <- "Crepuscular"
+sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 18] <- "Night"
+sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 1	] <- "Day"
+sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 2	] <- "Night"
+sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 3	] <- "Night"
+sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 4	] <- "Crepuscular"
+sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 5	] <- "Night"
+sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 6	] <- "Night"
+sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 7	] <- "Day"
+sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 20] <- "Night"
+sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 8	] <- "Day"
+sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 9	] <- "Crepuscular"
+sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 10] <- "Crepuscular"
+sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 21] <- "Crepuscular"
+sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 22] <- "Night"
+sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 14] <- "Day"
+sample_data(COI_3depths)$Diel[sample_data(COI_3depths)$Location.ID == 15] <- "Day"
+
+#sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 11] <- B
+#sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 12] <- B
+#sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 13] <- B
+sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 32] <- "Crepuscular"
+#sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 31] <- B 
+#sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 30] <- B
+#sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 29] <- B
+#sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 28] <- B
+#sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 27] <- B
+#sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 26] <- B
+#sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 25] <- B
+#sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 24] <- B
+sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 23] <- "Day"
+sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 19] <- "Night"
+sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 17] <- "Day"
+sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 16] <- "Crepuscular"
+sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 18] <- "Night"
+sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 1	] <- "Day"
+sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 2	] <- "Night"
+sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 3	] <- "Night"
+sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 4	] <- "Crepuscular"
+sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 5	] <- "Night"
+sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 6	] <- "Night"
+sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 7	] <- "Day"
+sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 20] <- "Night"
+sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 8	] <- "Day"
+sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 9	] <- "Crepuscular"
+sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 10] <- "Crepuscular"
+sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 21] <- "Crepuscular"
+sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 22] <- "Night"
+sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 14] <- "Day"
+sample_data(ZHAN_3depths)$Diel[sample_data(ZHAN_3depths)$Location.ID == 15] <- "Day"
+
+
+sample_data(ZHAN_3depths)$Mesh[sample_data(ZHAN_3depths)$Location.ID %in% c(31, 30, 29, 28, 27, 26, 25, 24)] <- "200um"
+sample_data(ZHAN_3depths)$Mesh[sample_data(ZHAN_3depths)$Location.ID %in% c(11, 12, 13, 32)] <- "150um"
+sample_data(ZHAN_3depths)$Mesh[sample_data(ZHAN_3depths)$Location.ID %in% c(1,2,3,4,5,6,7,8,9,10,14,15,16,17,18,19,20,21,22,23)] <- "100um"
+sample_data(COI_3depths)$Mesh[sample_data(COI_3depths)$Location.ID %in% c(31, 30, 29, 28, 27, 26, 25, 24)] <- "200um"
+sample_data(COI_3depths)$Mesh[sample_data(COI_3depths)$Location.ID %in% c(11, 12, 13, 32)] <- "150um"
+sample_data(COI_3depths)$Mesh[sample_data(COI_3depths)$Location.ID %in% c(1,2,3,4,5,6,7,8,9,10,14,15,16,17,18,19,20,21,22,23)] <- "100um"
+
+
+sample_data(ZHAN_3depths)$Region[sample_data(ZHAN_3depths)$Location.ID %in% c(24,25,26,27,28,29,30)] <- "CCE"
+sample_data(ZHAN_3depths)$Region[sample_data(ZHAN_3depths)$Location.ID %in% c(7,8,20,31)] <- "ENP"
+sample_data(ZHAN_3depths)$Region[sample_data(ZHAN_3depths)$Location.ID %in% c(14,15,21,22)] <- "KUR"
+sample_data(ZHAN_3depths)$Region[sample_data(ZHAN_3depths)$Location.ID %in% c(1,2,3,4,5,6,9,10,13)] <- "NPSG"
+sample_data(ZHAN_3depths)$Region[sample_data(ZHAN_3depths)$Location.ID %in% c(23,32)] <- "SP"
+sample_data(ZHAN_3depths)$Region[sample_data(ZHAN_3depths)$Location.ID %in% c(11,12,16,17,18,19)] <- "WWD"
+
+sample_data(COI_3depths)$Region[sample_data(COI_3depths)$Location.ID %in% c(24,25,26,27,28,29,30)] <- "CCE"
+sample_data(COI_3depths)$Region[sample_data(COI_3depths)$Location.ID %in% c(7,8,20,31)] <- "ENP"
+sample_data(COI_3depths)$Region[sample_data(COI_3depths)$Location.ID %in% c(14,15,21,22)] <- "KUR"
+sample_data(COI_3depths)$Region[sample_data(COI_3depths)$Location.ID %in% c(1,2,3,4,5,6,9,10,13)] <- "NPSG"
+sample_data(COI_3depths)$Region[sample_data(COI_3depths)$Location.ID %in% c(23,32)] <- "SP"
+sample_data(COI_3depths)$Region[sample_data(COI_3depths)$Location.ID %in% c(11,12,16,17,18,19)] <- "WWD"
+
+
+```
+
+
+
+
+
+
+control F + substitute >(.*?)\tMZGdb-v2023-m01-12 \(GenBank:18s\)\t
+#classify sequences
+
+```{r}
+# set.seed(100) # Initialize random number generator for reproducibility
+# library("Biostrings")
+# 
+# s <- readDNAStringSet("~/Documents/Chapter4/qiime2-analyses/COI_v1_alllibraries/sequences.fasta")
+# t <- readDNAStringSet("~/Documents/Chapter4/qiime2-analyses/18S_v1_alllibraries/sequences.fasta")
+# #subseq(s, start=c(1, 2, 3), end=c(3, 6, 5))
+# 
+# job::job({taxaCOI <- dada2::assignTaxonomy(dada2::getSequences(s), "~/Documents/databases/MZG_2023-03-24/Leray_for_dada2_cleaner.fasta", multithread=FALSE, minBoot = .7, outputBootstraps = T)})
+# #minboot = 0, 
+# #outputBootstraps = TRUE,
+# #verbose = TRUE
+# COItax <- unname(taxaCOI$tax)
+# COIboot <- unname(taxaCOI$boot)
+# COINames <- names(dada2::getSequences(s))
+# 
+# taxaZHAN <- dada2::assignTaxonomy(dada2::getSequences(t), "~/Documents/databases/MZG_2023-03-24/Zhan_for_dada2_withoutCCE.fasta", multithread=FALSE, minBoot = .7, outputBootstraps = T)
+# #minboot = 0, 
+# #outputBootstraps = TRUE,
+# #verbose = TRUE
+# #unname(taxa)
+# ZhanTax <- unname(taxaZHAN$tax)
+# ZhanBoot <- unname(taxaZHAN$boot)
+# ZhanNames <- names(dada2::getSequences(t))
+# 
+# 
+# ZhanGoodTax <- data.frame(ZhanTax)
+# ZhanBoot <- data.frame(ZhanBoot)
+# ZhanGoodTax[ZhanBoot < 70] <- NA
+# rownames(ZhanGoodTax) <- ZhanNames
+# 
+# COIGoodTax <- data.frame(COItax)
+# COIboot <- data.frame(COIboot)
+# COIGoodTax[COIboot < 70] <- NA
+# rownames(COIGoodTax) <- COINames
+# 
+#save(ZhanGoodTax, COIGoodTax, file = "data_objects/Zhan_and_Leray_taxonomy.rdat")
+
+load("data_objects/Zhan_and_Leray_taxonomy.rdat")
+
+```
+
+
+#add taxonomy to phyloseq
+```{r}
+ZHANwithtax <- ZHAN_3depths
+tax_table(ZHANwithtax) <- tax_table(as.matrix(ZhanGoodTax))
+
+COIwithtax <- COI_3depths
+tax_table(COIwithtax) <- tax_table(as.matrix(COIGoodTax))
+
+```
+
+
+
+#keep just samples shallower than 1000m
+
+```{r}
+ZHANwithtax <- subset_samples(ZHANwithtax, depth_bin != ">1000m")
+COIwithtax <- subset_samples(COIwithtax, depth_bin != ">1000m")
+
+ZHANwithtax <- subset_taxa(ZHANwithtax, X4 %in% unique(tax_table(ZHANwithtax)[,4]))
+COIwithtax <- subset_taxa(COIwithtax, X4 %in% unique(tax_table(COIwithtax)[,4]))
+
+```
+
+
+#clean up taxonomic groups
+```{r clean up taxonomic groups}
+#subset taxonomy
+tax_table(ZHANwithtax) <- tax_table(ZHANwithtax)[,c("X1", "X4", "X5", "X9", "X12", "X16", "X18", "X20")]
+colnames(tax_table(ZHANwithtax)) <- c("Kingdom", "Phylum", "Subphylum", "Class", "Order", "Family", "Genus", "Species")
+
+
+tax_table(COIwithtax) <- tax_table(COIwithtax)[,c("X1", "X4", "X5", "X9", "X12", "X16", "X18", "X20")]
+colnames(tax_table(COIwithtax)) <- c("Kingdom", "Phylum", "Subphylum", "Class", "Order", "Family", "Genus", "Species")
+
+
+zoopsCOI <- subset_taxa(COIwithtax, Phylum != "Echinodermata") #sea stars
+zoopsCOI <- subset_taxa(zoopsCOI, Phylum != "Chordata")
+zoopsCOI <- subset_taxa(zoopsCOI, Class != "Ceriantharia") #anenomes
+zoopsCOI <- subset_taxa(zoopsCOI, Class != "Heterodonta") #burrowing clams
+zoopsCOI <- subset_taxa(zoopsCOI, Class != "Octocorallia") #corals
+zoopsCOI <- subset_taxa(zoopsCOI, Class != "Pteriomorphia") #sessile clams
+zoopsCOI <- subset_taxa(zoopsCOI, Class != "Hexacorallia") #corals
+
+
+
+zoops18S <- subset_taxa(ZHANwithtax, Phylum != "Echinodermata") #sea stars
+zoops18S <- subset_taxa(zoops18S, Phylum != "Chordata")
+zoops18S <- subset_taxa(zoops18S, Class != "Hexacorallia") #corals
+
+```
+
+#remove taxa just in 100um mesh samples
+```{r}
+
+#meshCOI <- merge_samples(zoopsCOI, group = "Mesh")
+#mesh18S <- merge_samples(zoops18S, group = "Mesh")
+
+
+#meshCOItaxa <- taxa_names(filter_taxa(meshCOI, function(x) sum(x > 1) > 1, TRUE))
+#mesh18Staxa <- taxa_names(filter_taxa(mesh18S, function(x) sum(x > 1) > 1, TRUE))
+
+```
+
+#remove taxa unclassified at class
+```{r}
+zoops18Sclassified <- subset_taxa(zoops18S, Family %in% names(table(tax_table(zoops18S)[,c("Family")])))
+zoopsCOIclassified <- subset_taxa(zoopsCOI, Family %in% names(table(tax_table(zoopsCOI)[,c("Family")])))
+
+
+```
+
+# make final phyloseqs
+```{r}
+
+#remove mock communities
+zoops18S <- subset_samples(zoops18Sclassified, depth_bin != "NA")
+zoopsCOI <- subset_samples(zoopsCOIclassified, depth_bin != "NA")
+
+#make a copy that's in relative abundance
+razoops18S <- transform_sample_counts(zoops18S, function(x) x / sum(x) )
+razoopsCOI <- transform_sample_counts(zoopsCOI, function(x) x / sum(x) )
+
+```
+
+#new regions
+```{r}
+# sample_data(zoops18S)$NewRegion[sample_data(zoops18S)$Location.ID %in% c(13,16,25,26)] <- "CalCurr"
+# sample_data(zoops18S)$NewRegion[sample_data(zoops18S)$Location.ID %in% c(11,12,17,19,23,24,32)] <- "CoolFresh"
+# sample_data(zoops18S)$NewRegion[sample_data(zoops18S)$Location.ID %in% c(7,8,20,31)] <- "EquEast"
+# sample_data(zoops18S)$NewRegion[sample_data(zoops18S)$Location.ID %in% c(2,3,10,18)] <- "Gyre"
+# sample_data(zoops18S)$NewRegion[sample_data(zoops18S)$Location.ID %in% c(14,15,21,22)] <- "Kuro"
+# sample_data(zoops18S)$NewRegion[sample_data(zoops18S)$Location.ID %in% c(1,4,5,6,9)] <- "WarmSal"
+# 
+# sample_data(zoopsCOI)$NewRegion[sample_data(zoopsCOI)$Location.ID %in% c(13,16,25,26)] <- "CalCurr"
+# sample_data(zoopsCOI)$NewRegion[sample_data(zoopsCOI)$Location.ID %in% c(11,12,17,19,23,24,32)] <- "CoolFresh"
+# sample_data(zoopsCOI)$NewRegion[sample_data(zoopsCOI)$Location.ID %in% c(7,8,20,31)] <- "EquEast"
+# sample_data(zoopsCOI)$NewRegion[sample_data(zoopsCOI)$Location.ID %in% c(2,3,10,18)] <- "Gyre"
+# sample_data(zoopsCOI)$NewRegion[sample_data(zoopsCOI)$Location.ID %in% c(14,15,21,22)] <- "Kuro"
+# sample_data(zoopsCOI)$NewRegion[sample_data(zoopsCOI)$Location.ID %in% c(1,4,5,6,9)] <- "WarmSal"
+# 
+# sampleenvirodata$NewRegion <- NA
+# sampleenvirodata$NewRegion[sampleenvirodata$Location.ID %in% c(25,26)] <- "California Curr."
+# sampleenvirodata$NewRegion[sampleenvirodata$Location.ID %in% c(13,16,10,18)] <- "N. NPSG"
+# sampleenvirodata$NewRegion[sampleenvirodata$Location.ID %in% c(11,12,17,19,23,24,32)] <- "WWD & Subpolar"
+# sampleenvirodata$NewRegion[sampleenvirodata$Location.ID %in% c(7,8,20,31,6)] <- "Equatorial Pacific"
+# sampleenvirodata$NewRegion[sampleenvirodata$Location.ID %in% c(14,15,21,22)] <- "Kuroshio Curr."
+# sampleenvirodata$NewRegion[sampleenvirodata$Location.ID %in% c(2,3,1,4,5,9)] <- "Core NPSG"
+
+sample_data(zoops18S)$NewRegion <- NA
+sample_data(zoops18S)$NewRegion[sample_data(zoops18S)$Location.ID %in% c(25,26)] <- "Coastal CA"
+sample_data(zoops18S)$NewRegion[sample_data(zoops18S)$Location.ID %in% c(13,16,10,18)] <- "N. NPSG"
+sample_data(zoops18S)$NewRegion[sample_data(zoops18S)$Location.ID %in% c(11,12,17,19,23,24,32)] <- "WWD & Subpolar"
+sample_data(zoops18S)$NewRegion[sample_data(zoops18S)$Location.ID %in% c(7,8,20,31,6)] <- "Tropical"
+sample_data(zoops18S)$NewRegion[sample_data(zoops18S)$Location.ID %in% c(14,15,21,22)] <- "Kuroshio Curr."
+sample_data(zoops18S)$NewRegion[sample_data(zoops18S)$Location.ID %in% c(2,3,1,4,5,9)] <- "Core NPSG"
+
+sample_data(zoopsCOI)$NewRegion <- NA
+sample_data(zoopsCOI)$NewRegion[sample_data(zoopsCOI)$Location.ID %in% c(25,26)] <- "Coastal CA"
+sample_data(zoopsCOI)$NewRegion[sample_data(zoopsCOI)$Location.ID %in% c(13,16,10,18)] <- "N. NPSG"
+sample_data(zoopsCOI)$NewRegion[sample_data(zoopsCOI)$Location.ID %in% c(11,12,17,19,23,24,32)] <- "WWD & Subpolar"
+sample_data(zoopsCOI)$NewRegion[sample_data(zoopsCOI)$Location.ID %in% c(7,8,20,31,6)] <- "Tropical"
+sample_data(zoopsCOI)$NewRegion[sample_data(zoopsCOI)$Location.ID %in% c(14,15,21,22)] <- "Kuroshio Curr."
+sample_data(zoopsCOI)$NewRegion[sample_data(zoopsCOI)$Location.ID %in% c(2,3,1,4,5,9)] <- "Core NPSG"
+
+zoopsCOI <- subset_samples(zoopsCOI, Location.ID %in% c(1:26,31,32))
+zoops18S <- subset_samples(zoops18S, Location.ID %in% c(1:26,31,32))
+
+```
+
+# save these phyloseq
+commented out so as to not accidentally overwrite files 
+```{r}
+#save backup phyloseqs without filtering
+#save(ZHANwithtax, COIwithtax,  file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/data_objects/CleanPhyloseqs.rdat")
+
+#save(zoops18S, zoopsCOI,  file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/data_objects/CleanZooplanktonPhyloseqs.rdat")
+
+```
+
+
+
+
+
+

@@ -1,0 +1,205 @@
+---
+title: "Analyze_02_MockCommunity"
+output: html_document
+date: "2024-11-04"
+---
+
+```{r setup, include=FALSE}
+library(microshades)
+library(phyloseq)
+library(vegan)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(metagMisc)
+#library(viridis)
+library(RColorBrewer)
+library(ggExtra)
+library(beepr)
+library(readxl)
+library(ggforce)
+library(ggrepel)
+library(ggpubr)
+library(cowplot)
+library(ggtext)
+library(sp)
+library(vegan)
+library(grid)
+library(ggsci)
+set.seed(00110011)
+theme_set(theme_bw())
+theme_update(plot.title = element_text(hjust = 0.5))
+depthcolors <- c("#4DAF4A", "#E41A1C", "#984EA3")
+names(depthcolors) <- c("0-200m", "200-500m", "500-1000m")
+markercolors <- c("#D81B60","#1E88E5")
+names(markercolors) <- c("18S", "COI")
+
+```
+
+
+define modified plot_bar function that will keep unused levels in legend
+```{r}
+plot_bar <- function (physeq, x = "Sample", y = "Abundance", fill = NULL, 
+  title = NULL, facet_grid = NULL) 
+{
+  mdf = psmelt(physeq)
+  p = ggplot(mdf, aes_string(x = x, y = y, fill = fill))
+  p = p + geom_bar(stat = "identity", position = "stack", 
+    color = "black", show.legend = TRUE)
+  p = p + theme(axis.text.x = element_text(angle = -90, hjust = 0))
+  if (!is.null(facet_grid)) {
+    p <- p + facet_grid(facet_grid)
+  }
+  if (!is.null(title)) {
+    p <- p + ggtitle(title)
+  }
+  return(p)
+}
+
+```
+#plot mock community nMDS
+```{r}
+load("~/Documents/Chapter4/BasinScale_Analysis_v2_2024/data_objects/CleanMOCKSPhyloseqs.rdat")
+mocksCOI <- phyloseq_standardize_otu_abundance(cleanCOI, method = "total")
+mocks18S <- phyloseq_standardize_otu_abundance(clean18s, method = "total")
+#mocksCOI <- cleanCOI
+#mocks18S <- clean18s
+```
+
+```{r}
+ordCOI <- ordinate(mocksCOI, "NMDS", "bray")
+plotordCOI <- plot_ordination(mocksCOI, ordCOI, type = "samples", color  = "Library_name", shape = "SampleID") + scale_color_brewer(palette = "Set1", name = "Sequencing Run") + scale_shape_manual(values = c(16, 17), name = "Mock Community Type")
+#ord1 <- ordinate(prune_samples(!(sample_names(clean) %in% c("S2238", "S2286", "S2285")), clean), "NMDS", "bray")
+#plotord1 <- plot_ordination(prune_samples(!(sample_names(clean) %in% c("S2238", "S2286", "S2285")), clean), ord1, type = "samples", color  = "Library_name", shape = "SampleID") + scale_color_brewer(palette = "Set1", name = "Sequencing Run") + scale_shape_manual(values = c(16, 17), name = "Mock Community Type")
+
+plotordsCOI <- plotordCOI + 
+  geom_magnify(from=c(-.119, -.0105, -.1178, -.00985), to = c(0.2, -0.1, 0.85,0.6)) + 
+  ggtitle("COI, Mock Communities")
+plotordsCOI
+
+```
+
+```{r}
+ord18S <- ordinate(mocks18S, "NMDS", "bray")
+plotord18S <- plot_ordination(mocks18S, ord18S, type = "samples", color  = "Library_name", shape = "SampleID") + scale_color_brewer(palette = "Set1", name = "Sequencing Run") + scale_shape_manual(values = c(16, 17), name = "Mock Community Type")
+#ord1 <- ordinate(prune_samples(!(sample_names(clean) %in% c("S2238", "S2286", "S2285")), clean), "NMDS", "bray")
+#plotord1 <- plot_ordination(prune_samples(!(sample_names(clean) %in% c("S2238", "S2286", "S2285")), clean), ord1, type = "samples", color  = "Library_name", shape = "SampleID") + scale_color_brewer(palette = "Set1", name = "Sequencing Run") + scale_shape_manual(values = c(16, 17), name = "Mock Community Type")
+
+plotords18S <- plotord18S  + ggtitle("18S, Mock Communities")
+plotords18S
+
+```
+
+```{r}
+
+bothords <- ggarrange(plotord18S, plotordsCOI, align = "hv", common.legend = T, legend = "right", labels = c("a)", "b)"))
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/MockCommunityOrdination.jpeg", height =3, width = 7.5, unit = "in", quality = 100, res = 300)
+bothords
+dev.off()
+```
+
+#plot mock compositions
+#add taxonomy to phyloseq
+```{r}
+load("data_objects/Zhan_and_Leray_taxonomy.rdat")
+
+ZHANwithtax <- clean18s
+tax_table(ZHANwithtax) <- tax_table(as.matrix(ZhanGoodTax))
+
+COIwithtax <- cleanCOI
+tax_table(COIwithtax) <- tax_table(as.matrix(COIGoodTax))
+
+```
+##
+```{r}
+plot_richness(ZHANwithtax, measures = "Chao1", x = "Library_name") + facet_wrap(.~SampleID) + ylim(0,320) + ylab("Chao estimated richness") + ggtitle("18S Mock Communities")+ theme(axis.text.x = element_blank())
+plot_richness(COIwithtax, measures = "Chao1", x = "Library_name") + facet_wrap(.~SampleID) + ylim(0,320) + ylab("Chao estimated richness") + ggtitle("COI Mock Communities")+ theme(axis.text.x = element_blank())
+
+clean18s_glom <- tax_glom(ZHANwithtax, "X8")
+taxa_names(clean18s_glom) <- tax_table(clean18s_glom)[,"X8"]
+sort(taxa_sums(clean18s_glom))
+tax_table(clean18s_glom)[,"X8"][tax_table(clean18s_glom)[,"X8"] == "Polychaeta"] <- "Other"
+tax_table(clean18s_glom)[,"X8"][tax_table(clean18s_glom)[,"X8"] == "Tentaculata"] <- "Other"
+tax_table(clean18s_glom)[,"X8"][tax_table(clean18s_glom)[,"X8"] == "Actinoptergii"] <- "Other"
+tax_table(clean18s_glom)[,"X8"][tax_table(clean18s_glom)[,"X8"] == "Anthozoa"] <- "Other"
+clean18s_glom <- tax_glom(transform_sample_counts(clean18s_glom,  function(x) x / sum(x)), "X8")
+
+
+tax_table(COIwithtax)[,"X1"][tax_table(COIwithtax)[,"X1"] != "Animalia"] <- "Animalia"
+cleanCOI_glom <- tax_glom(COIwithtax, "X8")
+taxa_names(cleanCOI_glom) <- tax_table(cleanCOI_glom)[,"X8"]
+sort(taxa_sums(cleanCOI_glom))
+tax_table(cleanCOI_glom)[,"X8"][tax_table(cleanCOI_glom)[,"X8"] == "Polychaeta"] <- "Other"
+tax_table(cleanCOI_glom)[,"X8"][tax_table(cleanCOI_glom)[,"X8"] == "Tentaculata"] <- "Other"
+tax_table(cleanCOI_glom)[,"X8"][tax_table(cleanCOI_glom)[,"X8"] == "Actinoptergii"] <- "Other"
+tax_table(cleanCOI_glom)[,"X8"][tax_table(cleanCOI_glom)[,"X8"] == "Sagittoidea"] <- "Other"
+tax_table(cleanCOI_glom)[,"X8"][tax_table(cleanCOI_glom)[,"X8"] == "Cephalopoda"] <- "Other"
+tax_table(cleanCOI_glom)[,"X8"][tax_table(cleanCOI_glom)[,"X8"] == "Echinoidea"] <- "Other"
+tax_table(cleanCOI_glom)[,"X8"][tax_table(cleanCOI_glom)[,"X8"] == "Appendicularia"] <- "Other"
+tax_table(cleanCOI_glom)[,"X8"][tax_table(cleanCOI_glom)[,"X8"] == "Branchiopoda"] <- "Other"
+cleanCOI_glom <- tax_glom(transform_sample_counts(cleanCOI_glom,  function(x) x / sum(x)), "X8")
+cleanCOI_glom <- subset_taxa(cleanCOI_glom, tax_table(cleanCOI_glom)[,"X8"] %in% c("Actinoptergyii","Appendicularia", "Gastropoda", "Hydrozoa", "Hexanauplia", "Malacostraca", "Other", "Scyphozoa", "Thaliacea", "Ostracoda"))
+cleanCOI_glom <- phyloseq_standardize_otu_abundance(cleanCOI_glom, method = "total")
+
+
+sample_data(clean18s_glom)$Library <- paste(stringr::str_split_i(sample_data(clean18s_glom)$Library_name, "-", 2), stringr::str_split_i(sample_data(clean18s_glom)$replicate, "p", 2))
+sample_data(cleanCOI_glom)$Library <- paste(stringr::str_split_i(sample_data(cleanCOI_glom)$Library_name, "-", 2), stringr::str_split_i(sample_data(cleanCOI_glom)$replicate, "p", 2))
+
+
+obs_18S <- plot_bar(clean18s_glom, fill = "X8", x = "Library") + facet_wrap(.~SampleID, scales = "free") + scale_fill_manual(name = "Taxon", values = c("Actinoptergyii"="#006400","Appendicularia"="#0000EE", "Gastropoda" = "#FF6EB4", "Hydrozoa" = "#FFC125", "Hexanauplia" = "#9A32CD", "Malacostraca" = "#EE2C2C", "Other" = "#00C5CD", "Scyphozoa" = "#9ACD32", "Thaliacea" = "#BFEFFF", "Ostracoda"="#FFB6C1"), limits = c("Actinoptergyii","Appendicularia", "Gastropoda", "Hydrozoa", "Hexanauplia", "Malacostraca", "Other", "Scyphozoa", "Thaliacea", "Ostracoda")) + ggtitle("18S Mock Communities") + ylab("Relative Abundance (reads)")
+obs_COI <- plot_bar(cleanCOI_glom, fill = "X8", x = "Library") + facet_wrap(.~SampleID, scales = "free")  + scale_fill_manual(name = "Taxon", values = c("Actinoptergyii"="#006400","Appendicularia"="#0000EE", "Gastropoda" = "#FF6EB4", "Hydrozoa" = "#FFC125", "Hexanauplia" = "#9A32CD", "Malacostraca" = "#EE2C2C", "Other" = "#00C5CD", "Scyphozoa" = "#9ACD32", "Thaliacea" = "#BFEFFF", "Ostracoda"="#FFB6C1"), limits = c("Actinoptergyii","Appendicularia", "Gastropoda", "Hydrozoa", "Hexanauplia", "Malacostraca", "Other", "Scyphozoa", "Thaliacea", "Ostracoda")) + ggtitle("COI Mock Communities") + ylab("Relative Abundance (reads)")
+obs_18S
+obs_COI
+
+
+mockcomp <-  read.csv("~/Documents/barcodes_ind/MockComposition_QIIME_Input.csv")
+mockcommunityphylo <- phyloseq(otu_table(mockcomp[,c("Mock_Even_ng", "Mock_Staggered_ng")], taxa_are_rows = T),  tax_table(mockcomp[,c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")]))
+mockcommunityphylopa <- phyloseq_standardize_otu_abundance(mockcommunityphylo, method = "pa")
+
+plot_richness(mockcommunityphylopa, measures = "Observed") + facet_wrap(.~samples, scales = "free") + ylim(0,320) + ylab("Observed richness") + ggtitle("Assembled Mock Community") + theme(axis.text.x = element_blank())
+
+
+mockcommunityphylo_glom <- tax_glom(mockcommunityphylo, "ta3")
+taxa_names(mockcommunityphylo_glom) <- tax_table(mockcommunityphylo_glom)[,"ta3"]
+sort(taxa_sums(mockcommunityphylo_glom))
+tax_table(mockcommunityphylo_glom)[,"ta3"][tax_table(mockcommunityphylo_glom)[,"ta3"] == "Polychaeta"] <- "Other"
+tax_table(mockcommunityphylo_glom)[,"ta3"][tax_table(mockcommunityphylo_glom)[,"ta3"] == "Tentaculata"] <- "Other"
+tax_table(mockcommunityphylo_glom)[,"ta3"][tax_table(mockcommunityphylo_glom)[,"ta3"] == "Actinoptergii"] <- "Other"
+tax_table(mockcommunityphylo_glom)[,"ta3"][tax_table(mockcommunityphylo_glom)[,"ta3"] == "Sagittoidea"] <- "Other"
+tax_table(mockcommunityphylo_glom)[,"ta3"][tax_table(mockcommunityphylo_glom)[,"ta3"] == "Cephalopoda"] <- "Other"
+tax_table(mockcommunityphylo_glom)[,"ta3"][tax_table(mockcommunityphylo_glom)[,"ta3"] == "Echinoidea"] <- "Other"
+#tax_table(mockcommunityphylo_glom)[,"ta3"][tax_table(mockcommunityphylo_glom)[,"ta3"] == "Appendicularia"] <- "Other"
+tax_table(mockcommunityphylo_glom)[,"ta3"][tax_table(mockcommunityphylo_glom)[,"ta3"] == "Branchiopoda"] <- "Other"
+mockcommunityphylo_glom <- tax_glom(transform_sample_counts(mockcommunityphylo_glom,  function(x) x / sum(x)), "ta3")
+sample_names(mockcommunityphylo_glom) <- c("EVEN", "STAGGERED")
+
+assembled <-plot_bar(phyloseq_standardize_otu_abundance(mockcommunityphylo_glom), fill = "ta3")+ facet_wrap(.~Sample, scales = "free") + scale_fill_manual(name = "Taxon", values = c("Actinoptergyii"="#006400","Appendicularia"="#0000EE", "Gastropoda" = "#FF6EB4", "Hydrozoa" = "#FFC125", "Hexanauplia" = "#9A32CD", "Malacostraca" = "#EE2C2C", "Other" = "#00C5CD", "Scyphozoa" = "#9ACD32", "Thaliacea" = "#BFEFFF", "Ostracoda"="#FFB6C1"), limits = c("Actinoptergyii","Appendicularia", "Gastropoda", "Hydrozoa", "Hexanauplia", "Malacostraca", "Other", "Scyphozoa", "Thaliacea", "Ostracoda")) + ggtitle("Expected Mock Community")+ ylab("Relative Abundance (ng genomic DNA)")
+assembled
+
+
+allmocks <- ggarrange(obs_18S, assembled, obs_COI, align = "hv", nrow=1, widths = c(1, .8, 1), common.legend = T, legend = "right", labels = c("a)", "b)", "c)"))
+allmocks
+jpeg(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/MockCommunitybarplots.jpeg", height =5, width = 12.5, unit = "in", quality = 100, res = 300)
+allmocks
+dev.off()
+pdf(file = "~/Documents/Chapter4/BasinScale_Analysis_v2_2024/figures/MockCommunitybarplots.pdf", height =5, width = 7.5)
+allmocks
+dev.off()
+
+
+
+
+```
+
+
+```{r}
+```
+
+
+
+
+
+
+
+
+
