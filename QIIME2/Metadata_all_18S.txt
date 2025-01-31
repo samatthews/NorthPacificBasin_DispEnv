@@ -1,0 +1,991 @@
+Sample.number	Marker	replicate	Extraction_lab	Sequencing_lab	Library_name	Location.name	Location.ID	SampleID	Cruise	Station	Tow	net	Mesh_size	Size_frac	Min_depth	Max_depth	Depth_midpoint	depth_bin	Diel	dna-conc	Province	Lat(N)	Lon(W)
+S853	18S	rep1	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M7N1	NH1208	7	7	1	100um	na	800	1000	900		day	15850.65		47.0103165	-144.6739975
+S854	18S	rep1	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M7N2	NH1208	7	7	2	100um	na	600	800	700		day	16188.2		47.0103165	-144.6739975
+S855	18S	rep1	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M7N3	NH1208	7	7	3	100um	na	400	600	500		day	14254.011		47.0103165	-144.6739975
+S856	18S	rep1	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M7N4	NH1208	7	7	4	100um	na	200	400	300		day	11681.015		47.0103165	-144.6739975
+S857	18S	rep1	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M7N5	NH1208	7	7	5	100um	na	100	200	150		day	17196.226		47.0103165	-144.6739975
+S858	18S	rep1	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M7N6	NH1208	7	7	6	100um	na	50	100	75		day	18724.801		47.0103165	-144.6739975
+S859	18S	rep1	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M7N7	NH1208	7	7	7	100um	na	25	50	38		day	13939.108		47.0103165	-144.6739975
+S860	18S	rep1	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M7N8	NH1208	7	7	8	100um	na	0	25	13		day	13808.876		47.0103165	-144.6739975
+S861	18S	rep1	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M8N1	NH1208	7	8	1	100um	na	800	1000	900		night	17346.788		47.0103165	-144.6739975
+S862	18S	rep1	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M8N2	NH1208	7	8	2	100um	na	600	800	700		night	13255.366		47.0103165	-144.6739975
+S863	18S	rep1	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M8N3	NH1208	7	8	3	100um	na	500	600	550		night	15602.816		47.0103165	-144.6739975
+S864	18S	rep1	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M8N4	NH1208	7	8	4	100um	na	300	500	400		night	7334.071		47.0103165	-144.6739975
+S865	18S	rep1	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M8N5	NH1208	7	8	5	100um	na	100	300	200		night	15290.353		47.0103165	-144.6739975
+S866	18S	rep1	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M8N6	NH1208	7	8	6	100um	na	50	100	75		night	7833.255		47.0103165	-144.6739975
+S867	18S	rep1	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M8N7	NH1208	7	8	7	100um	na	25	50	38		night	16302.336		47.0103165	-144.6739975
+S868	18S	rep1	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M8N8	NH1208	7	8	8	100um	na	0	25	13		night	14912.759		47.0103165	-144.6739975
+S869	18S	rep1	BATS	Allen	Library-BB	Transition East	2	M11N1	NH1208	15	11	1	100um	na	800	1000	900		day	19113.509		43.04988	-138.1465175
+S870	18S	rep1	BATS	Allen	Library-BB	Transition East	2	M11N2	NH1208	15	11	2	100um	na	600	800	700		day	10003.088		43.04988	-138.1465175
+S871	18S	rep1	BATS	Allen	Library-BB	Transition East	2	M11N3	NH1208	15	11	3	100um	na	400	600	500		day	12263.129		43.04988	-138.1465175
+S872	18S	rep1	BATS	Allen	Library-BB	Transition East	2	M11N4	NH1208	15	11	4	100um	na	200	400	300		day	7974.385		43.04988	-138.1465175
+S873	18S	rep1	BATS	Allen	Library-BB	Transition East	2	M11N5	NH1208	15	11	5	100um	na	100	200	150		day	12909.594		43.04988	-138.1465175
+S874	18S	rep1	BATS	Allen	Library-BB	Transition East	2	M11N6	NH1208	15	11	6	100um	na	50	100	75		day	16297.385		43.04988	-138.1465175
+S875	18S	rep1	BATS	Allen	Library-BB	Transition East	2	M11N7	NH1208	15	11	7	100um	na	25	50	38		day	7352.268		43.04988	-138.1465175
+S876	18S	rep1	BATS	Allen	Library-BB	Transition East	2	M11N8	NH1208	15	11	8	100um	na	0	25	13		day	13102.118		43.04988	-138.1465175
+S877	18S	rep1	BATS	Allen	Library-BB	Transition East	2	M12N1	NH1208	15	12	1	100um	na	800	1000	900		night	17760.5		43.04988	-138.1465175
+S878	18S	rep1	BATS	Allen	Library-BB	Transition East	2	M12N2	NH1208	15	12	2	100um	na	600	800	700		night	19107.235		43.04988	-138.1465175
+S879	18S	rep1	BATS	Allen	Library-BB	Transition East	2	M12N3	NH1208	15	12	3	100um	na	400	600	500		night	16710.041		43.04988	-138.1465175
+S880	18S	rep1	BATS	Allen	Library-BB	Transition East	2	M12N4	NH1208	15	12	4	100um	na	200	400	300		night	14160.892		43.04988	-138.1465175
+S881	18S	rep1	BATS	Allen	Library-BB	Transition East	2	M12N5	NH1208	15	12	5	100um	na	100	200	150		night	14328.605		43.04988	-138.1465175
+S882	18S	rep1	BATS	Allen	Library-BB	Transition East	2	M12N6	NH1208	15	12	6	100um	na	50	100	75		night	15400.153		43.04988	-138.1465175
+S883	18S	rep1	BATS	Allen	Library-BB	Transition East	2	M12N7	NH1208	15	12	7	100um	na	25	50	38		night	19178.046		43.04988	-138.1465175
+S884	18S	rep1	BATS	Allen	Library-BB	Transition East	2	M12N8	NH1208	15	12	8	100um	na	0	25	13		night	12558.84		43.04988	-138.1465175
+S885	18S	rep1	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M26N1	NH1208	34	26	1	100um	na	800	1000	900		night	15781.172		33.5469525	-134.9893835
+S886	18S	rep1	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M26N2	NH1208	34	26	2	100um	na	600	800	700		night	13506.522		33.5469525	-134.9893835
+S887	18S	rep1	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M26N3	NH1208	34	26	3	100um	na	400	600	500		night	14967.638		33.5469525	-134.9893835
+S888	18S	rep1	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M26N4	NH1208	34	26	4	100um	na	200	400	300		night	8615.438		33.5469525	-134.9893835
+S889	18S	rep1	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M26N5	NH1208	34	26	5	100um	na	100	200	150		night	12011.912		33.5469525	-134.9893835
+S890	18S	rep1	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M26N6	NH1208	34	26	6	100um	na	50	100	75		night	14375.109		33.5469525	-134.9893835
+S891	18S	rep1	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M26N7	NH1208	34	26	7	100um	na	25	50	38		night	11715.042		33.5469525	-134.9893835
+S892	18S	rep1	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M26N8	NH1208	34	26	8	100um	na	0	25	13		night	11314.678		33.5469525	-134.9893835
+S893	18S	rep1	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M25N1	NH1208	34	25	1	100um	na	800	1000	900		day	13975.185		33.5469525	-134.9893835
+S894	18S	rep1	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M25N2	NH1208	34	25	2	100um	na	600	800	700		day	7412.489		33.5469525	-134.9893835
+S895	18S	rep1	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M25N3	NH1208	34	25	3	100um	na	400	600	500		day	13665.019		33.5469525	-134.9893835
+S896	18S	rep1	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M25N4	NH1208	34	25	4	100um	na	200	400	300		day	7296.323		33.5469525	-134.9893835
+S897	18S	rep1	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M25N5	NH1208	34	25	5	100um	na	100	200	150		day	13026.55		33.5469525	-134.9893835
+S898	18S	rep1	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M25N6	NH1208	34	25	6	100um	na	50	100	75		day	14973.267		33.5469525	-134.9893835
+S899	18S	rep1	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M25N7	NH1208	34	25	7	100um	na	25	50	38		day	7677.546		33.5469525	-134.9893835
+S900	18S	rep1	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M25N8	NH1208	34	25	8	100um	na	0	25	13		day	15311.328		33.5469525	-134.9893835
+S901	18S	rep1	BATS	Allen	Library-BB	na	na	MOCK-EVEN	na	na	na	na	100um	na	na	na	na		na	15100		na	na
+S902	18S	rep1	BATS	Allen	Library-BB	na	na	MOCK-STAGGERED	na	na	na	na	100um	na	na	na	na		na	14200		na	na
+S903	18S	rep1	BATS	Allen	Library-BB	na	na	NC	na	na	na	na	100um	na	na	na	na		na	5100		na	na
+S904	18S	rep2	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M7N1	NH1208	7	7	1	100um	na	800	1000	900		day	15311.328		47.0103165	-144.6739975
+S905	18S	rep2	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M7N2	NH1208	7	7	2	100um	na	600	800	700		day	17167.937		47.0103165	-144.6739975
+S906	18S	rep2	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M7N3	NH1208	7	7	3	100um	na	400	600	500		day	16891.938		47.0103165	-144.6739975
+S907	18S	rep2	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M7N4	NH1208	7	7	4	100um	na	200	400	300		day	12903.327		47.0103165	-144.6739975
+S908	18S	rep2	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M7N5	NH1208	7	7	5	100um	na	100	200	150		day	18809.499		47.0103165	-144.6739975
+S909	18S	rep2	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M7N6	NH1208	7	7	6	100um	na	50	100	75		day	15635.097		47.0103165	-144.6739975
+S910	18S	rep2	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M7N7	NH1208	7	7	7	100um	na	25	50	38		day	17248.554		47.0103165	-144.6739975
+S911	18S	rep2	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M7N8	NH1208	7	7	8	100um	na	0	25	13		day	14617.37		47.0103165	-144.6739975
+S912	18S	rep2	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M8N1	NH1208	7	8	1	100um	na	800	1000	900		night	14092.743		47.0103165	-144.6739975
+S913	18S	rep2	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M8N2	NH1208	7	8	2	100um	na	600	800	700		night	14716.767		47.0103165	-144.6739975
+S914	18S	rep2	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M8N3	NH1208	7	8	3	100um	na	500	600	550		night	16651.608		47.0103165	-144.6739975
+S915	18S	rep2	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M8N4	NH1208	7	8	4	100um	na	300	500	400		night	14966.107		47.0103165	-144.6739975
+S916	18S	rep2	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M8N5	NH1208	7	8	5	100um	na	100	300	200		night	17055.832		47.0103165	-144.6739975
+S917	18S	rep2	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M8N6	NH1208	7	8	6	100um	na	50	100	75		night	18674.717		47.0103165	-144.6739975
+S918	18S	rep2	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M8N7	NH1208	7	8	7	100um	na	25	50	38		night	17947.759		47.0103165	-144.6739975
+S919	18S	rep2	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M8N8	NH1208	7	8	8	100um	na	0	25	13		night	16752.403		47.0103165	-144.6739975
+S920	18S	rep2	BATS	Allen	Library-BB	Transition East	2	M11N1	NH1208	15	11	1	100um	na	800	1000	900		day	14970.147		43.04988	-138.1465175
+S921	18S	rep2	BATS	Allen	Library-BB	Transition East	2	M11N2	NH1208	15	11	2	100um	na	600	800	700		day	14221.633		43.04988	-138.1465175
+S922	18S	rep2	BATS	Allen	Library-BB	Transition East	2	M11N3	NH1208	15	11	3	100um	na	400	600	500		day	15574.886		43.04988	-138.1465175
+S923	18S	rep2	BATS	Allen	Library-BB	Transition East	2	M11N4	NH1208	15	11	4	100um	na	200	400	300		day	16327.82		43.04988	-138.1465175
+S924	18S	rep2	BATS	Allen	Library-BB	Transition East	2	M11N5	NH1208	15	11	5	100um	na	100	200	150		day	8749.5		43.04988	-138.1465175
+S925	18S	rep2	BATS	Allen	Library-BB	Transition East	2	M11N6	NH1208	15	11	6	100um	na	50	100	75		day	15494.526		43.04988	-138.1465175
+S926	18S	rep2	BATS	Allen	Library-BB	Transition East	2	M11N7	NH1208	15	11	7	100um	na	25	50	38		day	17296.314		43.04988	-138.1465175
+S927	18S	rep2	BATS	Allen	Library-BB	Transition East	2	M11N8	NH1208	15	11	8	100um	na	0	25	13		day	16569.223		43.04988	-138.1465175
+S928	18S	rep2	BATS	Allen	Library-BB	Transition East	2	M12N1	NH1208	15	12	1	100um	na	800	1000	900		night	12629.095		43.04988	-138.1465175
+S929	18S	rep2	BATS	Allen	Library-BB	Transition East	2	M12N2	NH1208	15	12	2	100um	na	600	800	700		night	18069.045		43.04988	-138.1465175
+S930	18S	rep2	BATS	Allen	Library-BB	Transition East	2	M12N3	NH1208	15	12	3	100um	na	400	600	500		night	16871.303		43.04988	-138.1465175
+S931	18S	rep2	BATS	Allen	Library-BB	Transition East	2	M12N4	NH1208	15	12	4	100um	na	200	400	300		night	16909.046		43.04988	-138.1465175
+S932	18S	rep2	BATS	Allen	Library-BB	Transition East	2	M12N5	NH1208	15	12	5	100um	na	100	200	150		night	19205.018		43.04988	-138.1465175
+S933	18S	rep2	BATS	Allen	Library-BB	Transition East	2	M12N6	NH1208	15	12	6	100um	na	50	100	75		night	15698.254		43.04988	-138.1465175
+S934	18S	rep2	BATS	Allen	Library-BB	Transition East	2	M12N7	NH1208	15	12	7	100um	na	25	50	38		night	21479.11		43.04988	-138.1465175
+S935	18S	rep2	BATS	Allen	Library-BB	Transition East	2	M12N8	NH1208	15	12	8	100um	na	0	25	13		night	19122.652		43.04988	-138.1465175
+S936	18S	rep2	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M26N1	NH1208	34	26	1	100um	na	800	1000	900		night	16497.778		33.5469525	-134.9893835
+S937	18S	rep2	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M26N2	NH1208	34	26	2	100um	na	600	800	700		night	15674.284		33.5469525	-134.9893835
+S938	18S	rep2	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M26N3	NH1208	34	26	3	100um	na	400	600	500		night	18007.542		33.5469525	-134.9893835
+S939	18S	rep2	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M26N4	NH1208	34	26	4	100um	na	200	400	300		night	16898.686		33.5469525	-134.9893835
+S940	18S	rep2	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M26N5	NH1208	34	26	5	100um	na	100	200	150		night	17789.947		33.5469525	-134.9893835
+S941	18S	rep2	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M26N6	NH1208	34	26	6	100um	na	50	100	75		night	19343.925		33.5469525	-134.9893835
+S942	18S	rep2	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M26N7	NH1208	34	26	7	100um	na	25	50	38		night	16538.343		33.5469525	-134.9893835
+S943	18S	rep2	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M26N8	NH1208	34	26	8	100um	na	0	25	13		night	17473.99		33.5469525	-134.9893835
+S944	18S	rep2	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M25N1	NH1208	34	25	1	100um	na	800	1000	900		day	16044.501		33.5469525	-134.9893835
+S945	18S	rep2	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M25N2	NH1208	34	25	2	100um	na	600	800	700		day	19807.02		33.5469525	-134.9893835
+S946	18S	rep2	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M25N3	NH1208	34	25	3	100um	na	400	600	500		day	10356.637		33.5469525	-134.9893835
+S947	18S	rep2	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M25N4	NH1208	34	25	4	100um	na	200	400	300		day	16826.956		33.5469525	-134.9893835
+S948	18S	rep2	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M25N5	NH1208	34	25	5	100um	na	100	200	150		day	15073.013		33.5469525	-134.9893835
+S949	18S	rep2	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M25N6	NH1208	34	25	6	100um	na	50	100	75		day	15641.912		33.5469525	-134.9893835
+S950	18S	rep2	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M25N7	NH1208	34	25	7	100um	na	25	50	38		day	20145.512		33.5469525	-134.9893835
+S951	18S	rep2	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M25N8	NH1208	34	25	8	100um	na	0	25	13		day	16464.009		33.5469525	-134.9893835
+S952	18S	rep2	BATS	Allen	Library-BB	na	na	MOCK-EVEN	na	na	na	na	100um	na	na	na	na		na	16200		na	na
+S953	18S	rep2	BATS	Allen	Library-BB	na	na	MOCK-STAGGERED	na	na	na	na	100um	na	na	na	na		na	14600		na	na
+S954	18S	rep2	BATS	Allen	Library-BB	na	na	NC	na	na	na	na	100um	na	na	na	na		na	7230		na	na
+S955	18S	rep3	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M7N1	NH1208	7	7	1	100um	na	800	1000	900		day	15660.55		47.0103165	-144.6739975
+S956	18S	rep3	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M7N2	NH1208	7	7	2	100um	na	600	800	700		day	14740.11		47.0103165	-144.6739975
+S957	18S	rep3	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M7N3	NH1208	7	7	3	100um	na	400	600	500		day	14462.96		47.0103165	-144.6739975
+S958	18S	rep3	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M7N4	NH1208	7	7	4	100um	na	200	400	300		day	9090.425		47.0103165	-144.6739975
+S959	18S	rep3	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M7N5	NH1208	7	7	5	100um	na	100	200	150		day	16101.072		47.0103165	-144.6739975
+S960	18S	rep3	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M7N6	NH1208	7	7	6	100um	na	50	100	75		day	7513.978		47.0103165	-144.6739975
+S961	18S	rep3	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M7N7	NH1208	7	7	7	100um	na	25	50	38		day	18643.456		47.0103165	-144.6739975
+S962	18S	rep3	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M7N8	NH1208	7	7	8	100um	na	0	25	13		day	16724.355		47.0103165	-144.6739975
+S963	18S	rep3	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M8N1	NH1208	7	8	1	100um	na	800	1000	900		night	8427.052		47.0103165	-144.6739975
+S964	18S	rep3	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M8N2	NH1208	7	8	2	100um	na	600	800	700		night	15909.348		47.0103165	-144.6739975
+S965	18S	rep3	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M8N3	NH1208	7	8	3	100um	na	500	600	550		night	15572.016		47.0103165	-144.6739975
+S966	18S	rep3	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M8N4	NH1208	7	8	4	100um	na	300	500	400		night	13574.009		47.0103165	-144.6739975
+S967	18S	rep3	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M8N5	NH1208	7	8	5	100um	na	100	300	200		night	15130.449		47.0103165	-144.6739975
+S968	18S	rep3	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M8N6	NH1208	7	8	6	100um	na	50	100	75		night	7420.445		47.0103165	-144.6739975
+S969	18S	rep3	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M8N7	NH1208	7	8	7	100um	na	25	50	38		night	14692.797		47.0103165	-144.6739975
+S970	18S	rep3	BATS	Allen	Library-BB	Subarctic Gyre South East	1	M8N8	NH1208	7	8	8	100um	na	0	25	13		night	17435.973		47.0103165	-144.6739975
+S971	18S	rep3	BATS	Allen	Library-BB	Transition East	2	M11N1	NH1208	15	11	1	100um	na	800	1000	900		day	16515.694		43.04988	-138.1465175
+S972	18S	rep3	BATS	Allen	Library-BB	Transition East	2	M11N2	NH1208	15	11	2	100um	na	600	800	700		day	15302.318		43.04988	-138.1465175
+S973	18S	rep3	BATS	Allen	Library-BB	Transition East	2	M11N3	NH1208	15	11	3	100um	na	400	600	500		day	15117.466		43.04988	-138.1465175
+S974	18S	rep3	BATS	Allen	Library-BB	Transition East	2	M11N4	NH1208	15	11	4	100um	na	200	400	300		day	15137.368		43.04988	-138.1465175
+S975	18S	rep3	BATS	Allen	Library-BB	Transition East	2	M11N5	NH1208	15	11	5	100um	na	100	200	150		day	17043.828		43.04988	-138.1465175
+S976	18S	rep3	BATS	Allen	Library-BB	Transition East	2	M11N6	NH1208	15	11	6	100um	na	50	100	75		day	18343.363		43.04988	-138.1465175
+S977	18S	rep3	BATS	Allen	Library-BB	Transition East	2	M11N7	NH1208	15	11	7	100um	na	25	50	38		day	15127.502		43.04988	-138.1465175
+S978	18S	rep3	BATS	Allen	Library-BB	Transition East	2	M11N8	NH1208	15	11	8	100um	na	0	25	13		day	16776.915		43.04988	-138.1465175
+S979	18S	rep3	BATS	Allen	Library-BB	Transition East	2	M12N1	NH1208	15	12	1	100um	na	800	1000	900		night	13424.722		43.04988	-138.1465175
+S980	18S	rep3	BATS	Allen	Library-BB	Transition East	2	M12N2	NH1208	15	12	2	100um	na	600	800	700		night	15331.382		43.04988	-138.1465175
+S981	18S	rep3	BATS	Allen	Library-BB	Transition East	2	M12N3	NH1208	15	12	3	100um	na	400	600	500		night	16161.264		43.04988	-138.1465175
+S982	18S	rep3	BATS	Allen	Library-BB	Transition East	2	M12N4	NH1208	15	12	4	100um	na	200	400	300		night	15077.48		43.04988	-138.1465175
+S983	18S	rep3	BATS	Allen	Library-BB	Transition East	2	M12N5	NH1208	15	12	5	100um	na	100	200	150		night	10652.881		43.04988	-138.1465175
+S984	18S	rep3	BATS	Allen	Library-BB	Transition East	2	M12N6	NH1208	15	12	6	100um	na	50	100	75		night	8530.413		43.04988	-138.1465175
+S985	18S	rep3	BATS	Allen	Library-BB	Transition East	2	M12N7	NH1208	15	12	7	100um	na	25	50	38		night	15504.858		43.04988	-138.1465175
+S986	18S	rep3	BATS	Allen	Library-BB	Transition East	2	M12N8	NH1208	15	12	8	100um	na	0	25	13		night	15730.873		43.04988	-138.1465175
+S987	18S	rep3	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M26N1	NH1208	34	26	1	100um	na	800	1000	900		night	15216.749		33.5469525	-134.9893835
+S988	18S	rep3	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M26N2	NH1208	34	26	2	100um	na	600	800	700		night	15645.485		33.5469525	-134.9893835
+S989	18S	rep3	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M26N3	NH1208	34	26	3	100um	na	400	600	500		night	15135.923		33.5469525	-134.9893835
+S990	18S	rep3	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M26N4	NH1208	34	26	4	100um	na	200	400	300		night	13169.357		33.5469525	-134.9893835
+S991	18S	rep3	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M26N5	NH1208	34	26	5	100um	na	100	200	150		night	8323.948		33.5469525	-134.9893835
+S992	18S	rep3	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M26N6	NH1208	34	26	6	100um	na	50	100	75		night	13494.552		33.5469525	-134.9893835
+S993	18S	rep3	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M26N7	NH1208	34	26	7	100um	na	25	50	38		night	14805.472		33.5469525	-134.9893835
+S994	18S	rep3	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M26N8	NH1208	34	26	8	100um	na	0	25	13		night	14480.344		33.5469525	-134.9893835
+S995	18S	rep3	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M25N1	NH1208	34	25	1	100um	na	800	1000	900		day	13052.129		33.5469525	-134.9893835
+S996	18S	rep3	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M25N2	NH1208	34	25	2	100um	na	600	800	700		day	14427.813		33.5469525	-134.9893835
+S997	18S	rep3	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M25N3	NH1208	34	25	3	100um	na	400	600	500		day	15353.157		33.5469525	-134.9893835
+S998	18S	rep3	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M25N4	NH1208	34	25	4	100um	na	200	400	300		day	13139.788		33.5469525	-134.9893835
+S999	18S	rep3	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M25N5	NH1208	34	25	5	100um	na	100	200	150		day	14136.587		33.5469525	-134.9893835
+S1000	18S	rep3	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M25N6	NH1208	34	25	6	100um	na	50	100	75		day	13005.852		33.5469525	-134.9893835
+S1001	18S	rep3	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M25N7	NH1208	34	25	7	100um	na	25	50	38		day	13172.75		33.5469525	-134.9893835
+S1002	18S	rep3	BATS	Allen	Library-BB	Subtropical Gyre North East	3	M25N8	NH1208	34	25	8	100um	na	0	25	13		day	11734.859		33.5469525	-134.9893835
+S1003	18S	rep3	BATS	Allen	Library-BB	na	na	MOCK-EVEN	na	na	na	na	100um	na	na	na	na		na	17100		na	na
+S1004	18S	rep3	BATS	Allen	Library-BB	na	na	MOCK-STAGGERED	na	na	na	na	100um	na	na	na	na		na	15700		na	na
+S3122	18S	rep1	GAK	GAK	GAK	Subarctic Gyre North East	4	MN19N3	SKQ201916S	GAK19	1	3	150um	na	600	1200	900			na		57.19301	-146.9569
+S3123	18S	rep1	GAK	GAK	GAK	Subarctic Gyre North East	4	MN19N4	SKQ201916S	GAK19	1	4	150um	na	400	600	500			na		57.19301	-146.9569
+S3124	18S	rep1	GAK	GAK	GAK	Subarctic Gyre North East	4	MN19N5	SKQ201916S	GAK19	1	5	150um	na	300	400	350			na		57.19301	-146.9569
+S3125	18S	rep1	GAK	GAK	GAK	Subarctic Gyre North East	4	MN19N6	SKQ201916S	GAK19	1	6	150um	na	200	300	250			na		57.19301	-146.9569
+S3126	18S	rep1	GAK	GAK	GAK	Subarctic Gyre North East	4	MN19N7	SKQ201916S	GAK19	1	7	150um	na	100	200	150			na		57.19301	-146.9569
+S3127	18S	rep1	GAK	GAK	GAK	Subarctic Gyre North East	4	MN19N8	SKQ201916S	GAK19	1	8	150um	na	40	100	70			na		57.19301	-146.9569
+S3128	18S	rep1	GAK	GAK	GAK	Subarctic Gyre North East	4	MN19N9	SKQ201916S	GAK19	1	9	150um	na	0	40	20			na		57.19301	-146.9569
+S3129	18S	rep2	GAK	GAK	GAK	Subarctic Gyre North East	4	MN19N3	SKQ201916S	GAK19	1	3	150um	na	600	1200	900			na		57.19301	-146.9569
+S3130	18S	rep2	GAK	GAK	GAK	Subarctic Gyre North East	4	MN19N4	SKQ201916S	GAK19	1	4	150um	na	400	600	500			na		57.19301	-146.9569
+S3131	18S	rep2	GAK	GAK	GAK	Subarctic Gyre North East	4	MN19N5	SKQ201916S	GAK19	1	5	150um	na	300	400	350			na		57.19301	-146.9569
+S3132	18S	rep2	GAK	GAK	GAK	Subarctic Gyre North East	4	MN19N6	SKQ201916S	GAK19	1	6	150um	na	200	300	250			na		57.19301	-146.9569
+S3133	18S	rep2	GAK	GAK	GAK	Subarctic Gyre North East	4	MN19N7	SKQ201916S	GAK19	1	7	150um	na	100	200	150			na		57.19301	-146.9569
+S3134	18S	rep2	GAK	GAK	GAK	Subarctic Gyre North East	4	MN19N8	SKQ201916S	GAK19	1	8	150um	na	40	100	70			na		57.19301	-146.9569
+S3135	18S	rep2	GAK	GAK	GAK	Subarctic Gyre North East	4	MN19N9	SKQ201916S	GAK19	1	9	150um	na	0	40	20			na		57.19301	-146.9569
+S3136	18S	rep3	GAK	GAK	GAK	Subarctic Gyre North East	4	MN19N3	SKQ201916S	GAK19	1	3	150um	na	600	1200	900			na		57.19301	-146.9569
+S3137	18S	rep3	GAK	GAK	GAK	Subarctic Gyre North East	4	MN19N4	SKQ201916S	GAK19	1	4	150um	na	400	600	500			na		57.19301	-146.9569
+S3138	18S	rep3	GAK	GAK	GAK	Subarctic Gyre North East	4	MN19N5	SKQ201916S	GAK19	1	5	150um	na	300	400	350			na		57.19301	-146.9569
+S3139	18S	rep3	GAK	GAK	GAK	Subarctic Gyre North East	4	MN19N6	SKQ201916S	GAK19	1	6	150um	na	200	300	250			na		57.19301	-146.9569
+S3140	18S	rep3	GAK	GAK	GAK	Subarctic Gyre North East	4	MN19N7	SKQ201916S	GAK19	1	7	150um	na	100	200	150			na		57.19301	-146.9569
+S3141	18S	rep3	GAK	GAK	GAK	Subarctic Gyre North East	4	MN19N8	SKQ201916S	GAK19	1	8	150um	na	40	100	70			na		57.19301	-146.9569
+S3142	18S	rep3	GAK	GAK	GAK	Subarctic Gyre North East	4	MN19N9	SKQ201916S	GAK19	1	9	150um	na	0	40	20			na		57.19301	-146.9569
+S1244	18S	rep1	Tokyo	Allen	Library-Hirai1			H01	KH-13-7	st1	na	3	100um	na	0	200	100			1589		0.02	-170.01
+S1245	18S	rep1	Tokyo	Allen	Library-Hirai1			H02	KH-13-7	st1	na	2	100um	na	200	500	350			1940		0.02	-170.01
+S1246	18S	rep1	Tokyo	Allen	Library-Hirai1			H03	KH-13-7	st1	na	1	100um	na	500	1000	750			922		0.02	-170.01
+S1247	18S	rep1	Tokyo	Allen	Library-Hirai1			H04	KH-14-3	st4	na	3	100um	na	0	200	100			2536		15.01333333	-170.02
+S1248	18S	rep1	Tokyo	Allen	Library-Hirai1			H05	KH-14-3	st4	na	2	100um	na	200	500	350			355		15.01333333	-170.02
+S1249	18S	rep1	Tokyo	Allen	Library-Hirai1			H06	KH-14-3	st4	na	1	100um	na	500	1000	750			569		15.01333333	-170.02
+S1250	18S	rep1	Tokyo	Allen	Library-Hirai1			H07	KH-14-3	st5	na	3	100um	na	0	200	100			1223		20.01	-169.9733333
+S1251	18S	rep1	Tokyo	Allen	Library-Hirai1			H08	KH-14-3	st5	na	2	100um	na	200	500	350			854		20.01	-169.9733333
+S1252	18S	rep1	Tokyo	Allen	Library-Hirai1			H09	KH-14-3	st5	na	1	100um	na	500	1000	750			217		20.01	-169.9733333
+S1253	18S	rep1	Tokyo	Allen	Library-Hirai1			H10	KH-14-3	st6	na	3	100um	na	0	200	100			1292		24	-170.005
+S1254	18S	rep1	Tokyo	Allen	Library-Hirai1			H11	KH-14-3	st6	na	2	100um	na	200	500	350			2759		24	-170.005
+S1255	18S	rep1	Tokyo	Allen	Library-Hirai1			H12	KH-14-3	st6	na	1	100um	na	500	1000	750			1519		24	-170.005
+S1256	18S	rep1	Tokyo	Allen	Library-Hirai1			H13	KH-14-3	st8	na	3	100um	na	0	200	100			4401		35.03166667	-170.025
+S1257	18S	rep1	Tokyo	Allen	Library-Hirai1			H14	KH-14-3	st8	na	2	100um	na	200	500	350			1334		35.03166667	-170.025
+S1258	18S	rep1	Tokyo	Allen	Library-Hirai1			H15	KH-14-3	st8	na	1	100um	na	500	1000	750			1399		35.03166667	-170.025
+S1259	18S	rep1	Tokyo	Allen	Library-Hirai1			H16	KH-14-3	st9	na	3	100um	na	0	200	100			2422		40.01166667	-169.995
+S1260	18S	rep1	Tokyo	Allen	Library-Hirai1			H17	KH-14-3	st9	na	2	100um	na	200	500	350			2929		40.01166667	-169.995
+S1261	18S	rep1	Tokyo	Allen	Library-Hirai1			H18	KH-14-3	st9	na	1	100um	na	500	1000	750			1621		40.01166667	-169.995
+S1262	18S	rep1	Tokyo	Allen	Library-Hirai1			H19	KH-14-3	st10	na	3	100um	na	0	200	100			1223		45.00666667	-170.015
+S1263	18S	rep1	Tokyo	Allen	Library-Hirai1			H20	KH-14-3	st10	na	2	100um	na	200	500	350			1309		45.00666667	-170.015
+S1264	18S	rep1	Tokyo	Allen	Library-Hirai1			H21	KH-14-3	st10	na	1	100um	na	500	1000	750			1446		45.00666667	-170.015
+S1266	18S	rep1	Tokyo	Allen	Library-Hirai1			H22	KH-14-3	st11	na	3	100um	na	0	200	100			784		50.00166667	-170.0333333
+S1265	18S	rep1	Tokyo	Allen	Library-Hirai1			H23	KH-14-3	st11	na	2	100um	na	200	500	350			2033		50.00166667	-170.0333333
+S1267	18S	rep1	Tokyo	Allen	Library-Hirai1			H24	KH-14-3	st11	na	1	100um	na	500	1000	750			757		50.00166667	-170.0333333
+S1268	18S	rep1	Tokyo	Allen	Library-Hirai1			H25	KH-14-3	st12	na	3	100um	na	0	200	100			4942		54.99333333	-169.9983333
+S1269	18S	rep1	Tokyo	Allen	Library-Hirai1			H26	KH-14-3	st12	na	2	100um	na	200	500	350			1956		54.99333333	-169.9983333
+S1270	18S	rep1	Tokyo	Allen	Library-Hirai1			H27	KH-14-3	st12	na	1	100um	na	500	1000	750			719		54.99333333	-169.9983333
+S1271	18S	rep1	Tokyo	Allen	Library-Hirai1			H28	KH-17-4	st7	na	3	100um	na	0	200	100			288		23.01	-130.0066667
+S1272	18S	rep1	Tokyo	Allen	Library-Hirai1			H29	KH-17-4	st7	na	2	100um	na	200	500	350			845		23.01	-130.0066667
+S1273	18S	rep1	Tokyo	Allen	Library-Hirai1			H30	KH-17-4	st7	na	1	100um	na	500	1000	750			444		23.01	-130.0066667
+S1274	18S	rep1	Tokyo	Allen	Library-Hirai1			MOCK-EVEN	na	na	na	na	100um	na	na	na	na		na	2.034137668		na	na
+S1275	18S	rep1	Tokyo	Allen	Library-Hirai1			MOCK-STAGGERED	na	na	na	na	100um	na	na	na	na		na	3.244988753		na	na
+S1276	18S	rep1	Tokyo	Allen	Library-Hirai1			NC	NC	NC	na	na	100um	na	NC	na	na			0		na	na
+S1292	18S	rep2	Tokyo	Allen	Library-Hirai1			H01	KH-13-7	st1	na	3	100um	na	0	200	100			1589		0.02	-170.01
+S1293	18S	rep2	Tokyo	Allen	Library-Hirai1			H02	KH-13-7	st1	na	2	100um	na	200	500	350			1940		0.02	-170.01
+S1294	18S	rep2	Tokyo	Allen	Library-Hirai1			H03	KH-13-7	st1	na	1	100um	na	500	1000	750			922		0.02	-170.01
+S1295	18S	rep2	Tokyo	Allen	Library-Hirai1			H04	KH-14-3	st4	na	3	100um	na	0	200	100			2536		15.01333333	-170.02
+S1296	18S	rep2	Tokyo	Allen	Library-Hirai1			H05	KH-14-3	st4	na	2	100um	na	200	500	350			355		15.01333333	-170.02
+S1297	18S	rep2	Tokyo	Allen	Library-Hirai1			H06	KH-14-3	st4	na	1	100um	na	500	1000	750			569		15.01333333	-170.02
+S1298	18S	rep2	Tokyo	Allen	Library-Hirai1			H07	KH-14-3	st5	na	3	100um	na	0	200	100			1223		20.01	-169.9733333
+S1299	18S	rep2	Tokyo	Allen	Library-Hirai1			H08	KH-14-3	st5	na	2	100um	na	200	500	350			854		20.01	-169.9733333
+S1300	18S	rep2	Tokyo	Allen	Library-Hirai1			H09	KH-14-3	st5	na	1	100um	na	500	1000	750			217		20.01	-169.9733333
+S1301	18S	rep2	Tokyo	Allen	Library-Hirai1			H10	KH-14-3	st6	na	3	100um	na	0	200	100			1292		24	-170.005
+S1302	18S	rep2	Tokyo	Allen	Library-Hirai1			H11	KH-14-3	st6	na	2	100um	na	200	500	350			2759		24	-170.005
+S1303	18S	rep2	Tokyo	Allen	Library-Hirai1			H12	KH-14-3	st6	na	1	100um	na	500	1000	750			1519		24	-170.005
+S1304	18S	rep2	Tokyo	Allen	Library-Hirai1			H13	KH-14-3	st8	na	3	100um	na	0	200	100			4401		35.03166667	-170.025
+S1305	18S	rep2	Tokyo	Allen	Library-Hirai1			H14	KH-14-3	st8	na	2	100um	na	200	500	350			1334		35.03166667	-170.025
+S1306	18S	rep2	Tokyo	Allen	Library-Hirai1			H15	KH-14-3	st8	na	1	100um	na	500	1000	750			1399		35.03166667	-170.025
+S1307	18S	rep2	Tokyo	Allen	Library-Hirai1			H16	KH-14-3	st9	na	3	100um	na	0	200	100			2422		40.01166667	-169.995
+S1308	18S	rep2	Tokyo	Allen	Library-Hirai1			H17	KH-14-3	st9	na	2	100um	na	200	500	350			2929		40.01166667	-169.995
+S1309	18S	rep2	Tokyo	Allen	Library-Hirai1			H18	KH-14-3	st9	na	1	100um	na	500	1000	750			1621		40.01166667	-169.995
+S1310	18S	rep2	Tokyo	Allen	Library-Hirai1			H19	KH-14-3	st10	na	3	100um	na	0	200	100			1223		45.00666667	-170.015
+S1311	18S	rep2	Tokyo	Allen	Library-Hirai1			H20	KH-14-3	st10	na	2	100um	na	200	500	350			1309		45.00666667	-170.015
+S1312	18S	rep2	Tokyo	Allen	Library-Hirai1			H21	KH-14-3	st10	na	1	100um	na	500	1000	750			1446		45.00666667	-170.015
+S1314	18S	rep2	Tokyo	Allen	Library-Hirai1			H22	KH-14-3	st11	na	3	100um	na	0	200	100			784		50.00166667	-170.0333333
+S1313	18S	rep2	Tokyo	Allen	Library-Hirai1			H23	KH-14-3	st11	na	2	100um	na	200	500	350			2033		50.00166667	-170.0333333
+S1315	18S	rep2	Tokyo	Allen	Library-Hirai1			H24	KH-14-3	st11	na	1	100um	na	500	1000	750			757		50.00166667	-170.0333333
+S1316	18S	rep2	Tokyo	Allen	Library-Hirai1			H25	KH-14-3	st12	na	3	100um	na	0	200	100			4942		54.99333333	-169.9983333
+S1317	18S	rep2	Tokyo	Allen	Library-Hirai1			H26	KH-14-3	st12	na	2	100um	na	200	500	350			1956		54.99333333	-169.9983333
+S1318	18S	rep2	Tokyo	Allen	Library-Hirai1			H27	KH-14-3	st12	na	1	100um	na	500	1000	750			719		54.99333333	-169.9983333
+S1319	18S	rep2	Tokyo	Allen	Library-Hirai1			H28	KH-17-4	st7	na	3	100um	na	0	200	100			288		23.01	-130.0066667
+S1320	18S	rep2	Tokyo	Allen	Library-Hirai1			H29	KH-17-4	st7	na	2	100um	na	200	500	350			845		23.01	-130.0066667
+S1321	18S	rep2	Tokyo	Allen	Library-Hirai1			H30	KH-17-4	st7	na	1	100um	na	500	1000	750			444		23.01	-130.0066667
+S1322	18S	rep2	Tokyo	Allen	Library-Hirai1			MOCK-EVEN	na	na	na	na	100um	na	na	na	na		na	2.034137668		na	na
+S1323	18S	rep2	Tokyo	Allen	Library-Hirai1			MOCK-STAGGERED	na	na	na	na	100um	na	na	na	na		na	3.244988753		na	na
+S1324	18S	rep2	Tokyo	Allen	Library-Hirai1			NC	NC	NC	na	na	100um	na	NC	na	na			0		na	na
+S1340	18S	rep3	Tokyo	Allen	Library-Hirai1			H01	KH-13-7	st1	na	3	100um	na	0	200	100			1589		0.02	-170.01
+S1341	18S	rep3	Tokyo	Allen	Library-Hirai1			H02	KH-13-7	st1	na	2	100um	na	200	500	350			1940		0.02	-170.01
+S1342	18S	rep3	Tokyo	Allen	Library-Hirai1			H03	KH-13-7	st1	na	1	100um	na	500	1000	750			922		0.02	-170.01
+S1343	18S	rep3	Tokyo	Allen	Library-Hirai1			H04	KH-14-3	st4	na	3	100um	na	0	200	100			2536		15.01333333	-170.02
+S1344	18S	rep3	Tokyo	Allen	Library-Hirai1			H05	KH-14-3	st4	na	2	100um	na	200	500	350			355		15.01333333	-170.02
+S1345	18S	rep3	Tokyo	Allen	Library-Hirai1			H06	KH-14-3	st4	na	1	100um	na	500	1000	750			569		15.01333333	-170.02
+S1346	18S	rep3	Tokyo	Allen	Library-Hirai1			H07	KH-14-3	st5	na	3	100um	na	0	200	100			1223		20.01	-169.9733333
+S1347	18S	rep3	Tokyo	Allen	Library-Hirai1			H08	KH-14-3	st5	na	2	100um	na	200	500	350			854		20.01	-169.9733333
+S1348	18S	rep3	Tokyo	Allen	Library-Hirai1			H09	KH-14-3	st5	na	1	100um	na	500	1000	750			217		20.01	-169.9733333
+S1349	18S	rep3	Tokyo	Allen	Library-Hirai1			H10	KH-14-3	st6	na	3	100um	na	0	200	100			1292		24	-170.005
+S1350	18S	rep3	Tokyo	Allen	Library-Hirai1			H11	KH-14-3	st6	na	2	100um	na	200	500	350			2759		24	-170.005
+S1351	18S	rep3	Tokyo	Allen	Library-Hirai1			H12	KH-14-3	st6	na	1	100um	na	500	1000	750			1519		24	-170.005
+S1352	18S	rep3	Tokyo	Allen	Library-Hirai1			H13	KH-14-3	st8	na	3	100um	na	0	200	100			4401		35.03166667	-170.025
+S1353	18S	rep3	Tokyo	Allen	Library-Hirai1			H14	KH-14-3	st8	na	2	100um	na	200	500	350			1334		35.03166667	-170.025
+S1354	18S	rep3	Tokyo	Allen	Library-Hirai1			H15	KH-14-3	st8	na	1	100um	na	500	1000	750			1399		35.03166667	-170.025
+S1355	18S	rep3	Tokyo	Allen	Library-Hirai1			H16	KH-14-3	st9	na	3	100um	na	0	200	100			2422		40.01166667	-169.995
+S1356	18S	rep3	Tokyo	Allen	Library-Hirai1			H17	KH-14-3	st9	na	2	100um	na	200	500	350			2929		40.01166667	-169.995
+S1357	18S	rep3	Tokyo	Allen	Library-Hirai1			H18	KH-14-3	st9	na	1	100um	na	500	1000	750			1621		40.01166667	-169.995
+S1358	18S	rep3	Tokyo	Allen	Library-Hirai1			H19	KH-14-3	st10	na	3	100um	na	0	200	100			1223		45.00666667	-170.015
+S1359	18S	rep3	Tokyo	Allen	Library-Hirai1			H20	KH-14-3	st10	na	2	100um	na	200	500	350			1309		45.00666667	-170.015
+S1361	18S	rep3	Tokyo	Allen	Library-Hirai1			H21	KH-14-3	st10	na	1	100um	na	500	1000	750			1446		45.00666667	-170.015
+S1360	18S	rep3	Tokyo	Allen	Library-Hirai1			H22	KH-14-3	st11	na	3	100um	na	0	200	100			784		50.00166667	-170.0333333
+S1362	18S	rep3	Tokyo	Allen	Library-Hirai1			H23	KH-14-3	st11	na	2	100um	na	200	500	350			2033		50.00166667	-170.0333333
+S1363	18S	rep3	Tokyo	Allen	Library-Hirai1			H24	KH-14-3	st11	na	1	100um	na	500	1000	750			757		50.00166667	-170.0333333
+S1364	18S	rep3	Tokyo	Allen	Library-Hirai1			H25	KH-14-3	st12	na	3	100um	na	0	200	100			4942		54.99333333	-169.9983333
+S1365	18S	rep3	Tokyo	Allen	Library-Hirai1			H26	KH-14-3	st12	na	2	100um	na	200	500	350			1956		54.99333333	-169.9983333
+S1366	18S	rep3	Tokyo	Allen	Library-Hirai1			H27	KH-14-3	st12	na	1	100um	na	500	1000	750			719		54.99333333	-169.9983333
+S1367	18S	rep3	Tokyo	Allen	Library-Hirai1			H28	KH-17-4	st7	na	3	100um	na	0	200	100			288		23.01	-130.0066667
+S1368	18S	rep3	Tokyo	Allen	Library-Hirai1			H29	KH-17-4	st7	na	2	100um	na	200	500	350			845		23.01	-130.0066667
+S1369	18S	rep3	Tokyo	Allen	Library-Hirai1			H30	KH-17-4	st7	na	1	100um	na	500	1000	750			444		23.01	-130.0066667
+S1370	18S	rep3	Tokyo	Allen	Library-Hirai1			MOCK-EVEN	na	na	na	na	100um	na	na	na	na		na	2.034137668		na	na
+S1371	18S	rep3	Tokyo	Allen	Library-Hirai1			MOCK-STAGGERED	na	na	na	na	100um	na	na	na	na		na	3.244988753		na	na
+S1372	18S	rep3	Tokyo	Allen	1			NC	NC	NC	na	na	100um	na	NC	na	na			0		na	na
+1645	18S	rep1	Tokyo	Allen	Library-Hirai2			H31	KH-17-4	st8	na	3	100um	na	0	200	100			752		23.00333333	-140.01
+1646	18S	rep1	Tokyo	Allen	Library-Hirai2			H32	KH-17-4	st8	na	2	100um	na	200	500	350			767		23.00333333	-140.01
+1647	18S	rep1	Tokyo	Allen	Library-Hirai2			H33	KH-17-4	st8	na	1	100um	na	500	1000	750			1222		23.00333333	-140.01
+1648	18S	rep1	Tokyo	Allen	Library-Hirai2			H34	KH-12-01	st3	na	3	100um	na	0	200	100			1121		0	-105.0016667
+1649	18S	rep1	Tokyo	Allen	Library-Hirai2			H35	KH-12-01	st3	na	2	100um	na	200	500	350			3670		0	-105.0016667
+1650	18S	rep1	Tokyo	Allen	Library-Hirai2			H36	KH-12-01	st3	na	1	100um	na	500	1000	750			1374		0	-105.0016667
+1651	18S	rep1	Tokyo	Allen	Library-Hirai2			H37	KH-12-01	st5	na	3	100um	na	0	200	100			1716		0.001666667	-115
+1652	18S	rep1	Tokyo	Allen	Library-Hirai2			H38	KH-12-01	st5	na	2	100um	na	200	500	350			727		0.001666667	-115
+1653	18S	rep1	Tokyo	Allen	Library-Hirai2			H39	KH-12-01	st5	na	1	100um	na	500	1000	750			666		0.001666667	-115
+1654	18S	rep1	Tokyo	Allen	Library-Hirai2			H40	KH-12-01	st7	na	3	100um	na	0	200	100			1245		-0.001666667	-125.0016667
+1655	18S	rep1	Tokyo	Allen	Library-Hirai2			H41	KH-12-01	st7	na	2	100um	na	200	500	350			1133		-0.001666667	-125.0016667
+1656	18S	rep1	Tokyo	Allen	Library-Hirai2			H42	KH-12-01	st7	na	1	100um	na	500	1000	750			756		-0.001666667	-125.0016667
+1657	18S	rep1	Tokyo	Allen	Library-Hirai2			H43	KH-11-10	st3	na	3	100um	na	0	200	100			2147		23.00833333	-195
+1658	18S	rep1	Tokyo	Allen	Library-Hirai2			H44	KH-11-10	st3	na	2	100um	na	200	500	350			465		23.00833333	-195
+1659	18S	rep1	Tokyo	Allen	Library-Hirai2			H45	KH-11-10	st3	na	1	100um	na	500	1000	750			82.9		23.00833333	-195
+1660	18S	rep1	Tokyo	Allen	Library-Hirai2			H46	KH-11-10	st4A	na	3	100um	na	0	200	100			611		23.00166667	-189.9983
+1661	18S	rep1	Tokyo	Allen	Library-Hirai2			H47	KH-11-10	st4A	na	2	100um	na	200	500	350			233		23.00166667	-189.9983
+1662	18S	rep1	Tokyo	Allen	Library-Hirai2			H48	KH-11-10	st4A	na	1	100um	na	500	1000	750			183		23.00166667	-189.9983
+1663	18S	rep1	Tokyo	Allen	Library-Hirai2			H49	SY-15-01	C3300	na	3	100um	na	0	200	100			2581		33	-222
+1664	18S	rep1	Tokyo	Allen	Library-Hirai2			H50	SY-15-01	C3300	na	2	100um	na	200	500	350			1808		33	-222
+1665	18S	rep1	Tokyo	Allen	Library-Hirai2			H51	SY-15-01	C3300	na	1	100um	na	500	1000	750			1134		33	-222
+1666	18S	rep1	Tokyo	Allen	Library-Hirai2			H52	SY-15-01	C3345	na	3	100um	na	0	200	100			1264		33.75	-222
+1667	18S	rep1	Tokyo	Allen	Library-Hirai2			H53	SY-15-01	C3345	na	2	100um	na	200	500	350			1331		33.75	-222
+1668	18S	rep1	Tokyo	Allen	Library-Hirai2			H54	SY-15-01	C3345	na	1	100um	na	500	1000	750			162		33.75	-222
+1669	18S	rep1	Tokyo	Allen	Library-Hirai2			H55	SY-11-05	C3100	na	3	100um	na	0	200	100			1749		31	-222.0016667
+1670	18S	rep1	Tokyo	Allen	Library-Hirai2			H56	SY-11-05	C3100	na	2	100um	na	200	500	350			1619		31	-222.0016667
+1671	18S	rep1	Tokyo	Allen	Library-Hirai2			H57	SY-11-05	C3100	na	1	100um	na	500	1000	750			167		31	-222.0016667
+1672	18S	rep1	Tokyo	Allen	Library-Hirai2			H58	SY-11-05	K01	na	3	100um	na	0	200	100			330		32.91	-221.9916667
+1673	18S	rep1	Tokyo	Allen	Library-Hirai2			H59	SY-11-05	K01	na	2	100um	na	200	500	350			1559		32.91	-221.9916667
+1674	18S	rep1	Tokyo	Allen	Library-Hirai2			H60	SY-11-05	K01	na	1	100um	na	500	1000	750			2173		32.91	-221.9916667
+1675	18S	rep1	Tokyo	Allen	Library-Hirai2			MOCK-EVEN	na	na	na	na	100um	na	na	na	na		na	2.034137668		na	na
+1676	18S	rep1	Tokyo	Allen	Library-Hirai2			MOCK-STAGGERED	na	na	na	na	100um	na	na	na	na		na	3.244988753		na	na
+1677	18S	rep1	Tokyo	Allen	Library-Hirai2			NC	NC	NC	na	na	100um	na	NC	na	na			0		na	na
+1693	18S	rep2	Tokyo	Allen	Library-Hirai2			H31	KH-17-4	st8	na	3	100um	na	0	200	100			752		23.00333333	-140.01
+1694	18S	rep2	Tokyo	Allen	Library-Hirai2			H32	KH-17-4	st8	na	2	100um	na	200	500	350			767		23.00333333	-140.01
+1695	18S	rep2	Tokyo	Allen	Library-Hirai2			H33	KH-17-4	st8	na	1	100um	na	500	1000	750			1222		23.00333333	-140.01
+1696	18S	rep2	Tokyo	Allen	Library-Hirai2			H34	KH-12-01	st3	na	3	100um	na	0	200	100			1121		0	-105.0016667
+1697	18S	rep2	Tokyo	Allen	Library-Hirai2			H35	KH-12-01	st3	na	2	100um	na	200	500	350			3670		0	-105.0016667
+1698	18S	rep2	Tokyo	Allen	Library-Hirai2			H36	KH-12-01	st3	na	1	100um	na	500	1000	750			1374		0	-105.0016667
+1699	18S	rep2	Tokyo	Allen	Library-Hirai2			H37	KH-12-01	st5	na	3	100um	na	0	200	100			1716		0.001666667	-115
+1700	18S	rep2	Tokyo	Allen	Library-Hirai2			H38	KH-12-01	st5	na	2	100um	na	200	500	350			727		0.001666667	-115
+1701	18S	rep2	Tokyo	Allen	Library-Hirai2			H39	KH-12-01	st5	na	1	100um	na	500	1000	750			666		0.001666667	-115
+1702	18S	rep2	Tokyo	Allen	Library-Hirai2			H40	KH-12-01	st7	na	3	100um	na	0	200	100			1245		-0.001666667	-125.0016667
+1703	18S	rep2	Tokyo	Allen	Library-Hirai2			H41	KH-12-01	st7	na	2	100um	na	200	500	350			1133		-0.001666667	-125.0016667
+1704	18S	rep2	Tokyo	Allen	Library-Hirai2			H42	KH-12-01	st7	na	1	100um	na	500	1000	750			756		-0.001666667	-125.0016667
+1705	18S	rep2	Tokyo	Allen	Library-Hirai2			H43	KH-11-10	st3	na	3	100um	na	0	200	100			2147		23.00833333	-195
+1706	18S	rep2	Tokyo	Allen	Library-Hirai2			H44	KH-11-10	st3	na	2	100um	na	200	500	350			465		23.00833333	-195
+1707	18S	rep2	Tokyo	Allen	Library-Hirai2			H45	KH-11-10	st3	na	1	100um	na	500	1000	750			82.9		23.00833333	-195
+1708	18S	rep2	Tokyo	Allen	Library-Hirai2			H46	KH-11-10	st4A	na	3	100um	na	0	200	100			611		23.00166667	-189.9983
+1709	18S	rep2	Tokyo	Allen	Library-Hirai2			H47	KH-11-10	st4A	na	2	100um	na	200	500	350			233		23.00166667	-189.9983
+1710	18S	rep2	Tokyo	Allen	Library-Hirai2			H48	KH-11-10	st4A	na	1	100um	na	500	1000	750			183		23.00166667	-189.9983
+1711	18S	rep2	Tokyo	Allen	Library-Hirai2			H49	SY-15-01	C3300	na	3	100um	na	0	200	100			2581		33	-222
+1712	18S	rep2	Tokyo	Allen	Library-Hirai2			H50	SY-15-01	C3300	na	2	100um	na	200	500	350			1808		33	-222
+1713	18S	rep2	Tokyo	Allen	Library-Hirai2			H51	SY-15-01	C3300	na	1	100um	na	500	1000	750			1134		33	-222
+1714	18S	rep2	Tokyo	Allen	Library-Hirai2			H52	SY-15-01	C3345	na	3	100um	na	0	200	100			1264		33.75	-222
+1715	18S	rep2	Tokyo	Allen	Library-Hirai2			H53	SY-15-01	C3345	na	2	100um	na	200	500	350			1331		33.75	-222
+1716	18S	rep2	Tokyo	Allen	Library-Hirai2			H54	SY-15-01	C3345	na	1	100um	na	500	1000	750			162		33.75	-222
+1717	18S	rep2	Tokyo	Allen	Library-Hirai2			H55	SY-11-05	C3100	na	3	100um	na	0	200	100			1749		31	-222.0016667
+1718	18S	rep2	Tokyo	Allen	Library-Hirai2			H56	SY-11-05	C3100	na	2	100um	na	200	500	350			1619		31	-222.0016667
+1719	18S	rep2	Tokyo	Allen	Library-Hirai2			H57	SY-11-05	C3100	na	1	100um	na	500	1000	750			167		31	-222.0016667
+1720	18S	rep2	Tokyo	Allen	Library-Hirai2			H58	SY-11-05	K01	na	3	100um	na	0	200	100			330		32.91	-221.9916667
+1721	18S	rep2	Tokyo	Allen	Library-Hirai2			H59	SY-11-05	K01	na	2	100um	na	200	500	350			1559		32.91	-221.9916667
+1722	18S	rep2	Tokyo	Allen	Library-Hirai2			H60	SY-11-05	K01	na	1	100um	na	500	1000	750			2173		32.91	-221.9916667
+1723	18S	rep2	Tokyo	Allen	Library-Hirai2			MOCK-EVEN	na	na	na	na	100um	na	na	na	na		na	2.034137668		na	na
+1724	18S	rep2	Tokyo	Allen	Library-Hirai2			MOCK-STAGGERED	na	na	na	na	100um	na	na	na	na		na	3.244988753		na	na
+1725	18S	rep2	Tokyo	Allen	Library-Hirai2			NC	NC	NC	na	na	100um	na	NC	na	na			0		na	na
+1741	18S	rep3	Tokyo	Allen	Library-Hirai2			H31	KH-17-4	st8	na	3	100um	na	0	200	100			752		23.00333333	-140.01
+1742	18S	rep3	Tokyo	Allen	Library-Hirai2			H32	KH-17-4	st8	na	2	100um	na	200	500	350			767		23.00333333	-140.01
+1743	18S	rep3	Tokyo	Allen	Library-Hirai2			H33	KH-17-4	st8	na	1	100um	na	500	1000	750			1222		23.00333333	-140.01
+1744	18S	rep3	Tokyo	Allen	Library-Hirai2			H34	KH-12-01	st3	na	3	100um	na	0	200	100			1121		0	-105.0016667
+1745	18S	rep3	Tokyo	Allen	Library-Hirai2			H35	KH-12-01	st3	na	2	100um	na	200	500	350			3670		0	-105.0016667
+1746	18S	rep3	Tokyo	Allen	Library-Hirai2			H36	KH-12-01	st3	na	1	100um	na	500	1000	750			1374		0	-105.0016667
+1747	18S	rep3	Tokyo	Allen	Library-Hirai2			H37	KH-12-01	st5	na	3	100um	na	0	200	100			1716		0.001666667	-115
+1748	18S	rep3	Tokyo	Allen	Library-Hirai2			H38	KH-12-01	st5	na	2	100um	na	200	500	350			727		0.001666667	-115
+1749	18S	rep3	Tokyo	Allen	Library-Hirai2			H39	KH-12-01	st5	na	1	100um	na	500	1000	750			666		0.001666667	-115
+1750	18S	rep3	Tokyo	Allen	Library-Hirai2			H40	KH-12-01	st7	na	3	100um	na	0	200	100			1245		-0.001666667	-125.0016667
+1751	18S	rep3	Tokyo	Allen	Library-Hirai2			H41	KH-12-01	st7	na	2	100um	na	200	500	350			1133		-0.001666667	-125.0016667
+1752	18S	rep3	Tokyo	Allen	Library-Hirai2			H42	KH-12-01	st7	na	1	100um	na	500	1000	750			756		-0.001666667	-125.0016667
+1753	18S	rep3	Tokyo	Allen	Library-Hirai2			H43	KH-11-10	st3	na	3	100um	na	0	200	100			2147		23.00833333	-195
+1754	18S	rep3	Tokyo	Allen	Library-Hirai2			H44	KH-11-10	st3	na	2	100um	na	200	500	350			465		23.00833333	-195
+1755	18S	rep3	Tokyo	Allen	Library-Hirai2			H45	KH-11-10	st3	na	1	100um	na	500	1000	750			82.9		23.00833333	-195
+1756	18S	rep3	Tokyo	Allen	Library-Hirai2			H46	KH-11-10	st4A	na	3	100um	na	0	200	100			611		23.00166667	-189.9983
+1757	18S	rep3	Tokyo	Allen	Library-Hirai2			H47	KH-11-10	st4A	na	2	100um	na	200	500	350			233		23.00166667	-189.9983
+1758	18S	rep3	Tokyo	Allen	Library-Hirai2			H48	KH-11-10	st4A	na	1	100um	na	500	1000	750			183		23.00166667	-189.9983
+1759	18S	rep3	Tokyo	Allen	Library-Hirai2			H49	SY-15-01	C3300	na	3	100um	na	0	200	100			2581		33	-222
+1760	18S	rep3	Tokyo	Allen	Library-Hirai2			H50	SY-15-01	C3300	na	2	100um	na	200	500	350			1808		33	-222
+1761	18S	rep3	Tokyo	Allen	Library-Hirai2			H51	SY-15-01	C3300	na	1	100um	na	500	1000	750			1134		33	-222
+1762	18S	rep3	Tokyo	Allen	Library-Hirai2			H52	SY-15-01	C3345	na	3	100um	na	0	200	100			1264		33.75	-222
+1763	18S	rep3	Tokyo	Allen	Library-Hirai2			H53	SY-15-01	C3345	na	2	100um	na	200	500	350			1331		33.75	-222
+1764	18S	rep3	Tokyo	Allen	Library-Hirai2			H54	SY-15-01	C3345	na	1	100um	na	500	1000	750			162		33.75	-222
+1765	18S	rep3	Tokyo	Allen	Library-Hirai2			H55	SY-11-05	C3100	na	3	100um	na	0	200	100			1749		31	-222.0016667
+1766	18S	rep3	Tokyo	Allen	Library-Hirai2			H56	SY-11-05	C3100	na	2	100um	na	200	500	350			1619		31	-222.0016667
+1767	18S	rep3	Tokyo	Allen	Library-Hirai2			H57	SY-11-05	C3100	na	1	100um	na	500	1000	750			167		31	-222.0016667
+1768	18S	rep3	Tokyo	Allen	Library-Hirai2			H58	SY-11-05	K01	na	3	100um	na	0	200	100			330		32.91	-221.9916667
+1769	18S	rep3	Tokyo	Allen	Library-Hirai2			H59	SY-11-05	K01	na	2	100um	na	200	500	350			1559		32.91	-221.9916667
+1770	18S	rep3	Tokyo	Allen	Library-Hirai2			H60	SY-11-05	K01	na	1	100um	na	500	1000	750			2173		32.91	-221.9916667
+1771	18S	rep3	Tokyo	Allen	Library-Hirai2			MOCK-EVEN	na	na	na	na	100um	na	na	na	na		na	2.034137668		na	na
+1772	18S	rep3	Tokyo	Allen	Library-Hirai2			MOCK-STAGGERED	na	na	na	na	100um	na	na	na	na		na	3.244988753		na	na
+1773	18S	rep3	Tokyo	Allen	Library-Hirai2			NC	NC	NC	na	na	100um	na	NC	na	na			0		na	na
+S124	18S	rep1	Allen	Allen	library-1			Sample 1	P1604	Cycle 1	2	1	200um	na	350	400	375		night	4.36		33.04663	-122.9035
+S125	18S	rep1	Allen	Allen	library-1			Sample 2	P1604	Cycle 1	2	2	200um	na	300	350	325		night	7.4		33.04663	-122.9035
+S126	18S	rep1	Allen	Allen	library-1			Sample 3	P1604	Cycle 1	2	3	200um	na	250	300	275		night	12.64		33.04663	-122.9035
+S127	18S	rep1	Allen	Allen	library-1			Sample 4	P1604	Cycle 1	2	4	200um	na	200	250	225		night	11.6		33.04663	-122.9035
+S128	18S	rep1	Allen	Allen	library-1			Sample 5	P1604	Cycle 1	2	5	200um	na	150	200	175		night	14.2		33.04663	-122.9035
+S129	18S	rep1	Allen	Allen	library-1			Sample 6	P1604	Cycle 1	2	6	200um	na	100	150	125		night	5.84		33.04663	-122.9035
+S130	18S	rep1	Allen	Allen	library-1			Sample 7	P1604	Cycle 1	2	7	200um	na	50	100	75		night	13.24		33.04663	-122.9035
+S131	18S	rep1	Allen	Allen	library-1			Sample 8	P1604	Cycle 1	2	8	200um	na	0	50	25		night	11.04		33.04663	-122.9035
+S132	18S	rep1	Allen	Allen	library-1			Sample 9	P1604	Cycle 2	2	1	200um	na	350	400	375		night	9.52		33.5297	-122.0517
+S133	18S	rep1	Allen	Allen	library-1			Sample 10	P1604	Cycle 2	2	2	200um	na	300	350	325		night	7.36		33.5297	-122.0517
+S134	18S	rep1	Allen	Allen	library-1			Sample 11	P1604	Cycle 2	2	3	200um	na	250	300	275		night	7.72		33.5297	-122.0517
+S135	18S	rep1	Allen	Allen	library-1			Sample 12	P1604	Cycle 2	2	4	200um	na	200	250	225		night	7.4		33.5297	-122.0517
+S136	18S	rep1	Allen	Allen	library-1			Sample 13	P1604	Cycle 2	2	5	200um	na	150	200	175		night	14		33.5297	-122.0517
+S137	18S	rep1	Allen	Allen	library-1			Sample 14	P1604	Cycle 2	2	6	200um	na	100	150	125		night	4.76		33.5297	-122.0517
+S138	18S	rep1	Allen	Allen	library-1			Sample 15	P1604	Cycle 2	2	7	200um	na	50	100	75		night	5.36		33.5297	-122.0517
+S139	18S	rep1	Allen	Allen	library-1			Sample 16	P1604	Cycle 2	2	8	200um	na	0	50	25		night	15.28		33.5297	-122.0517
+S140	18S	rep1	Allen	Allen	library-1			Sample 17	P1604	Cycle 3	2	1	200um	na	350	400	375		night	12.4		34.68737	-121.2542
+S141	18S	rep1	Allen	Allen	library-1			Sample 18	P1604	Cycle 3	2	2	200um	na	300	350	325		night	13.24		34.68737	-121.2542
+S142	18S	rep1	Allen	Allen	library-1			Sample 19	P1604	Cycle 3	2	3	200um	na	250	300	275		night	15.64		34.68737	-121.2542
+S143	18S	rep1	Allen	Allen	library-1			Sample 20	P1604	Cycle 3	2	4	200um	na	200	250	225		night	13.84		34.68737	-121.2542
+S144	18S	rep1	Allen	Allen	library-1			Sample 21	P1604	Cycle 3	2	5	200um	na	150	200	175		night	15.12		34.68737	-121.2542
+S145	18S	rep1	Allen	Allen	library-1			Sample 22	P1604	Cycle 3	2	6	200um	na	100	150	125		night	7.04		34.68737	-121.2542
+S146	18S	rep1	Allen	Allen	library-1			Sample 23	P1604	Cycle 3	2	7	200um	na	50	100	75		night	16.16		34.68737	-121.2542
+S147	18S	rep1	Allen	Allen	library-1			Sample 24	P1604	Cycle 3	2	8	200um	na	0	50	25		night	15.04		34.68737	-121.2542
+S148	18S	rep1	Allen	Allen	library-1			Sample 25	P1604	Cycle 3	2	8	200um	na	0	50	25		night	13.96		34.68737	-121.2542
+S149	18S	rep1	Allen	Allen	library-1			Sample 26	P1604	Cycle 3	2	8	200um	na	0	50	25		night	18.72		34.68737	-121.2542
+S150	18S	rep1	Allen	Allen	library-1			Sample 28	P1604	Cycle 4	2	1	200um	na	175	200	187.5		night	16.72		34.5183	-120.7625
+S151	18S	rep1	Allen	Allen	library-1			Sample 29	P1604	Cycle 4	2	2	200um	na	150	175	162.5		night	12.04		34.5183	-120.7625
+S152	18S	rep1	Allen	Allen	library-1			Sample 30	P1604	Cycle 4	2	3	200um	na	125	150	137.5		night	14.64		34.5183	-120.7625
+S153	18S	rep1	Allen	Allen	library-1			Sample 31	P1604	Cycle 4	2	4	200um	na	100	125	112.5		night	5.08		34.5183	-120.7625
+S154	18S	rep1	Allen	Allen	library-1			Sample 32	P1604	Cycle 4	2	5	200um	na	75	100	87.5		night	15.52		34.5183	-120.7625
+S155	18S	rep1	Allen	Allen	library-1			Sample 33	P1604	Cycle 4	2	6	200um	na	50	75	62.5		night	16.24		34.5183	-120.7625
+S156	18S	rep1	Allen	Allen	library-1			Sample 34	P1604	Cycle 4	2	7	200um	na	25	50	37.5		night	14.44		34.5183	-120.7625
+S157	18S	rep1	Allen	Allen	library-1			Sample 35	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	13.36		34.5183	-120.7625
+S158	18S	rep1	Allen	Allen	library-1			Sample 36	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	13.32		34.5183	-120.7625
+S159	18S	rep1	Allen	Allen	library-1			Sample 37	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	11.44		34.5183	-120.7625
+S160	18S	rep1	Allen	Allen	library-1			Sample 38	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	12.72		34.5183	-120.7625
+S161	18S	rep1	Allen	Allen	library-1			Sample 39	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	5.56		34.5183	-120.7625
+S162	18S	rep1	Allen	Allen	library-1			Sample 40	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	16		34.5183	-120.7625
+S163	18S	rep1	Allen	Allen	library-1			NC	na	na	na	na	na	na	na	na	na		na	0.03		na	na
+S165	18S	rep1	Allen	Allen	library-1			NC	na	na	na	na	na	na	na	na	na		na	0.03		na	na
+S167	18S	rep2	Allen	Allen	library-1			Sample 1	P1604	Cycle 1	2	1	200um	na	350	400	375		night	6.92		33.04663	-122.9035
+S168	18S	rep2	Allen	Allen	library-1			Sample 2	P1604	Cycle 1	2	2	200um	na	300	350	325		night	20.32		33.04663	-122.9035
+S169	18S	rep2	Allen	Allen	library-1			Sample 3	P1604	Cycle 1	2	3	200um	na	250	300	275		night	13.4		33.04663	-122.9035
+S170	18S	rep2	Allen	Allen	library-1			Sample 4	P1604	Cycle 1	2	4	200um	na	200	250	225		night	10.88		33.04663	-122.9035
+S171	18S	rep2	Allen	Allen	library-1			Sample 5	P1604	Cycle 1	2	5	200um	na	150	200	175		night	10.84		33.04663	-122.9035
+S172	18S	rep2	Allen	Allen	library-1			Sample 6	P1604	Cycle 1	2	6	200um	na	100	150	125		night	10.12		33.04663	-122.9035
+S173	18S	rep2	Allen	Allen	library-1			Sample 7	P1604	Cycle 1	2	7	200um	na	50	100	75		night	11.88		33.04663	-122.9035
+S174	18S	rep2	Allen	Allen	library-1			Sample 8	P1604	Cycle 1	2	8	200um	na	0	50	25		night	11.88		33.04663	-122.9035
+S175	18S	rep2	Allen	Allen	library-1			Sample 9	P1604	Cycle 2	2	1	200um	na	350	400	375		night	5.88		33.5297	-122.0517
+S176	18S	rep2	Allen	Allen	library-1			Sample 10	P1604	Cycle 2	2	2	200um	na	300	350	325		night	5.72		33.5297	-122.0517
+S177	18S	rep2	Allen	Allen	library-1			Sample 11	P1604	Cycle 2	2	3	200um	na	250	300	275		night	17.52		33.5297	-122.0517
+S178	18S	rep2	Allen	Allen	library-1			Sample 12	P1604	Cycle 2	2	4	200um	na	200	250	225		night	17.56		33.5297	-122.0517
+S179	18S	rep2	Allen	Allen	library-1			Sample 13	P1604	Cycle 2	2	5	200um	na	150	200	175		night	14.16		33.5297	-122.0517
+S180	18S	rep2	Allen	Allen	library-1			Sample 14	P1604	Cycle 2	2	6	200um	na	100	150	125		night	12.8		33.5297	-122.0517
+S181	18S	rep2	Allen	Allen	library-1			Sample 15	P1604	Cycle 2	2	7	200um	na	50	100	75		night	15.44		33.5297	-122.0517
+S182	18S	rep2	Allen	Allen	library-1			Sample 16	P1604	Cycle 2	2	8	200um	na	0	50	25		night	14.52		33.5297	-122.0517
+S183	18S	rep2	Allen	Allen	library-1			Sample 17	P1604	Cycle 3	2	1	200um	na	350	400	375		night	4.02		34.68737	-121.2542
+S184	18S	rep2	Allen	Allen	library-1			Sample 18	P1604	Cycle 3	2	2	200um	na	300	350	325		night	7.68		34.68737	-121.2542
+S185	18S	rep2	Allen	Allen	library-1			Sample 19	P1604	Cycle 3	2	3	200um	na	250	300	275		night	11.96		34.68737	-121.2542
+S186	18S	rep2	Allen	Allen	library-1			Sample 20	P1604	Cycle 3	2	4	200um	na	200	250	225		night	9.92		34.68737	-121.2542
+S187	18S	rep2	Allen	Allen	library-1			Sample 21	P1604	Cycle 3	2	5	200um	na	150	200	175		night	12		34.68737	-121.2542
+S188	18S	rep2	Allen	Allen	library-1			Sample 22	P1604	Cycle 3	2	6	200um	na	100	150	125		night	10.24		34.68737	-121.2542
+S189	18S	rep2	Allen	Allen	library-1			Sample 23	P1604	Cycle 3	2	7	200um	na	50	100	75		night	9.76		34.68737	-121.2542
+S190	18S	rep2	Allen	Allen	library-1			Sample 24	P1604	Cycle 3	2	8	200um	na	0	50	25		night	12.92		34.68737	-121.2542
+S191	18S	rep2	Allen	Allen	library-1			Sample 25	P1604	Cycle 3	2	8	200um	na	0	50	25		night	4.8		34.68737	-121.2542
+S192	18S	rep2	Allen	Allen	library-1			Sample 26	P1604	Cycle 3	2	8	200um	na	0	50	25		night	15.08		34.68737	-121.2542
+S193	18S	rep2	Allen	Allen	library-1			Sample 28	P1604	Cycle 4	2	1	200um	na	175	200	187.5		night	17.52		34.5183	-120.7625
+S194	18S	rep2	Allen	Allen	library-1			Sample 29	P1604	Cycle 4	2	2	200um	na	150	175	162.5		night	12.88		34.5183	-120.7625
+S195	18S	rep2	Allen	Allen	library-1			Sample 30	P1604	Cycle 4	2	3	200um	na	125	150	137.5		night	10.08		34.5183	-120.7625
+S196	18S	rep2	Allen	Allen	library-1			Sample 31	P1604	Cycle 4	2	4	200um	na	100	125	112.5		night	12.56		34.5183	-120.7625
+S197	18S	rep2	Allen	Allen	library-1			Sample 32	P1604	Cycle 4	2	5	200um	na	75	100	87.5		night	14.48		34.5183	-120.7625
+S198	18S	rep2	Allen	Allen	library-1			Sample 33	P1604	Cycle 4	2	6	200um	na	50	75	62.5		night	14.72		34.5183	-120.7625
+S199	18S	rep2	Allen	Allen	library-1			Sample 34	P1604	Cycle 4	2	7	200um	na	25	50	37.5		night	2.5		34.5183	-120.7625
+S200	18S	rep2	Allen	Allen	library-1			Sample 35	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	10.36		34.5183	-120.7625
+S201	18S	rep2	Allen	Allen	library-1			Sample 36	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	12.84		34.5183	-120.7625
+S202	18S	rep2	Allen	Allen	library-1			Sample 37	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	11.64		34.5183	-120.7625
+S203	18S	rep2	Allen	Allen	library-1			Sample 38	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	12.88		34.5183	-120.7625
+S204	18S	rep2	Allen	Allen	library-1			Sample 39	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	11.96		34.5183	-120.7625
+S205	18S	rep2	Allen	Allen	library-1			Sample 40	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	12.2		34.5183	-120.7625
+S208	18S	rep3	Allen	Allen	library-1			Sample 2	P1604	Cycle 1	2	2	200um	na	300	350	325		night	10.64		33.04663	-122.9035
+S209	18S	rep3	Allen	Allen	library-1			Sample 3	P1604	Cycle 1	2	3	200um	na	250	300	275		night	8.96		33.04663	-122.9035
+S210	18S	rep3	Allen	Allen	library-1			Sample 4	P1604	Cycle 1	2	4	200um	na	200	250	225		night	5.96		33.04663	-122.9035
+S212	18S	rep3	Allen	Allen	library-1			Sample 6	P1604	Cycle 1	2	6	200um	na	100	150	125		night	9.92		33.04663	-122.9035
+S213	18S	rep3	Allen	Allen	library-1			Sample 7	P1604	Cycle 1	2	7	200um	na	50	100	75		night	10.72		33.04663	-122.9035
+S214	18S	rep3	Allen	Allen	library-1			Sample 8	P1604	Cycle 1	2	8	200um	na	0	50	25		night	6.96		33.04663	-122.9035
+S216	18S	rep3	Allen	Allen	library-1			Sample 10	P1604	Cycle 2	2	2	200um	na	300	350	325		night	12.56		33.5297	-122.0517
+S217	18S	rep3	Allen	Allen	library-1			Sample 11	P1604	Cycle 2	2	3	200um	na	250	300	275		night	13.36		33.5297	-122.0517
+S218	18S	rep3	Allen	Allen	library-1			Sample 12	P1604	Cycle 2	2	4	200um	na	200	250	225		night	14.72		33.5297	-122.0517
+S220	18S	rep3	Allen	Allen	library-1			Sample 14	P1604	Cycle 2	2	6	200um	na	100	150	125		night	15.12		33.5297	-122.0517
+S221	18S	rep3	Allen	Allen	library-1			Sample 15	P1604	Cycle 2	2	7	200um	na	50	100	75		night	19.6		33.5297	-122.0517
+S222	18S	rep3	Allen	Allen	library-1			Sample 16	P1604	Cycle 2	2	8	200um	na	0	50	25		night	16.12		33.5297	-122.0517
+S224	18S	rep3	Allen	Allen	library-1			Sample 18	P1604	Cycle 3	2	2	200um	na	300	350	325		night	13.56		34.68737	-121.2542
+S225	18S	rep3	Allen	Allen	library-1			Sample 19	P1604	Cycle 3	2	3	200um	na	250	300	275		night	16.12		34.68737	-121.2542
+S226	18S	rep3	Allen	Allen	library-1			Sample 20	P1604	Cycle 3	2	4	200um	na	200	250	225		night	14.04		34.68737	-121.2542
+S228	18S	rep3	Allen	Allen	library-1			Sample 22	P1604	Cycle 3	2	6	200um	na	100	150	125		night	16.04		34.68737	-121.2542
+S229	18S	rep3	Allen	Allen	library-1			Sample 23	P1604	Cycle 3	2	7	200um	na	50	100	75		night	16.44		34.68737	-121.2542
+S230	18S	rep3	Allen	Allen	library-1			Sample 24	P1604	Cycle 3	2	8	200um	na	0	50	25		night	13.72		34.68737	-121.2542
+S232	18S	rep3	Allen	Allen	library-1			Sample 26	P1604	Cycle 3	2	8	200um	na	0	50	25		night	7.4		34.68737	-121.2542
+S233	18S	rep3	Allen	Allen	library-1			Sample 28	P1604	Cycle 4	2	1	200um	na	175	200	187.5		night	15		34.5183	-120.7625
+S234	18S	rep3	Allen	Allen	library-1			Sample 29	P1604	Cycle 4	2	2	200um	na	150	175	162.5		night	14.52		34.5183	-120.7625
+S236	18S	rep3	Allen	Allen	library-1			Sample 31	P1604	Cycle 4	2	4	200um	na	100	125	112.5		night	14.44		34.5183	-120.7625
+S237	18S	rep3	Allen	Allen	library-1			Sample 32	P1604	Cycle 4	2	5	200um	na	75	100	87.5		night	12.72		34.5183	-120.7625
+S238	18S	rep3	Allen	Allen	library-1			Sample 33	P1604	Cycle 4	2	6	200um	na	50	75	62.5		night	15.76		34.5183	-120.7625
+S240	18S	rep3	Allen	Allen	library-1			Sample 35	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	15.16		34.5183	-120.7625
+S241	18S	rep3	Allen	Allen	library-1			Sample 36	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	16.64		34.5183	-120.7625
+S242	18S	rep3	Allen	Allen	library-1			Sample 37	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	14.72		34.5183	-120.7625
+S244	18S	rep3	Allen	Allen	library-1			Sample 39	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	13.36		34.5183	-120.7625
+S245	18S	rep3	Allen	Allen	library-1			Sample 40	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	14.76		34.5183	-120.7625
+S248	18S	rep3	Allen	Allen	library-1			NC	na	na	na	na	na	na	na	na	na		na	0.03		na	na
+S371	18S	rep1	Allen	Allen	library-2			Sample 43	P1604	Cycle 1	1	1	200um	na	350	400	375		day	11.49		33.03124	-122.9335
+S372	18S	rep1	Allen	Allen	library-2			Sample 44	P1604	Cycle 1	1	2	200um	na	300	350	325		day	15.02		33.03124	-122.9335
+S373	18S	rep1	Allen	Allen	library-2			Sample 45	P1604	Cycle 1	1	3	200um	na	250	300	275		day	13.36		33.03124	-122.9335
+S374	18S	rep1	Allen	Allen	library-2			Sample 46	P1604	Cycle 1	1	4	200um	na	200	250	225		day	13.2		33.03124	-122.9335
+S375	18S	rep1	Allen	Allen	library-2			Sample 47	P1604	Cycle 1	1	5	200um	na	150	200	175		day	16.36		33.03124	-122.9335
+S376	18S	rep1	Allen	Allen	library-2			Sample 48	P1604	Cycle 1	1	6	200um	na	100	150	125		day	15.5		33.03124	-122.9335
+S377	18S	rep1	Allen	Allen	library-2			Sample 49	P1604	Cycle 1	1	7	200um	na	50	100	75		day	17.44		33.03124	-122.9335
+S378	18S	rep1	Allen	Allen	library-2			Sample 50	P1604	Cycle 1	1	8	200um	na	0	50	25		day	16.76		33.03124	-122.9335
+S379	18S	rep1	Allen	Allen	library-2			Sample 51	P1604	Cycle 2	1	1	200um	na	350	400	375		day	9.59		33.5584	-122.1327
+S380	18S	rep1	Allen	Allen	library-2			Sample 52	P1604	Cycle 2	1	2	200um	na	300	350	325		day	13.07		33.5584	-122.1327
+S381	18S	rep1	Allen	Allen	library-2			Sample 53	P1604	Cycle 2	1	3	200um	na	250	300	275		day	16.35		33.5584	-122.1327
+S382	18S	rep1	Allen	Allen	library-2			Sample 54	P1604	Cycle 2	1	4	200um	na	200	250	225		day	16.51		33.5584	-122.1327
+S383	18S	rep1	Allen	Allen	library-2			Sample 55	P1604	Cycle 2	1	5	200um	na	150	200	175		day	16.69		33.5584	-122.1327
+S384	18S	rep1	Allen	Allen	library-2			Sample 56	P1604	Cycle 2	1	6	200um	na	100	150	125		day	13.8		33.5584	-122.1327
+S385	18S	rep1	Allen	Allen	library-2			Sample 57	P1604	Cycle 2	1	7	200um	na	50	100	75		day	16.45		33.5584	-122.1327
+S386	18S	rep1	Allen	Allen	library-2			Sample 58	P1604	Cycle 2	1	8	200um	na	0	50	25		day	16.24		33.5584	-122.1327
+S387	18S	rep1	Allen	Allen	library-2			Sample 61	P1604	Cycle 3	1	1	200um	na	350	400	375		day	8.59		34.73994	-121.2671
+S388	18S	rep1	Allen	Allen	library-2			Sample 62	P1604	Cycle 3	1	2	200um	na	300	350	325		day	12.13		34.73994	-121.2671
+S389	18S	rep1	Allen	Allen	library-2			Sample 63	P1604	Cycle 3	1	3	200um	na	250	300	275		day	13.75		34.73994	-121.2671
+S390	18S	rep1	Allen	Allen	library-2			Sample 64	P1604	Cycle 3	1	4	200um	na	200	250	225		day	15.25		34.73994	-121.2671
+S391	18S	rep1	Allen	Allen	library-2			Sample 65	P1604	Cycle 3	1	5	200um	na	150	200	175		day	14.4		34.73994	-121.2671
+S392	18S	rep1	Allen	Allen	library-2			Sample 66	P1604	Cycle 3	1	6	200um	na	100	150	125		day	16.17		34.73994	-121.2671
+S393	18S	rep1	Allen	Allen	library-2			Sample 67	P1604	Cycle 3	1	7	200um	na	50	100	75		day	16.81		34.73994	-121.2671
+S394	18S	rep1	Allen	Allen	library-2			Sample 68	P1604	Cycle 3	1	8	200um	na	0	50	25		day	19.43		34.73994	-121.2671
+S395	18S	rep1	Allen	Allen	library-2			Sample 69	P1604	Cycle 3	1	8	200um	na	0	50	25		day	11.2		34.73994	-121.2671
+S396	18S	rep1	Allen	Allen	library-2			Sample 70	P1604	Cycle 4	1	1	200um	na	175	200	187.5		day	13.34		34.49348	-120.7343
+S397	18S	rep1	Allen	Allen	library-2			Sample 71	P1604	Cycle 4	1	2	200um	na	150	175	162.5		day	14.76		34.49348	-120.7343
+S398	18S	rep1	Allen	Allen	library-2			Sample 72	P1604	Cycle 4	1	3	200um	na	125	150	137.5		day	13.83		34.49348	-120.7343
+S399	18S	rep1	Allen	Allen	library-2			Sample 73	P1604	Cycle 4	1	4	200um	na	100	125	112.5		day	15.66		34.49348	-120.7343
+S400	18S	rep1	Allen	Allen	library-2			Sample 74	P1604	Cycle 4	1	5	200um	na	75	100	87.5		day	15.23		34.49348	-120.7343
+S401	18S	rep1	Allen	Allen	library-2			Sample 75	P1604	Cycle 4	1	6	200um	na	50	75	62.5		day	14.03		34.49348	-120.7343
+S402	18S	rep1	Allen	Allen	library-2			Sample 76	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	17.4		34.49348	-120.7343
+S403	18S	rep1	Allen	Allen	library-2			Sample 77	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	10.14		34.49348	-120.7343
+S404	18S	rep1	Allen	Allen	library-2			Sample 78	P1604	Cycle 4	1	8	200um	na	0	25	12.5		day	16.01		34.49348	-120.7343
+S405	18S	rep1	Allen	Allen	library-2			Sample 79	P1604	Cycle 4	1	8	200um	na	0	25	12.5		day	12.12		34.49348	-120.7343
+S406	18S	rep1	Allen	Allen	library-2			NC	na	na	na	na	na	na	na	na	#VALUE!		na	0.03		na	na
+S407	18S	rep1	Allen	Allen	library-2			Sample 5	P1604	Cycle 1	1	5	200um	na	150	200	175		day	15.58		33.03124	-122.9335
+S408	18S	rep1	Allen	Allen	library-2			Sample 26	P1604	Cycle 3	1	8	200um	na	0	50	25		day	13.69		34.73994	-121.2671
+S409	18S	rep1	Allen	Allen	library-2			Sample 29	P1604	Cycle 4	1	1	200um	na	175	200	187.5		day	14.79		34.49348	-120.7343
+S410	18S	rep1	Allen	Allen	library-2			NC	na	na	na	na	na	na	na	na	#VALUE!		na	0.03		na	na
+S411	18S	rep2	Allen	Allen	library-2			Sample 43	P1604	Cycle 1	1	1	200um	na	350	400	375		day	4.95		33.03124	-122.9335
+S412	18S	rep2	Allen	Allen	library-2			Sample 44	P1604	Cycle 1	1	2	200um	na	300	350	325		day	6.57		33.03124	-122.9335
+S413	18S	rep2	Allen	Allen	library-2			Sample 45	P1604	Cycle 1	1	3	200um	na	250	300	275		day	9.46		33.03124	-122.9335
+S414	18S	rep2	Allen	Allen	library-2			Sample 46	P1604	Cycle 1	1	4	200um	na	200	250	225		day	11.8		33.03124	-122.9335
+S415	18S	rep2	Allen	Allen	library-2			Sample 47	P1604	Cycle 1	1	5	200um	na	150	200	175		day	9.97		33.03124	-122.9335
+S416	18S	rep2	Allen	Allen	library-2			Sample 48	P1604	Cycle 1	1	6	200um	na	100	150	125		day	14.34		33.03124	-122.9335
+S417	18S	rep2	Allen	Allen	library-2			Sample 49	P1604	Cycle 1	1	7	200um	na	50	100	75		day	14.98		33.03124	-122.9335
+S418	18S	rep2	Allen	Allen	library-2			Sample 50	P1604	Cycle 1	1	8	200um	na	0	50	25		day	11.47		33.03124	-122.9335
+S419	18S	rep2	Allen	Allen	library-2			Sample 51	P1604	Cycle 2	1	1	200um	na	350	400	375		day	10.82		33.5584	-122.1327
+S420	18S	rep2	Allen	Allen	library-2			Sample 52	P1604	Cycle 2	1	2	200um	na	300	350	325		day	9.45		33.5584	-122.1327
+S421	18S	rep2	Allen	Allen	library-2			Sample 53	P1604	Cycle 2	1	3	200um	na	250	300	275		day	6		33.5584	-122.1327
+S422	18S	rep2	Allen	Allen	library-2			Sample 54	P1604	Cycle 2	1	4	200um	na	200	250	225		day	13.04		33.5584	-122.1327
+S423	18S	rep2	Allen	Allen	library-2			Sample 55	P1604	Cycle 2	1	5	200um	na	150	200	175		day	11.78		33.5584	-122.1327
+S424	18S	rep2	Allen	Allen	library-2			Sample 56	P1604	Cycle 2	1	6	200um	na	100	150	125		day	13.41		33.5584	-122.1327
+S425	18S	rep2	Allen	Allen	library-2			Sample 57	P1604	Cycle 2	1	7	200um	na	50	100	75		day	15.35		33.5584	-122.1327
+S426	18S	rep2	Allen	Allen	library-2			Sample 58	P1604	Cycle 2	1	8	200um	na	0	50	25		day	13.95		33.5584	-122.1327
+S427	18S	rep2	Allen	Allen	library-2			Sample 61	P1604	Cycle 3	1	1	200um	na	350	400	375		day	11.71		34.73994	-121.2671
+S428	18S	rep2	Allen	Allen	library-2			Sample 62	P1604	Cycle 3	1	2	200um	na	300	350	325		day	9.53		34.73994	-121.2671
+S429	18S	rep2	Allen	Allen	library-2			Sample 63	P1604	Cycle 3	1	3	200um	na	250	300	275		day	12.56		34.73994	-121.2671
+S430	18S	rep2	Allen	Allen	library-2			Sample 64	P1604	Cycle 3	1	4	200um	na	200	250	225		day	7.01		34.73994	-121.2671
+S431	18S	rep2	Allen	Allen	library-2			Sample 65	P1604	Cycle 3	1	5	200um	na	150	200	175		day	9.82		34.73994	-121.2671
+S432	18S	rep2	Allen	Allen	library-2			Sample 66	P1604	Cycle 3	1	6	200um	na	100	150	125		day	12.9		34.73994	-121.2671
+S433	18S	rep2	Allen	Allen	library-2			Sample 67	P1604	Cycle 3	1	7	200um	na	50	100	75		day	14.61		34.73994	-121.2671
+S434	18S	rep2	Allen	Allen	library-2			Sample 68	P1604	Cycle 3	1	8	200um	na	0	50	25		day	14.47		34.73994	-121.2671
+S435	18S	rep2	Allen	Allen	library-2			Sample 69	P1604	Cycle 3	1	8	200um	na	0	50	25		day	9.81		34.73994	-121.2671
+S436	18S	rep2	Allen	Allen	library-2			Sample 70	P1604	Cycle 4	1	1	200um	na	175	200	187.5		day	9.17		34.49348	-120.7343
+S437	18S	rep2	Allen	Allen	library-2			Sample 71	P1604	Cycle 4	1	2	200um	na	150	175	162.5		day	16.08		34.49348	-120.7343
+S438	18S	rep2	Allen	Allen	library-2			Sample 72	P1604	Cycle 4	1	3	200um	na	125	150	137.5		day	10.12		34.49348	-120.7343
+S439	18S	rep2	Allen	Allen	library-2			Sample 73	P1604	Cycle 4	1	4	200um	na	100	125	112.5		day	13.59		34.49348	-120.7343
+S440	18S	rep2	Allen	Allen	library-2			Sample 74	P1604	Cycle 4	1	5	200um	na	75	100	87.5		day	15.26		34.49348	-120.7343
+S441	18S	rep2	Allen	Allen	library-2			Sample 75	P1604	Cycle 4	1	6	200um	na	50	75	62.5		day	14.48		34.49348	-120.7343
+S442	18S	rep2	Allen	Allen	library-2			Sample 76	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	14.18		34.49348	-120.7343
+S443	18S	rep2	Allen	Allen	library-2			Sample 77	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	9.36		34.49348	-120.7343
+S444	18S	rep2	Allen	Allen	library-2			Sample 78	P1604	Cycle 4	1	8	200um	na	0	25	12.5		day	8.23		34.49348	-120.7343
+S445	18S	rep2	Allen	Allen	library-2			Sample 79	P1604	Cycle 4	1	8	200um	na	0	25	12.5		day	8.83		34.49348	-120.7343
+S446	18S	rep2	Allen	Allen	library-2			NC	na	na	na	na	na	na	na	na	na		na	0.03		na	na
+S447	18S	rep2	Allen	Allen	library-2			Sample 5	P1604	Cycle 1	1	5	200um	na	150	200	175		day	12.25		33.03124	-122.9335
+S448	18S	rep2	Allen	Allen	library-2			Sample 26	P1604	Cycle 3	1	8	200um	na	0	50	25		day	12.19		34.73994	-121.2671
+S449	18S	rep2	Allen	Allen	library-2			Sample 29	P1604	Cycle 4	1	1	200um	na	175	200	187.5		day	15.84		34.49348	-120.7343
+S450	18S	rep2	Allen	Allen	library-2			NC	na	na	na	na	na	na	na	na	na		na	0.03		na	na
+S451	18S	rep3	Allen	Allen	library-2			Sample 43	P1604	Cycle 1	1	1	200um	na	350	400	375		day	11.14		33.03124	-122.9335
+S452	18S	rep3	Allen	Allen	library-2			Sample 44	P1604	Cycle 1	1	2	200um	na	300	350	325		day	10.33		33.03124	-122.9335
+S453	18S	rep3	Allen	Allen	library-2			Sample 45	P1604	Cycle 1	1	3	200um	na	250	300	275		day	11.1		33.03124	-122.9335
+S454	18S	rep3	Allen	Allen	library-2			Sample 46	P1604	Cycle 1	1	4	200um	na	200	250	225		day	10.57		33.03124	-122.9335
+S455	18S	rep3	Allen	Allen	library-2			Sample 47	P1604	Cycle 1	1	5	200um	na	150	200	175		day	14.24		33.03124	-122.9335
+S456	18S	rep3	Allen	Allen	library-2			Sample 48	P1604	Cycle 1	1	6	200um	na	100	150	125		day	13		33.03124	-122.9335
+S457	18S	rep3	Allen	Allen	library-2			Sample 49	P1604	Cycle 1	1	7	200um	na	50	100	75		day	14.44		33.03124	-122.9335
+S458	18S	rep3	Allen	Allen	library-2			Sample 50	P1604	Cycle 1	1	8	200um	na	0	50	25		day	16.59		33.03124	-122.9335
+S459	18S	rep3	Allen	Allen	library-2			Sample 51	P1604	Cycle 2	1	1	200um	na	350	400	375		day	9.76		33.5584	-122.1327
+S460	18S	rep3	Allen	Allen	library-2			Sample 52	P1604	Cycle 2	1	2	200um	na	300	350	325		day	9.98		33.5584	-122.1327
+S461	18S	rep3	Allen	Allen	library-2			Sample 53	P1604	Cycle 2	1	3	200um	na	250	300	275		day	11.93		33.5584	-122.1327
+S462	18S	rep3	Allen	Allen	library-2			Sample 54	P1604	Cycle 2	1	4	200um	na	200	250	225		day	13.86		33.5584	-122.1327
+S463	18S	rep3	Allen	Allen	library-2			Sample 55	P1604	Cycle 2	1	5	200um	na	150	200	175		day	14.31		33.5584	-122.1327
+S464	18S	rep3	Allen	Allen	library-2			Sample 56	P1604	Cycle 2	1	6	200um	na	100	150	125		day	13.36		33.5584	-122.1327
+S465	18S	rep3	Allen	Allen	library-2			Sample 57	P1604	Cycle 2	1	7	200um	na	50	100	75		day	15.77		33.5584	-122.1327
+S466	18S	rep3	Allen	Allen	library-2			Sample 58	P1604	Cycle 2	1	8	200um	na	0	50	25		day	15.74		33.5584	-122.1327
+S467	18S	rep3	Allen	Allen	library-2			Sample 61	P1604	Cycle 3	1	1	200um	na	350	400	375		day	9.23		34.73994	-121.2671
+S468	18S	rep3	Allen	Allen	library-2			Sample 62	P1604	Cycle 3	1	2	200um	na	300	350	325		day	12.18		34.73994	-121.2671
+S469	18S	rep3	Allen	Allen	library-2			Sample 63	P1604	Cycle 3	1	3	200um	na	250	300	275		day	14.01		34.73994	-121.2671
+S470	18S	rep3	Allen	Allen	library-2			Sample 64	P1604	Cycle 3	1	4	200um	na	200	250	225		day	13.36		34.73994	-121.2671
+S471	18S	rep3	Allen	Allen	library-2			Sample 65	P1604	Cycle 3	1	5	200um	na	150	200	175		day	12.41		34.73994	-121.2671
+S472	18S	rep3	Allen	Allen	library-2			Sample 66	P1604	Cycle 3	1	6	200um	na	100	150	125		day	14.83		34.73994	-121.2671
+S473	18S	rep3	Allen	Allen	library-2			Sample 67	P1604	Cycle 3	1	7	200um	na	50	100	75		day	18.98		34.73994	-121.2671
+S474	18S	rep3	Allen	Allen	library-2			Sample 68	P1604	Cycle 3	1	8	200um	na	0	50	25		day	14.13		34.73994	-121.2671
+S475	18S	rep3	Allen	Allen	library-2			Sample 69	P1604	Cycle 3	1	8	200um	na	0	50	25		day	11.7		34.73994	-121.2671
+S476	18S	rep3	Allen	Allen	library-2			Sample 70	P1604	Cycle 4	1	1	200um	na	175	200	187.5		day	14.71		34.49348	-120.7343
+S477	18S	rep3	Allen	Allen	library-2			Sample 71	P1604	Cycle 4	1	2	200um	na	150	175	162.5		day	15.21		34.49348	-120.7343
+S478	18S	rep3	Allen	Allen	library-2			Sample 72	P1604	Cycle 4	1	3	200um	na	125	150	137.5		day	16.61		34.49348	-120.7343
+S479	18S	rep3	Allen	Allen	library-2			Sample 73	P1604	Cycle 4	1	4	200um	na	100	125	112.5		day	15.89		34.49348	-120.7343
+S480	18S	rep3	Allen	Allen	library-2			Sample 74	P1604	Cycle 4	1	5	200um	na	75	100	87.5		day	14.12		34.49348	-120.7343
+S481	18S	rep3	Allen	Allen	library-2			Sample 75	P1604	Cycle 4	1	6	200um	na	50	75	62.5		day	15.37		34.49348	-120.7343
+S482	18S	rep3	Allen	Allen	library-2			Sample 76	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	13.96		34.49348	-120.7343
+S483	18S	rep3	Allen	Allen	library-2			Sample 77	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	10.72		34.49348	-120.7343
+S484	18S	rep3	Allen	Allen	library-2			Sample 78	P1604	Cycle 4	1	8	200um	na	0	25	12.5		day	13.36		34.49348	-120.7343
+S485	18S	rep3	Allen	Allen	library-2			Sample 79	P1604	Cycle 4	1	8	200um	na	0	25	12.5		day	14.17		34.49348	-120.7343
+S486	18S	rep3	Allen	Allen	library-2			NC	na	na	na	na	na	na	na	na	na		day	3.37			
+S487	18S	rep3	Allen	Allen	library-2			Sample 5	P1604	Cycle 1	1	5	200um	na	150	200	175		day	15.06		33.03124	-122.9335
+S488	18S	rep3	Allen	Allen	library-2			Sample 26	P1604	Cycle 3	1	8	200um	na	0	50	25		day	15.81		34.73994	-121.2671
+S489	18S	rep3	Allen	Allen	library-2			Sample 29	P1604	Cycle 4	1	1	200um	na	175	200	187.5		day	14.79		34.49348	-120.7343
+s501	18S	rep1	Allen	Allen	library-3			Sample 81	P1604	Cycle 3	1	8	200um	na	0	50	25		day	d		34.73994	-121.2671
+s502	18S	rep1	Allen	Allen	library-3			Sample 82	P1604	Cycle 3	1	8	200um	na	0	50	25		day	32		34.73994	-121.2671
+s503	18S	rep1	Allen	Allen	library-3			Sample 83	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	263.6		34.49348	-120.7343
+s504	18S	rep1	Allen	Allen	library-3			Sample 84	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	496.4		34.49348	-120.7343
+s505	18S	rep1	Allen	Allen	library-3			Sample 85	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	129.3		34.49348	-120.7343
+s506	18S	rep1	Allen	Allen	library-3			Sample 86	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	160.6		34.49348	-120.7343
+s507	18S	rep1	Allen	Allen	library-3			Sample 87	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	125.3		34.49348	-120.7343
+s508	18S	rep1	Allen	Allen	library-3			Sample 88	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	109		34.49348	-120.7343
+s509	18S	rep1	Allen	Allen	library-3			Sample 89	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	301.8		34.49348	-120.7343
+s510	18S	rep1	Allen	Allen	library-3			Sample 90	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	216.8		34.49348	-120.7343
+s511	18S	rep1	Allen	Allen	library-3			Sample 91	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	599		34.49348	-120.7343
+s512	18S	rep1	Allen	Allen	library-3			Sample 92	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	406.11		34.49348	-120.7343
+s513	18S	rep1	Allen	Allen	library-3			Sample 93	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	254.7		34.49348	-120.7343
+s514	18S	rep1	Allen	Allen	library-3			Sample 94	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	470.3		34.49348	-120.7343
+s515	18S	rep1	Allen	Allen	library-3			Sample 95	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	322		34.49348	-120.7343
+s516	18S	rep1	Allen	Allen	library-3			Sample 96	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	539.7		34.49348	-120.7343
+s517	18S	rep1	Allen	Allen	library-3			Sample 97	P1604	Cycle 4	1	8	200um	na	0	25	12.5		day	547.6		34.49348	-120.7343
+s518	18S	rep1	Allen	Allen	library-3			Sample 98	P1604	Cycle 4	1	8	200um	na	0	25	12.5		day	502.5		34.49348	-120.7343
+s519	18S	rep1	Allen	Allen	library-3			Sample 99	P1604	Cycle 4	1	8	200um	na	0	25	12.5		day	819.8		34.49348	-120.7343
+s520	18S	rep1	Allen	Allen	library-3			Sample 100	P1604	Cycle 4	1	8	200um	na	0	25	12.5		day	nd		34.49348	-120.7343
+s521	18S	rep1	Allen	Allen	library-3			Sample 101	P1604	Cycle 4	1	8	200um	na	0	25	12.5		day	919.5		34.49348	-120.7343
+s522	18S	rep1	Allen	Allen	library-3			Sample 102	P1604	Cycle 4	1	8	200um	na	0	25	12.5		day	659.8		34.49348	-120.7343
+s523	18S	rep1	Allen	Allen	library-3			Sample 103	P2007	na	2	1	200um	na	800	1000	900		night	16.2		32.51216667	-118.3308667
+s524	18S	rep1	Allen	Allen	library-3			Sample 104	P2007	na	2	2	200um	na	600	800	700		night	138.9		32.51216667	-118.3308667
+s525	18S	rep1	Allen	Allen	library-3			Sample 105	P2007	na	2	3	200um	na	500	600	550		night	164.8		32.51216667	-118.3308667
+s526	18S	rep1	Allen	Allen	library-3			Sample 106	P2007	na	2	5	200um	na	300	400	350		night	176.7		32.51216667	-118.3308667
+s527	18S	rep1	Allen	Allen	library-3			Sample 107	P2007	na	2	6	200um	na	200	300	250		night	395.1		32.51216667	-118.3308667
+s528	18S	rep1	Allen	Allen	library-3			Sample 108	P2007	na	2	7	200um	na	100	200	150		night	131.6		32.51216667	-118.3308667
+s529	18S	rep1	Allen	Allen	library-3			Sample 109	P2007	na	2	8	200um	na	50	100	75		night	90.8		32.51216667	-118.3308667
+s530	18S	rep1	Allen	Allen	library-3			Sample 110	P2007	na	2	9	200um	na	0	50	25		night	35.6		32.51216667	-118.3308667
+s531	18S	rep1	Allen	Allen	library-3			Sample 111	P2007	na	3	1	200um	na	800	1000	900		day	105.4		32.51216667	-118.3308667
+s532	18S	rep1	Allen	Allen	library-3			Sample 112	P2007	na	3	2	200um	na	500	800	650		day	49.3		32.51216667	-118.3308667
+s533	18S	rep1	Allen	Allen	library-3			Sample 113	P2007	na	3	3	200um	na	400	500	450		day	69.4		32.51216667	-118.3308667
+s534	18S	rep1	Allen	Allen	library-3			Sample 114	P2007	na	3	4	200um	na	300	400	350		day	97.4		32.51216667	-118.3308667
+s535	18S	rep1	Allen	Allen	library-3			Sample 115	P2007	na	3	6	200um	na	100	200	150		day	152.9		32.51216667	-118.3308667
+s536	18S	rep1	Allen	Allen	library-3			Sample 116	P2007	na	3	7	200um	na	50	100	75		day	94.2		32.51216667	-118.3308667
+s537	18S	rep1	Allen	Allen	library-3			Sample 117	P2007	na	3	8	200um	na	25	50	37.5		day	102.8		32.51216667	-118.3308667
+s538	18S	rep1	Allen	Allen	library-3			Sample 118	P2007	na	3	9	200um	na	0	25	12.5		day	67.6		32.51216667	-118.3308667
+s539	18S	rep1	Allen	Allen	library-3		NC	NC	NC		na	na	na	na	na	na	na		na	-1.8		32.51216667	-118.3308667
+s540	18S	rep1	Allen	Allen	library-3			Sample 120	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	390.5		34.5183	-120.7625
+s541	18S	rep1	Allen	Allen	library-3			Sample 121	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	124.5		34.5183	-120.7625
+s542	18S	rep1	Allen	Allen	library-3			Sample 122	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	250.8		34.5183	-120.7625
+s543	18S	rep1	Allen	Allen	library-3			Sample 123	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	169.6		34.5183	-120.7625
+s544	18S	rep1	Allen	Allen	library-3			Sample 124	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	162.6		34.5183	-120.7625
+s545	18S	rep1	Allen	Allen	library-3			Sample 125	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	125		34.5183	-120.7625
+s546	18S	rep1	Allen	Allen	library-3			Sample 126	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	337.1		34.5183	-120.7625
+s547	18S	rep1	Allen	Allen	library-3			Sample 127	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	265.8		34.5183	-120.7625
+s548	18S	rep1	Allen	Allen	library-3			Sample 41	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	269.7		34.5183	-120.7625
+s549	18S	rep1	Allen	Allen	library-3			Sample 42	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	393.2		34.5183	-120.7625
+s550	18S	rep1	Allen	Allen	library-3			Sample 27	P1604	Cycle 3	2	8	200um	na	0	50	25		night	40.8		34.68737	-121.2542
+s551	18S	rep2	Allen	Allen	library-3			Sample 81	P1604	Cycle 3	1	8	200um	na	0	50	25		day	d		34.73994	-121.2671
+s552	18S	rep2	Allen	Allen	library-3			Sample 82	P1604	Cycle 3	1	8	200um	na	0	50	25		day	32		34.73994	-121.2671
+s553	18S	rep2	Allen	Allen	library-3			Sample 83	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	263.6		34.49348	-120.7343
+s554	18S	rep2	Allen	Allen	library-3			Sample 84	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	496.4		34.49348	-120.7343
+s555	18S	rep2	Allen	Allen	library-3			Sample 85	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	129.3		34.49348	-120.7343
+s556	18S	rep2	Allen	Allen	library-3			Sample 86	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	160.6		34.49348	-120.7343
+s557	18S	rep2	Allen	Allen	library-3			Sample 87	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	125.3		34.49348	-120.7343
+s558	18S	rep2	Allen	Allen	library-3			Sample 88	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	109		34.49348	-120.7343
+s559	18S	rep2	Allen	Allen	library-3			Sample 89	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	301.8		34.49348	-120.7343
+s560	18S	rep2	Allen	Allen	library-3			Sample 90	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	216.8		34.49348	-120.7343
+s561	18S	rep2	Allen	Allen	library-3			Sample 91	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	599		34.49348	-120.7343
+s562	18S	rep2	Allen	Allen	library-3			Sample 92	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	406.11		34.49348	-120.7343
+s563	18S	rep2	Allen	Allen	library-3			Sample 93	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	254.7		34.49348	-120.7343
+s564	18S	rep2	Allen	Allen	library-3			Sample 94	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	470.3		34.49348	-120.7343
+s565	18S	rep2	Allen	Allen	library-3			Sample 95	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	322		34.49348	-120.7343
+s566	18S	rep2	Allen	Allen	library-3			Sample 96	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	539.7		34.49348	-120.7343
+s567	18S	rep2	Allen	Allen	library-3			Sample 97	P1604	Cycle 4	1	8	200um	na	0	25	12.5		day	547.6		34.49348	-120.7343
+s568	18S	rep2	Allen	Allen	library-3			Sample 98	P1604	Cycle 4	1	8	200um	na	0	25	12.5		day	502.5		34.49348	-120.7343
+s569	18S	rep2	Allen	Allen	library-3			Sample 99	P1604	Cycle 4	1	8	200um	na	0	25	12.5		day	819.8		34.49348	-120.7343
+s570	18S	rep2	Allen	Allen	library-3			Sample 100	P1604	Cycle 4	1	8	200um	na	0	25	12.5		day	nd		34.49348	-120.7343
+s571	18S	rep2	Allen	Allen	library-3			Sample 101	P1604	Cycle 4	1	8	200um	na	0	25	12.5		day	919.5		34.49348	-120.7343
+s572	18S	rep2	Allen	Allen	library-3			Sample 102	P1604	Cycle 4	1	8	200um	na	0	25	12.5		day	659.8		34.49348	-120.7343
+s573	18S	rep2	Allen	Allen	library-3			Sample 103	P2007	na	2	1	200um	na	800	1000	900		night	16.2		32.51216667	-118.3308667
+s574	18S	rep2	Allen	Allen	library-3			Sample 104	P2007	na	2	2	200um	na	600	800	700		night	138.9		32.51216667	-118.3308667
+s575	18S	rep2	Allen	Allen	library-3			Sample 105	P2007	na	2	3	200um	na	500	600	550		night	164.8		32.51216667	-118.3308667
+s576	18S	rep2	Allen	Allen	library-3			Sample 106	P2007	na	2	5	200um	na	300	400	350		night	176.7		32.51216667	-118.3308667
+s577	18S	rep2	Allen	Allen	library-3			Sample 107	P2007	na	2	6	200um	na	200	300	250		night	395.1		32.51216667	-118.3308667
+s578	18S	rep2	Allen	Allen	library-3			Sample 108	P2007	na	2	7	200um	na	100	200	150		night	131.6		32.51216667	-118.3308667
+s579	18S	rep2	Allen	Allen	library-3			Sample 109	P2007	na	2	8	200um	na	50	100	75		night	90.8		32.51216667	-118.3308667
+s580	18S	rep2	Allen	Allen	library-3			Sample 110	P2007	na	2	9	200um	na	0	50	25		night	35.6		32.51216667	-118.3308667
+s581	18S	rep2	Allen	Allen	library-3			Sample 111	P2007	na	3	1	200um	na	800	1000	900		day	105.4		32.51216667	-118.3308667
+s582	18S	rep2	Allen	Allen	library-3			Sample 112	P2007	na	3	2	200um	na	500	800	650		day	49.3		32.51216667	-118.3308667
+s583	18S	rep2	Allen	Allen	library-3			Sample 113	P2007	na	3	3	200um	na	400	500	450		day	69.4		32.51216667	-118.3308667
+s584	18S	rep2	Allen	Allen	library-3			Sample 114	P2007	na	3	4	200um	na	300	400	350		day	97.4		32.51216667	-118.3308667
+s585	18S	rep2	Allen	Allen	library-3			Sample 115	P2007	na	3	6	200um	na	100	200	150		day	152.9		32.51216667	-118.3308667
+s586	18S	rep2	Allen	Allen	library-3			Sample 116	P2007	na	3	7	200um	na	50	100	75		day	94.2		32.51216667	-118.3308667
+s587	18S	rep2	Allen	Allen	library-3			Sample 117	P2007	na	3	8	200um	na	25	50	37.5		day	102.8		32.51216667	-118.3308667
+s588	18S	rep2	Allen	Allen	library-3			Sample 118	P2007	na	3	9	200um	na	0	25	12.5		day	67.6		32.51216667	-118.3308667
+s589	18S	rep2	Allen	Allen	library-3		NC	NC	NC		na	na	na	na	na	na	na		na	-1.8		32.51216667	-118.3308667
+s590	18S	rep2	Allen	Allen	library-3			Sample 120	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	390.5		34.5183	-120.7625
+s591	18S	rep2	Allen	Allen	library-3			Sample 121	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	124.5		34.5183	-120.7625
+s592	18S	rep2	Allen	Allen	library-3			Sample 122	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	250.8		34.5183	-120.7625
+s593	18S	rep2	Allen	Allen	library-3			Sample 123	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	169.6		34.5183	-120.7625
+s594	18S	rep2	Allen	Allen	library-3			Sample 124	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	162.6		34.5183	-120.7625
+s595	18S	rep2	Allen	Allen	library-3			Sample 125	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	125		34.5183	-120.7625
+s596	18S	rep2	Allen	Allen	library-3			Sample 126	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	337.1		34.5183	-120.7625
+s597	18S	rep2	Allen	Allen	library-3			Sample 127	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	265.8		34.5183	-120.7625
+s598	18S	rep2	Allen	Allen	library-3			Sample 41	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	269.7		34.5183	-120.7625
+s599	18S	rep2	Allen	Allen	library-3			Sample 42	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	393.2		34.5183	-120.7625
+s600	18S	rep2	Allen	Allen	library-3			Sample 27	P1604	Cycle 3	2	8	200um	na	0	50	25		night	40.8		34.68737	-121.2542
+s601	18S	rep3	Allen	Allen	library-3			Sample 81	P1604	Cycle 3	1	8	200um	na	0	50	25		day	d		34.73994	-121.2671
+s602	18S	rep3	Allen	Allen	library-3			Sample 82	P1604	Cycle 3	1	8	200um	na	0	50	25		day	32		34.73994	-121.2671
+s603	18S	rep3	Allen	Allen	library-3			Sample 83	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	263.6		34.49348	-120.7343
+s604	18S	rep3	Allen	Allen	library-3			Sample 84	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	496.4		34.49348	-120.7343
+s605	18S	rep3	Allen	Allen	library-3			Sample 85	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	129.3		34.49348	-120.7343
+s606	18S	rep3	Allen	Allen	library-3			Sample 86	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	160.6		34.49348	-120.7343
+s607	18S	rep3	Allen	Allen	library-3			Sample 87	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	125.3		34.49348	-120.7343
+s608	18S	rep3	Allen	Allen	library-3			Sample 88	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	109		34.49348	-120.7343
+s609	18S	rep3	Allen	Allen	library-3			Sample 89	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	301.8		34.49348	-120.7343
+s610	18S	rep3	Allen	Allen	library-3			Sample 90	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	216.8		34.49348	-120.7343
+s611	18S	rep3	Allen	Allen	library-3			Sample 91	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	599		34.49348	-120.7343
+s612	18S	rep3	Allen	Allen	library-3			Sample 92	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	406.11		34.49348	-120.7343
+s613	18S	rep3	Allen	Allen	library-3			Sample 93	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	254.7		34.49348	-120.7343
+s614	18S	rep3	Allen	Allen	library-3			Sample 94	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	470.3		34.49348	-120.7343
+s615	18S	rep3	Allen	Allen	library-3			Sample 95	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	322		34.49348	-120.7343
+s616	18S	rep3	Allen	Allen	library-3			Sample 96	P1604	Cycle 4	1	7	200um	na	25	50	37.5		day	539.7		34.49348	-120.7343
+s617	18S	rep3	Allen	Allen	library-3			Sample 97	P1604	Cycle 4	1	8	200um	na	0	25	12.5		day	547.6		34.49348	-120.7343
+s618	18S	rep3	Allen	Allen	library-3			Sample 98	P1604	Cycle 4	1	8	200um	na	0	25	12.5		day	502.5		34.49348	-120.7343
+s619	18S	rep3	Allen	Allen	library-3			Sample 99	P1604	Cycle 4	1	8	200um	na	0	25	12.5		day	819.8		34.49348	-120.7343
+s620	18S	rep3	Allen	Allen	library-3			Sample 100	P1604	Cycle 4	1	8	200um	na	0	25	12.5		day	nd		34.49348	-120.7343
+s621	18S	rep3	Allen	Allen	library-3			Sample 101	P1604	Cycle 4	1	8	200um	na	0	25	12.5		day	919.5		34.49348	-120.7343
+s622	18S	rep3	Allen	Allen	library-3			Sample 102	P1604	Cycle 4	1	8	200um	na	0	25	12.5		day	659.8		34.49348	-120.7343
+s623	18S	rep3	Allen	Allen	library-3			Sample 103	P2007	na	2	1	200um	na	800	1000	900		night	16.2		32.51216667	-118.3308667
+s624	18S	rep3	Allen	Allen	library-3			Sample 104	P2007	na	2	2	200um	na	600	800	700		night	138.9		32.51216667	-118.3308667
+s625	18S	rep3	Allen	Allen	library-3			Sample 105	P2007	na	2	3	200um	na	500	600	550		night	164.8		32.51216667	-118.3308667
+s626	18S	rep3	Allen	Allen	library-3			Sample 106	P2007	na	2	5	200um	na	300	400	350		night	176.7		32.51216667	-118.3308667
+s627	18S	rep3	Allen	Allen	library-3			Sample 107	P2007	na	2	6	200um	na	200	300	250		night	395.1		32.51216667	-118.3308667
+s628	18S	rep3	Allen	Allen	library-3			Sample 108	P2007	na	2	7	200um	na	100	200	150		night	131.6		32.51216667	-118.3308667
+s629	18S	rep3	Allen	Allen	library-3			Sample 109	P2007	na	2	8	200um	na	50	100	75		night	90.8		32.51216667	-118.3308667
+s630	18S	rep3	Allen	Allen	library-3			Sample 110	P2007	na	2	9	200um	na	0	50	25		night	35.6		32.51216667	-118.3308667
+s631	18S	rep3	Allen	Allen	library-3			Sample 111	P2007	na	3	1	200um	na	800	1000	900		day	105.4		32.51216667	-118.3308667
+s632	18S	rep3	Allen	Allen	library-3			Sample 112	P2007	na	3	2	200um	na	500	800	650		day	49.3		32.51216667	-118.3308667
+s633	18S	rep3	Allen	Allen	library-3			Sample 113	P2007	na	3	3	200um	na	400	500	450		day	69.4		32.51216667	-118.3308667
+s634	18S	rep3	Allen	Allen	library-3			Sample 114	P2007	na	3	4	200um	na	300	400	350		day	97.4		32.51216667	-118.3308667
+s635	18S	rep3	Allen	Allen	library-3			Sample 115	P2007	na	3	6	200um	na	100	200	150		day	152.9		32.51216667	-118.3308667
+s636	18S	rep3	Allen	Allen	library-3			Sample 116	P2007	na	3	7	200um	na	50	100	75		day	94.2		32.51216667	-118.3308667
+s637	18S	rep3	Allen	Allen	library-3			Sample 117	P2007	na	3	8	200um	na	25	50	37.5		day	102.8		32.51216667	-118.3308667
+s638	18S	rep3	Allen	Allen	library-3			Sample 118	P2007	na	3	9	200um	na	0	25	12.5		day	67.6		32.51216667	-118.3308667
+s639	18S	rep3	Allen	Allen	library-3		NC	NC	NC		na	na	na	na	na	na	na		na	-1.8		32.51216667	-118.3308667
+s640	18S	rep3	Allen	Allen	library-3			Sample 120	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	390.5		34.5183	-120.7625
+s641	18S	rep3	Allen	Allen	library-3			Sample 121	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	124.5		34.5183	-120.7625
+s642	18S	rep3	Allen	Allen	library-3			Sample 122	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	250.8		34.5183	-120.7625
+s643	18S	rep3	Allen	Allen	library-3			Sample 123	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	169.6		34.5183	-120.7625
+s644	18S	rep3	Allen	Allen	library-3			Sample 124	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	162.6		34.5183	-120.7625
+s645	18S	rep3	Allen	Allen	library-3			Sample 125	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	125		34.5183	-120.7625
+s646	18S	rep3	Allen	Allen	library-3			Sample 126	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	337.1		34.5183	-120.7625
+s647	18S	rep3	Allen	Allen	library-3			Sample 127	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	265.8		34.5183	-120.7625
+s648	18S	rep3	Allen	Allen	library-3			Sample 41	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	269.7		34.5183	-120.7625
+s649	18S	rep3	Allen	Allen	library-3			Sample 42	P1604	Cycle 4	2	8	200um	na	0	25	12.5		night	393.2		34.5183	-120.7625
+s650	18S	rep3	Allen	Allen	library-3			Sample 27	P1604	Cycle 3	2	8	200um	na	0	50	25		night	40.8		34.68737	-121.2542
+S2345	18S	rep1	Goetze	Allen	library-ENP		DG5B-M192	M192	DG5B		4	1	200um	SM	1250	1500	1375		Day	19		10.8595	-116.20965
+S2346	18S	rep1	Goetze	Allen	library-ENP		DG5B-M198	M198	DG5B		4	1	200um	LG	1250	1500	1375		Day	26.8		10.8595	-116.20965
+S2347	18S	rep1	Goetze	Allen	library-ENP		DG5B-M73	M73	DG5B		4	2	200um	SM	1000	1250	1125		Day	13		10.8595	-116.20965
+S2348	18S	rep1	Goetze	Allen	library-ENP		DG5B-M145	M145	DG5B		4	2	200um	LG	1000	1250	1125		Day	78.2		10.8595	-116.20965
+S2349	18S	rep1	Goetze	Allen	library-ENP		DG5B-M74	M74	DG5B		4	3	200um	SM	800	1000	900		Day	46.6		10.8595	-116.20965
+S2350	18S	rep1	Goetze	Allen	library-ENP		DG5B-M146	M146	DG5B		4	3	200um	LG	800	1000	900		Day	244		10.8595	-116.20965
+S2351	18S	rep1	Goetze	Allen	library-ENP		DG5B-M26	M26	DG5B		4	4	200um	SM	700	800	750		Day	57.2		10.8595	-116.20965
+S2352	18S	rep1	Goetze	Allen	library-ENP		DG5B-M209	M209	DG5B		4	4	200um	LG	700	800	750		Day	260		10.8595	-116.20965
+S2353	18S	rep1	Goetze	Allen	library-ENP		DG5B-M56	M56	DG5B		4	5	200um	SM	500	700	600		Day	9.08		10.8595	-116.20965
+S2354	18S	rep1	Goetze	Allen	library-ENP		DG5B-M159	M159	DG5B		4	5	200um	LG	500	700	600		Day	104		10.8595	-116.20965
+S2355	18S	rep1	Goetze	Allen	library-ENP		DG5B-M75	M75	DG5B		4	6	200um	SM	300	500	400		Day	84		10.8595	-116.20965
+S2356	18S	rep1	Goetze	Allen	library-ENP		DG5B-M182	M182	DG5B		4	6	200um	LG	300	500	400		Day	69.6		10.8595	-116.20965
+S2357	18S	rep1	Goetze	Allen	library-ENP		DG5B-M92	M92	DG5B		4	7	200um	SM	100	300	200		Day	132		10.8595	-116.20965
+S2358	18S	rep1	Goetze	Allen	library-ENP		DG5B-M183	M183	DG5B		4	7	200um	LG	100	300	200		Day	380		10.8595	-116.20965
+S2359	18S	rep1	Goetze	Allen	library-ENP		DG5B-M71	M71	DG5B		4	8	200um	SM	50	100	75		Day	16.8		10.8595	-116.20965
+S2360	18S	rep1	Goetze	Allen	library-ENP		DG5B-M203	M203	DG5B		4	8	200um	LG	50	100	75		Day	16.8		10.8595	-116.20965
+S2361	18S	rep1	Goetze	Allen	library-ENP		DG5B-M105	M105	DG5B		4	9	200um	SM	0	50	25		Day	151		10.8595	-116.20965
+S2362	18S	rep1	Goetze	Allen	library-ENP		DG5B-M204	M204	DG5B		4	9	200um	LG	0	50	25		Day	7.96		10.8595	-116.20965
+S2363	18S	rep1	Goetze	Allen	library-ENP		DG5B-M52	M52	DG5B		2	1	200um	SM	1250	1500	1375		Night	24.2		10.8595	-116.20965
+S2364	18S	rep1	Goetze	Allen	library-ENP		DG5B-M185	M185	DG5B		2	1	200um	LG	1250	1500	1375		Night	72.6		10.8595	-116.20965
+S2365	18S	rep1	Goetze	Allen	library-ENP		DG5B-M54	M54	DG5B		2	2	200um	SM	1000	1250	1125		Night	29.4		10.8595	-116.20965
+S2366	18S	rep1	Goetze	Allen	library-ENP		DG5B-M155	M155	DG5B		2	2	200um	LG	1000	1250	1125		Night	74.4		10.8595	-116.20965
+S2367	18S	rep1	Goetze	Allen	library-ENP		DG5B-M53	M53	DG5B		2	3	200um	SM	800	1000	900		Night	90.4		10.8595	-116.20965
+S2368	18S	rep1	Goetze	Allen	library-ENP		DG5B-M157	M157	DG5B		2	3	200um	LG	800	1000	900		Night	80.8		10.8595	-116.20965
+S2369	18S	rep1	Goetze	Allen	library-ENP		DG5B-M51	M51	DG5B		2	4	200um	SM	700	800	750		Night	84.2		10.8595	-116.20965
+S2370	18S	rep1	Goetze	Allen	library-ENP		DG5B-M156	M156	DG5B		2	4	200um	LG	700	800	750		Night	470		10.8595	-116.20965
+S2371	18S	rep1	Goetze	Allen	library-ENP		DG5B-M55	M55	DG5B		2	5	200um	SM	500	700	600		Night	13.9		10.8595	-116.20965
+S2372	18S	rep1	Goetze	Allen	library-ENP		DG5B-M165	M165	DG5B		2	5	200um	LG	500	700	600		Night	165		10.8595	-116.20965
+S2373	18S	rep1	Goetze	Allen	library-ENP		DG5B-M79	M79	DG5B		2	6	200um	SM	300	500	400		Night	84.2		10.8595	-116.20965
+S2374	18S	rep1	Goetze	Allen	library-ENP		DG5B-M131	M131	DG5B		2	6	200um	LG	300	500	400		Night	136		10.8595	-116.20965
+S2375	18S	rep1	Goetze	Allen	library-ENP		DG5B-M91	M91	DG5B		2	7	200um	SM	100	300	200		Night	52		10.8595	-116.20965
+S2376	18S	rep1	Goetze	Allen	library-ENP		DG5B-M202	M202	DG5B		2	7	200um	LG	100	300	200		Night	330		10.8595	-116.20965
+S2377	18S	rep1	Goetze	Allen	library-ENP		DG5B-M102	M102	DG5B		2	8	200um	SM	50	100	75		Night	91.2		10.8595	-116.20965
+S2378	18S	rep1	Goetze	Allen	library-ENP		DG5B-M199	M199	DG5B		2	8	200um	LG	50	100	75		Night	438		10.8595	-116.20965
+S2379	18S	rep1	Goetze	Allen	library-ENP		DG5B-M103	M103	DG5B		2	9	200um	SM	0	50	25		Night	13		10.8595	-116.20965
+S2380	18S	rep1	Goetze	Allen	library-ENP		DG5B-M132	M132	DG5B		2	9	200um	LG	0	50	25		Night	15.4		10.8595	-116.20965
+S2381	18S	rep1	Goetze	Allen	library-ENP		MOCK-EVEN	MOCK-EVEN	na	na	na	na	100um	na	na	na	na		na	na		na	na
+S2382	18S	rep1	Goetze	Allen	library-ENP		MOCK-STAGGERED	MOCK-STAGGERED	na	na	na	na	100um	na	na	na	na		na	na		na	na
+S2383	18S	rep1	Goetze	Allen	library-ENP		NC	NC	NC		na	na	na	na	na	na	na		na	na		na	na
+S2384	18S	rep1	Goetze	Allen	library-ENP		KH-14-3 st 5 (0-200m)	H07	KH-14-3	st5	na	3	100um	na	0	200	100					20.01	-169.9733333
+S2393	18S	rep2	Goetze	Allen	library-ENP		DG5B-M192	M192	DG5B		4	1	200um	SM	1250	1500	1375		Day	19		10.8595	-116.20965
+S2394	18S	rep2	Goetze	Allen	library-ENP		DG5B-M198	M198	DG5B		4	1	200um	LG	1250	1500	1375		Day	26.8		10.8595	-116.20965
+S2395	18S	rep2	Goetze	Allen	library-ENP		DG5B-M73	M73	DG5B		4	2	200um	SM	1000	1250	1125		Day	13		10.8595	-116.20965
+S2396	18S	rep2	Goetze	Allen	library-ENP		DG5B-M145	M145	DG5B		4	2	200um	LG	1000	1250	1125		Day	78.2		10.8595	-116.20965
+S2397	18S	rep2	Goetze	Allen	library-ENP		DG5B-M74	M74	DG5B		4	3	200um	SM	800	1000	900		Day	46.6		10.8595	-116.20965
+S2398	18S	rep2	Goetze	Allen	library-ENP		DG5B-M146	M146	DG5B		4	3	200um	LG	800	1000	900		Day	244		10.8595	-116.20965
+S2399	18S	rep2	Goetze	Allen	library-ENP		DG5B-M26	M26	DG5B		4	4	200um	SM	700	800	750		Day	57.2		10.8595	-116.20965
+S2400	18S	rep2	Goetze	Allen	library-ENP		DG5B-M209	M209	DG5B		4	4	200um	LG	700	800	750		Day	260		10.8595	-116.20965
+S2401	18S	rep2	Goetze	Allen	library-ENP		DG5B-M56	M56	DG5B		4	5	200um	SM	500	700	600		Day	9.08		10.8595	-116.20965
+S2402	18S	rep2	Goetze	Allen	library-ENP		DG5B-M159	M159	DG5B		4	5	200um	LG	500	700	600		Day	104		10.8595	-116.20965
+S2403	18S	rep2	Goetze	Allen	library-ENP		DG5B-M75	M75	DG5B		4	6	200um	SM	300	500	400		Day	84		10.8595	-116.20965
+S2404	18S	rep2	Goetze	Allen	library-ENP		DG5B-M182	M182	DG5B		4	6	200um	LG	300	500	400		Day	69.6		10.8595	-116.20965
+S2405	18S	rep2	Goetze	Allen	library-ENP		DG5B-M92	M92	DG5B		4	7	200um	SM	100	300	200		Day	132		10.8595	-116.20965
+S2406	18S	rep2	Goetze	Allen	library-ENP		DG5B-M183	M183	DG5B		4	7	200um	LG	100	300	200		Day	380		10.8595	-116.20965
+S2407	18S	rep2	Goetze	Allen	library-ENP		DG5B-M71	M71	DG5B		4	8	200um	SM	50	100	75		Day	16.8		10.8595	-116.20965
+S2408	18S	rep2	Goetze	Allen	library-ENP		DG5B-M203	M203	DG5B		4	8	200um	LG	50	100	75		Day	16.8		10.8595	-116.20965
+S2409	18S	rep2	Goetze	Allen	library-ENP		DG5B-M105	M105	DG5B		4	9	200um	SM	0	50	25		Day	151		10.8595	-116.20965
+S2410	18S	rep2	Goetze	Allen	library-ENP		DG5B-M204	M204	DG5B		4	9	200um	LG	0	50	25		Day	7.96		10.8595	-116.20965
+S2411	18S	rep2	Goetze	Allen	library-ENP		DG5B-M52	M52	DG5B		2	1	200um	SM	1250	1500	1375		Night	24.2		10.8595	-116.20965
+S2412	18S	rep2	Goetze	Allen	library-ENP		DG5B-M185	M185	DG5B		2	1	200um	LG	1250	1500	1375		Night	72.6		10.8595	-116.20965
+S2413	18S	rep2	Goetze	Allen	library-ENP		DG5B-M54	M54	DG5B		2	2	200um	SM	1000	1250	1125		Night	29.4		10.8595	-116.20965
+S2414	18S	rep2	Goetze	Allen	library-ENP		DG5B-M155	M155	DG5B		2	2	200um	LG	1000	1250	1125		Night	74.4		10.8595	-116.20965
+S2415	18S	rep2	Goetze	Allen	library-ENP		DG5B-M53	M53	DG5B		2	3	200um	SM	800	1000	900		Night	90.4		10.8595	-116.20965
+S2416	18S	rep2	Goetze	Allen	library-ENP		DG5B-M157	M157	DG5B		2	3	200um	LG	800	1000	900		Night	80.8		10.8595	-116.20965
+S2417	18S	rep2	Goetze	Allen	library-ENP		DG5B-M51	M51	DG5B		2	4	200um	SM	700	800	750		Night	84.2		10.8595	-116.20965
+S2418	18S	rep2	Goetze	Allen	library-ENP		DG5B-M156	M156	DG5B		2	4	200um	LG	700	800	750		Night	470		10.8595	-116.20965
+S2419	18S	rep2	Goetze	Allen	library-ENP		DG5B-M55	M55	DG5B		2	5	200um	SM	500	700	600		Night	13.9		10.8595	-116.20965
+S2420	18S	rep2	Goetze	Allen	library-ENP		DG5B-M165	M165	DG5B		2	5	200um	LG	500	700	600		Night	165		10.8595	-116.20965
+S2421	18S	rep2	Goetze	Allen	library-ENP		DG5B-M79	M79	DG5B		2	6	200um	SM	300	500	400		Night	84.2		10.8595	-116.20965
+S2422	18S	rep2	Goetze	Allen	library-ENP		DG5B-M131	M131	DG5B		2	6	200um	LG	300	500	400		Night	136		10.8595	-116.20965
+S2423	18S	rep2	Goetze	Allen	library-ENP		DG5B-M91	M91	DG5B		2	7	200um	SM	100	300	200		Night	52		10.8595	-116.20965
+S2424	18S	rep2	Goetze	Allen	library-ENP		DG5B-M202	M202	DG5B		2	7	200um	LG	100	300	200		Night	330		10.8595	-116.20965
+S2425	18S	rep2	Goetze	Allen	library-ENP		DG5B-M102	M102	DG5B		2	8	200um	SM	50	100	75		Night	91.2		10.8595	-116.20965
+S2426	18S	rep2	Goetze	Allen	library-ENP		DG5B-M199	M199	DG5B		2	8	200um	LG	50	100	75		Night	438		10.8595	-116.20965
+S2427	18S	rep2	Goetze	Allen	library-ENP		DG5B-M103	M103	DG5B		2	9	200um	SM	0	50	25		Night	13		10.8595	-116.20965
+S2428	18S	rep2	Goetze	Allen	library-ENP		DG5B-M132	M132	DG5B		2	9	200um	LG	0	50	25		Night	15.4		10.8595	-116.20965
+S2429	18S	rep2	Goetze	Allen	library-ENP		MOCK-EVEN	MOCK-EVEN	na	na	na	na	100um	na	na	na	na		na	na		na	na
+S2430	18S	rep2	Goetze	Allen	library-ENP		MOCK-STAGGERED	MOCK-STAGGERED	na	na	na	na	100um	na	na	na	na		na	na		na	na
+S2431	18S	rep2	Goetze	Allen	library-ENP		NC	NC	NC		na	na	na	na	na	na	na		na	na		na	na
+S2432	18S	rep2	Goetze	Allen	library-ENP		KH-14-3 st 5 (0-200m)	H07	KH-14-3	st5	na	3	100um	na	0	200	100					20.01	-169.9733333
+S2441	18S	rep3	Goetze	Allen	library-ENP		DG5B-M192	M192	DG5B		4	1	200um	SM	1250	1500	1375		Day	19		10.8595	-116.20965
+S2442	18S	rep3	Goetze	Allen	library-ENP		DG5B-M198	M198	DG5B		4	1	200um	LG	1250	1500	1375		Day	26.8		10.8595	-116.20965
+S2443	18S	rep3	Goetze	Allen	library-ENP		DG5B-M73	M73	DG5B		4	2	200um	SM	1000	1250	1125		Day	13		10.8595	-116.20965
+S2444	18S	rep3	Goetze	Allen	library-ENP		DG5B-M145	M145	DG5B		4	2	200um	LG	1000	1250	1125		Day	78.2		10.8595	-116.20965
+S2445	18S	rep3	Goetze	Allen	library-ENP		DG5B-M74	M74	DG5B		4	3	200um	SM	800	1000	900		Day	46.6		10.8595	-116.20965
+S2446	18S	rep3	Goetze	Allen	library-ENP		DG5B-M146	M146	DG5B		4	3	200um	LG	800	1000	900		Day	244		10.8595	-116.20965
+S2447	18S	rep3	Goetze	Allen	library-ENP		DG5B-M26	M26	DG5B		4	4	200um	SM	700	800	750		Day	57.2		10.8595	-116.20965
+S2448	18S	rep3	Goetze	Allen	library-ENP		DG5B-M209	M209	DG5B		4	4	200um	LG	700	800	750		Day	260		10.8595	-116.20965
+S2449	18S	rep3	Goetze	Allen	library-ENP		DG5B-M56	M56	DG5B		4	5	200um	SM	500	700	600		Day	9.08		10.8595	-116.20965
+S2450	18S	rep3	Goetze	Allen	library-ENP		DG5B-M159	M159	DG5B		4	5	200um	LG	500	700	600		Day	104		10.8595	-116.20965
+S2451	18S	rep3	Goetze	Allen	library-ENP		DG5B-M75	M75	DG5B		4	6	200um	SM	300	500	400		Day	84		10.8595	-116.20965
+S2452	18S	rep3	Goetze	Allen	library-ENP		DG5B-M182	M182	DG5B		4	6	200um	LG	300	500	400		Day	69.6		10.8595	-116.20965
+S2453	18S	rep3	Goetze	Allen	library-ENP		DG5B-M92	M92	DG5B		4	7	200um	SM	100	300	200		Day	132		10.8595	-116.20965
+S2454	18S	rep3	Goetze	Allen	library-ENP		DG5B-M183	M183	DG5B		4	7	200um	LG	100	300	200		Day	380		10.8595	-116.20965
+S2455	18S	rep3	Goetze	Allen	library-ENP		DG5B-M71	M71	DG5B		4	8	200um	SM	50	100	75		Day	16.8		10.8595	-116.20965
+S2456	18S	rep3	Goetze	Allen	library-ENP		DG5B-M203	M203	DG5B		4	8	200um	LG	50	100	75		Day	16.8		10.8595	-116.20965
+S2457	18S	rep3	Goetze	Allen	library-ENP		DG5B-M105	M105	DG5B		4	9	200um	SM	0	50	25		Day	151		10.8595	-116.20965
+S2458	18S	rep3	Goetze	Allen	library-ENP		DG5B-M204	M204	DG5B		4	9	200um	LG	0	50	25		Day	7.96		10.8595	-116.20965
+S2459	18S	rep3	Goetze	Allen	library-ENP		DG5B-M52	M52	DG5B		2	1	200um	SM	1250	1500	1375		Night	24.2		10.8595	-116.20965
+S2460	18S	rep3	Goetze	Allen	library-ENP		DG5B-M185	M185	DG5B		2	1	200um	LG	1250	1500	1375		Night	72.6		10.8595	-116.20965
+S2461	18S	rep3	Goetze	Allen	library-ENP		DG5B-M54	M54	DG5B		2	2	200um	SM	1000	1250	1125		Night	29.4		10.8595	-116.20965
+S2462	18S	rep3	Goetze	Allen	library-ENP		DG5B-M155	M155	DG5B		2	2	200um	LG	1000	1250	1125		Night	74.4		10.8595	-116.20965
+S2463	18S	rep3	Goetze	Allen	library-ENP		DG5B-M53	M53	DG5B		2	3	200um	SM	800	1000	900		Night	90.4		10.8595	-116.20965
+S2464	18S	rep3	Goetze	Allen	library-ENP		DG5B-M157	M157	DG5B		2	3	200um	LG	800	1000	900		Night	80.8		10.8595	-116.20965
+S2465	18S	rep3	Goetze	Allen	library-ENP		DG5B-M51	M51	DG5B		2	4	200um	SM	700	800	750		Night	84.2		10.8595	-116.20965
+S2466	18S	rep3	Goetze	Allen	library-ENP		DG5B-M156	M156	DG5B		2	4	200um	LG	700	800	750		Night	470		10.8595	-116.20965
+S2467	18S	rep3	Goetze	Allen	library-ENP		DG5B-M55	M55	DG5B		2	5	200um	SM	500	700	600		Night	13.9		10.8595	-116.20965
+S2468	18S	rep3	Goetze	Allen	library-ENP		DG5B-M165	M165	DG5B		2	5	200um	LG	500	700	600		Night	165		10.8595	-116.20965
+S2469	18S	rep3	Goetze	Allen	library-ENP		DG5B-M79	M79	DG5B		2	6	200um	SM	300	500	400		Night	84.2		10.8595	-116.20965
+S2470	18S	rep3	Goetze	Allen	library-ENP		DG5B-M131	M131	DG5B		2	6	200um	LG	300	500	400		Night	136		10.8595	-116.20965
+S2471	18S	rep3	Goetze	Allen	library-ENP		DG5B-M91	M91	DG5B		2	7	200um	SM	100	300	200		Night	52		10.8595	-116.20965
+S2472	18S	rep3	Goetze	Allen	library-ENP		DG5B-M202	M202	DG5B		2	7	200um	LG	100	300	200		Night	330		10.8595	-116.20965
+S2473	18S	rep3	Goetze	Allen	library-ENP		DG5B-M102	M102	DG5B		2	8	200um	SM	50	100	75		Night	91.2		10.8595	-116.20965
+S2474	18S	rep3	Goetze	Allen	library-ENP		DG5B-M199	M199	DG5B		2	8	200um	LG	50	100	75		Night	438		10.8595	-116.20965
+S2475	18S	rep3	Goetze	Allen	library-ENP		DG5B-M103	M103	DG5B		2	9	200um	SM	0	50	25		Night	13		10.8595	-116.20965
+S2476	18S	rep3	Goetze	Allen	library-ENP		DG5B-M132	M132	DG5B		2	9	200um	LG	0	50	25		Night	15.4		10.8595	-116.20965
+S2477	18S	rep3	Goetze	Allen	library-ENP		MOCK-EVEN	MOCK-EVEN	na	na	na	na	100um	na	na	na	na		na	na		na	na
+S2478	18S	rep3	Goetze	Allen	library-ENP		MOCK-STAGGERED	MOCK-STAGGERED	na	na	na	na	100um	na	na	na	na		na	na		na	na
+S2479	18S	rep3	Goetze	Allen	library-ENP		NC	NC	NC		na	na	na	na	na	na	na		na	na		na	na
+S2480	18S	rep3	Goetze	Allen	library-ENP		KH-14-3 st 5 (0-200m)	H07	KH-14-3	st5	na	3	100um	na	0	200	100					20.01	-169.9733333
+S1945	18S	rep1	Allen	Allen	library-P2107			P2107s1	P2107	Cycle 1	3	8	200um	na	50	100	75		Day			36.145	-122.28
+S1946	18S	rep1	Allen	Allen	library-P2107			P2107s2	P2107	Cycle 1	3	9	200um	na	0	50	25		Day			36.145	-122.28
+S1947	18S	rep1	Allen	Allen	library-P2107			P2107s3	P2107	Cycle 1	3	7	200um	na	100	200	150		Day			36.145	-122.28
+S1948	18S	rep1	Allen	Allen	library-P2107			P2107s4	P2107	Cycle 1	3	6	200um	na	200	300	250		Day			36.145	-122.28
+S1949	18S	rep1	Allen	Allen	library-P2107			P2107s5	P2107	Cycle 1	3	5	200um	na	300	400	350		Day			36.145	-122.28
+S1950	18S	rep1	Allen	Allen	library-P2107			P2107s6	P2107	Cycle 1	3	4	200um	na	400	600	500		Day			36.145	-122.28
+S1951	18S	rep1	Allen	Allen	library-P2107			P2107s7	P2107	Cycle 1	4	6	200um	na	200	300	250		Night			36.145	-122.28
+S1952	18S	rep1	Allen	Allen	library-P2107			P2107s8	P2107	Cycle 1	4	7	200um	na	100	200	150		Night			36.145	-122.28
+S1953	18S	rep1	Allen	Allen	library-P2107			P2107s9	P2107	Cycle 1	4	8	200um	na	50	100	75		Night			36.145	-122.28
+S1954	18S	rep1	Allen	Allen	library-P2107			P2107s10	P2107	Cycle 1	4	9	200um	na	0	50	25		Night			36.145	-122.28
+S1955	18S	rep1	Allen	Allen	library-P2107			P2107s11	P2107	Cycle 1	3	1	200um	na	800	1000	900		Day			36.145	-122.28
+S1956	18S	rep1	Allen	Allen	library-P2107			P2107s12	P2107	Cycle 1	3	2	200um	na	600	800	700		Day			36.145	-122.28
+S1957	18S	rep1	Allen	Allen	library-P2107			P2107s13	P2107	Cycle 1	3	3	200um	na	500	600	550		Day			36.145	-122.28
+S1958	18S	rep1	Allen	Allen	library-P2107			P2107s14	P2107	Cycle 1	4	1	200um	na	800	1000	900		Night			36.145	-122.28
+S1959	18S	rep1	Allen	Allen	library-P2107			P2107s15	P2107	Cycle 1	4	2	200um	na	600	800	700		Night			36.145	-122.28
+S1960	18S	rep1	Allen	Allen	library-P2107			P2107s16	P2107	Cycle 1	4	3	200um	na	500	600	550		Night			36.145	-122.28
+S1961	18S	rep1	Allen	Allen	library-P2107			P2107s17	P2107	Cycle 1	4	5	200um	na	300	400	350		Night			36.145	-122.28
+S1962	18S	rep1	Allen	Allen	library-P2107			P2107s18	P2107	Cycle 1	4	4	200um	na	400	500	450		Night			36.145	-122.28
+S1963	18S	rep1	Allen	Allen	library-P2107			P2107s19	P2107	Cycle 3	7	9	200um	na	0	50	25		Day			34.42	-130.41
+S1964	18S	rep1	Allen	Allen	library-P2107			P2107s20	P2107	Cycle 3	7	8	200um	na	50	100	75		Day			34.42	-130.41
+S1965	18S	rep1	Allen	Allen	library-P2107			P2107s21	P2107	Cycle 3	7	7	200um	na	100	200	150		Day			34.42	-130.41
+S1966	18S	rep1	Allen	Allen	library-P2107			P2107s22	P2107	Cycle 3	7	6	200um	na	200	300	250		Day			34.42	-130.41
+S1967	18S	rep1	Allen	Allen	library-P2107			P2107s23	P2107	Cycle 3	7	1	200um	na	800	1000	900		Day			34.42	-130.41
+S1968	18S	rep1	Allen	Allen	library-P2107			P2107s24	P2107	Cycle 3	7	2	200um	na	600	800	700		Day			34.42	-130.41
+S1969	18S	rep1	Allen	Allen	library-P2107			P2107s25	P2107	Cycle 3	7	3	200um	na	500	600	550		Day			34.42	-130.41
+S1970	18S	rep1	Allen	Allen	library-P2107			P2107s26	P2107	Cycle 3	7	4	200um	na	400	500	450		Day			34.42	-130.41
+S1971	18S	rep1	Allen	Allen	library-P2107			P2107s27	P2107	Cycle 3	7	5	200um	na	300	400	350		Day			34.42	-130.41
+S1972	18S	rep1	Allen	Allen	library-P2107			P2107s28	P2107	Cycle 3	6	9	200um	na	0	50	25		Night			34.42	-130.41
+S1973	18S	rep1	Allen	Allen	library-P2107			P2107s29	P2107	Cycle 3	6	1	200um	na	800	1000	900		Night			34.42	-130.41
+S1974	18S	rep1	Allen	Allen	library-P2107			P2107s30	P2107	Cycle 3	6	2	200um	na	600	800	700		Night			34.42	-130.41
+S1975	18S	rep1	Allen	Allen	library-P2107			P2107s31	P2107	Cycle 3	6	3	200um	na	500	600	550		Night			34.42	-130.41
+S1976	18S	rep1	Allen	Allen	library-P2107			P2107s32	P2107	Cycle 3	6	4	200um	na	400	500	450		Night			34.42	-130.41
+S1977	18S	rep1	Allen	Allen	library-P2107			P2107s33	P2107	Cycle 3	6	5	200um	na	300	400	350		Night			34.42	-130.41
+S1978	18S	rep1	Allen	Allen	library-P2107			P2107s34	P2107	Cycle 3	6	6	200um	na	200	300	250		Night			34.42	-130.41
+S1979	18S	rep1	Allen	Allen	library-P2107			P2107s35	P2107	Cycle 3	6	7	200um	na	100	200	150		Night			34.42	-130.41
+S1980	18S	rep1	Allen	Allen	library-P2107			P2107s36	P2107	Cycle 3	6	8	200um	na	50	100	75		Night			34.42	-130.41
+S1981	18S	rep1	Allen	Allen	library-P2107			MOCK-EVEN	na	na	na	na	100um	na	na	na	na		na			na	na
+S1982	18S	rep1	Allen	Allen	library-P2107			MOCK-STAGGERED	na	na	na	na	100um	na	na	na	na		na			na	na
+S1983	18S	rep1	Allen	Allen	library-P2107			NC	NC	na	na	na	na	na	na	na	na		na			na	na
+S1984	18S	rep2	Allen	Allen	library-P2107			H04	KH-14-3	st4	na	3	100um	na	0	200	100					15.01333333	-170.02
+S1993	18S	rep2	Allen	Allen	library-P2107			P2107s1	P2107	Cycle 1	3	8	200um	na	50	100	75		Day			36.145	-122.28
+S1994	18S	rep2	Allen	Allen	library-P2107			P2107s2	P2107	Cycle 1	3	9	200um	na	0	50	25		Day			36.145	-122.28
+S1995	18S	rep2	Allen	Allen	library-P2107			P2107s3	P2107	Cycle 1	3	7	200um	na	100	200	150		Day			36.145	-122.28
+S1996	18S	rep2	Allen	Allen	library-P2107			P2107s4	P2107	Cycle 1	3	6	200um	na	200	300	250		Day			36.145	-122.28
+S1997	18S	rep2	Allen	Allen	library-P2107			P2107s5	P2107	Cycle 1	3	5	200um	na	300	400	350		Day			36.145	-122.28
+S1998	18S	rep2	Allen	Allen	library-P2107			P2107s6	P2107	Cycle 1	3	4	200um	na	400	600	500		Day			36.145	-122.28
+S1999	18S	rep2	Allen	Allen	library-P2107			P2107s7	P2107	Cycle 1	4	6	200um	na	200	300	250		Night			36.145	-122.28
+S2000	18S	rep2	Allen	Allen	library-P2107			P2107s8	P2107	Cycle 1	4	7	200um	na	100	200	150		Night			36.145	-122.28
+S2001	18S	rep2	Allen	Allen	library-P2107			P2107s9	P2107	Cycle 1	4	8	200um	na	50	100	75		Night			36.145	-122.28
+S2002	18S	rep2	Allen	Allen	library-P2107			P2107s10	P2107	Cycle 1	4	9	200um	na	0	50	25		Night			36.145	-122.28
+S2003	18S	rep2	Allen	Allen	library-P2107			P2107s11	P2107	Cycle 1	3	1	200um	na	800	1000	900		Day			36.145	-122.28
+S2004	18S	rep2	Allen	Allen	library-P2107			P2107s12	P2107	Cycle 1	3	2	200um	na	600	800	700		Day			36.145	-122.28
+S2005	18S	rep2	Allen	Allen	library-P2107			P2107s13	P2107	Cycle 1	3	3	200um	na	500	600	550		Day			36.145	-122.28
+S2006	18S	rep2	Allen	Allen	library-P2107			P2107s14	P2107	Cycle 1	4	1	200um	na	800	1000	900		Night			36.145	-122.28
+S2007	18S	rep2	Allen	Allen	library-P2107			P2107s15	P2107	Cycle 1	4	2	200um	na	600	800	700		Night			36.145	-122.28
+S2008	18S	rep2	Allen	Allen	library-P2107			P2107s16	P2107	Cycle 1	4	3	200um	na	500	600	550		Night			36.145	-122.28
+S2009	18S	rep2	Allen	Allen	library-P2107			P2107s17	P2107	Cycle 1	4	5	200um	na	300	400	350		Night			36.145	-122.28
+S2010	18S	rep2	Allen	Allen	library-P2107			P2107s18	P2107	Cycle 1	4	4	200um	na	400	500	450		Night			36.145	-122.28
+S2011	18S	rep2	Allen	Allen	library-P2107			P2107s19	P2107	Cycle 3	7	9	200um	na	0	50	25		Day			34.42	-130.41
+S2012	18S	rep2	Allen	Allen	library-P2107			P2107s20	P2107	Cycle 3	7	8	200um	na	50	100	75		Day			34.42	-130.41
+S2013	18S	rep2	Allen	Allen	library-P2107			P2107s21	P2107	Cycle 3	7	7	200um	na	100	200	150		Day			34.42	-130.41
+S2014	18S	rep2	Allen	Allen	library-P2107			P2107s22	P2107	Cycle 3	7	6	200um	na	200	300	250		Day			34.42	-130.41
+S2015	18S	rep2	Allen	Allen	library-P2107			P2107s23	P2107	Cycle 3	7	1	200um	na	800	1000	900		Day			34.42	-130.41
+S2016	18S	rep2	Allen	Allen	library-P2107			P2107s24	P2107	Cycle 3	7	2	200um	na	600	800	700		Day			34.42	-130.41
+S2017	18S	rep2	Allen	Allen	library-P2107			P2107s25	P2107	Cycle 3	7	3	200um	na	500	600	550		Day			34.42	-130.41
+S2018	18S	rep2	Allen	Allen	library-P2107			P2107s26	P2107	Cycle 3	7	4	200um	na	400	500	450		Day			34.42	-130.41
+S2019	18S	rep2	Allen	Allen	library-P2107			P2107s27	P2107	Cycle 3	7	5	200um	na	300	400	350		Day			34.42	-130.41
+S2020	18S	rep2	Allen	Allen	library-P2107			P2107s28	P2107	Cycle 3	6	9	200um	na	0	50	25		Night			34.42	-130.41
+S2021	18S	rep2	Allen	Allen	library-P2107			P2107s29	P2107	Cycle 3	6	1	200um	na	800	1000	900		Night			34.42	-130.41
+S2022	18S	rep2	Allen	Allen	library-P2107			P2107s30	P2107	Cycle 3	6	2	200um	na	600	800	700		Night			34.42	-130.41
+S2023	18S	rep2	Allen	Allen	library-P2107			P2107s31	P2107	Cycle 3	6	3	200um	na	500	600	550		Night			34.42	-130.41
+S2024	18S	rep2	Allen	Allen	library-P2107			P2107s32	P2107	Cycle 3	6	4	200um	na	400	500	450		Night			34.42	-130.41
+S2025	18S	rep2	Allen	Allen	library-P2107			P2107s33	P2107	Cycle 3	6	5	200um	na	300	400	350		Night			34.42	-130.41
+S2026	18S	rep2	Allen	Allen	library-P2107			P2107s34	P2107	Cycle 3	6	6	200um	na	200	300	250		Night			34.42	-130.41
+S2027	18S	rep2	Allen	Allen	library-P2107			P2107s35	P2107	Cycle 3	6	7	200um	na	100	200	150		Night			34.42	-130.41
+S2028	18S	rep2	Allen	Allen	library-P2107			P2107s36	P2107	Cycle 3	6	8	200um	na	50	100	75		Night			34.42	-130.41
+S2029	18S	rep2	Allen	Allen	library-P2107			MOCK-EVEN	na	na	na	na	100um	na	na	na	na		na			na	na
+S2030	18S	rep2	Allen	Allen	library-P2107			MOCK-STAGGERED	na	na	na	na	100um	na	na	na	na		na			na	na
+S2031	18S	rep2	Allen	Allen	library-P2107			NC	NC	na	na	na	na	na	na	na	na		na			na	na
+S2032	18S	rep2	Allen	Allen	library-P2107			H04	KH-14-3	st4	na	3	100um	na	0	200	100					15.01333333	-170.02
+S2041	18S	rep3	Allen	Allen	library-P2107			P2107s1	P2107	Cycle 1	3	8	200um	na	50	100	75		Day			36.145	-122.28
+S2042	18S	rep3	Allen	Allen	library-P2107			P2107s2	P2107	Cycle 1	3	9	200um	na	0	50	25		Day			36.145	-122.28
+S2043	18S	rep3	Allen	Allen	library-P2107			P2107s3	P2107	Cycle 1	3	7	200um	na	100	200	150		Day			36.145	-122.28
+S2044	18S	rep3	Allen	Allen	library-P2107			P2107s4	P2107	Cycle 1	3	6	200um	na	200	300	250		Day			36.145	-122.28
+S2045	18S	rep3	Allen	Allen	library-P2107			P2107s5	P2107	Cycle 1	3	5	200um	na	300	400	350		Day			36.145	-122.28
+S2046	18S	rep3	Allen	Allen	library-P2107			P2107s6	P2107	Cycle 1	3	4	200um	na	400	600	500		Day			36.145	-122.28
+S2047	18S	rep3	Allen	Allen	library-P2107			P2107s7	P2107	Cycle 1	4	6	200um	na	200	300	250		Night			36.145	-122.28
+S2048	18S	rep3	Allen	Allen	library-P2107			P2107s8	P2107	Cycle 1	4	7	200um	na	100	200	150		Night			36.145	-122.28
+S2049	18S	rep3	Allen	Allen	library-P2107			P2107s9	P2107	Cycle 1	4	8	200um	na	50	100	75		Night			36.145	-122.28
+S2050	18S	rep3	Allen	Allen	library-P2107			P2107s10	P2107	Cycle 1	4	9	200um	na	0	50	25		Night			36.145	-122.28
+S2051	18S	rep3	Allen	Allen	library-P2107			P2107s11	P2107	Cycle 1	3	1	200um	na	800	1000	900		Day			36.145	-122.28
+S2052	18S	rep3	Allen	Allen	library-P2107			P2107s12	P2107	Cycle 1	3	2	200um	na	600	800	700		Day			36.145	-122.28
+S2053	18S	rep3	Allen	Allen	library-P2107			P2107s13	P2107	Cycle 1	3	3	200um	na	500	600	550		Day			36.145	-122.28
+S2054	18S	rep3	Allen	Allen	library-P2107			P2107s14	P2107	Cycle 1	4	1	200um	na	800	1000	900		Night			36.145	-122.28
+S2055	18S	rep3	Allen	Allen	library-P2107			P2107s15	P2107	Cycle 1	4	2	200um	na	600	800	700		Night			36.145	-122.28
+S2056	18S	rep3	Allen	Allen	library-P2107			P2107s16	P2107	Cycle 1	4	3	200um	na	500	600	550		Night			36.145	-122.28
+S2057	18S	rep3	Allen	Allen	library-P2107			P2107s17	P2107	Cycle 1	4	5	200um	na	300	400	350		Night			36.145	-122.28
+S2058	18S	rep3	Allen	Allen	library-P2107			P2107s18	P2107	Cycle 1	4	4	200um	na	400	500	450		Night			36.145	-122.28
+S2059	18S	rep3	Allen	Allen	library-P2107			P2107s19	P2107	Cycle 3	7	9	200um	na	0	50	25		Day			34.42	-130.41
+S2060	18S	rep3	Allen	Allen	library-P2107			P2107s20	P2107	Cycle 3	7	8	200um	na	50	100	75		Day			34.42	-130.41
+S2061	18S	rep3	Allen	Allen	library-P2107			P2107s21	P2107	Cycle 3	7	7	200um	na	100	200	150		Day			34.42	-130.41
+S2062	18S	rep3	Allen	Allen	library-P2107			P2107s22	P2107	Cycle 3	7	6	200um	na	200	300	250		Day			34.42	-130.41
+S2063	18S	rep3	Allen	Allen	library-P2107			P2107s23	P2107	Cycle 3	7	1	200um	na	800	1000	900		Day			34.42	-130.41
+S2064	18S	rep3	Allen	Allen	library-P2107			P2107s24	P2107	Cycle 3	7	2	200um	na	600	800	700		Day			34.42	-130.41
+S2065	18S	rep3	Allen	Allen	library-P2107			P2107s25	P2107	Cycle 3	7	3	200um	na	500	600	550		Day			34.42	-130.41
+S2066	18S	rep3	Allen	Allen	library-P2107			P2107s26	P2107	Cycle 3	7	4	200um	na	400	500	450		Day			34.42	-130.41
+S2067	18S	rep3	Allen	Allen	library-P2107			P2107s27	P2107	Cycle 3	7	5	200um	na	300	400	350		Day			34.42	-130.41
+S2068	18S	rep3	Allen	Allen	library-P2107			P2107s28	P2107	Cycle 3	6	9	200um	na	0	50	25		Night			34.42	-130.41
+S2069	18S	rep3	Allen	Allen	library-P2107			P2107s29	P2107	Cycle 3	6	1	200um	na	800	1000	900		Night			34.42	-130.41
+S2070	18S	rep3	Allen	Allen	library-P2107			P2107s30	P2107	Cycle 3	6	2	200um	na	600	800	700		Night			34.42	-130.41
+S2071	18S	rep3	Allen	Allen	library-P2107			P2107s31	P2107	Cycle 3	6	3	200um	na	500	600	550		Night			34.42	-130.41
+S2072	18S	rep3	Allen	Allen	library-P2107			P2107s32	P2107	Cycle 3	6	4	200um	na	400	500	450		Night			34.42	-130.41
+S2073	18S	rep3	Allen	Allen	library-P2107			P2107s33	P2107	Cycle 3	6	5	200um	na	300	400	350		Night			34.42	-130.41
+S2074	18S	rep3	Allen	Allen	library-P2107			P2107s34	P2107	Cycle 3	6	6	200um	na	200	300	250		Night			34.42	-130.41
+S2075	18S	rep3	Allen	Allen	library-P2107			P2107s35	P2107	Cycle 3	6	7	200um	na	100	200	150		Night			34.42	-130.41
+S2076	18S	rep3	Allen	Allen	library-P2107			P2107s36	P2107	Cycle 3	6	8	200um	na	50	100	75		Night			34.42	-130.41
+S2077	18S	rep3	Allen	Allen	library-P2107			MOCK-EVEN	na	na	na	na	100um	na	na	na	na		na			na	na
+S2078	18S	rep3	Allen	Allen	library-P2107			MOCK-STAGGERED	na	na	na	na	100um	na	na	na	na		na			na	na
+S2079	18S	rep3	Allen	Allen	library-P2107			NC	NC	na	na	na	na	na	na	na	na		na			na	na
+S2080	18S	rep3	Tokyo	Allen	library-P2107			H04	KH-14-3	st4	na	3	100um	na	0	200	100					15.01333333	-170.02
